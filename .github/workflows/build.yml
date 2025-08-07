@@ -1,0 +1,29 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches: [main]  # Run on PRs to main
+  push:
+    branches: [main]  # Optional: also run on direct pushes to main (if any)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      #  add tests
+      # - name: Run tests
+      #   run: npm test
