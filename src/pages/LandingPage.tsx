@@ -26,11 +26,13 @@ import {
   CheckCircle,
   Menu,
 } from '@mui/icons-material';
+import { Link, useNavigate } from 'react-router-dom';
 import { ThemeToggle, useTheme as useAppTheme } from '../theme';
 
 const LandingPage = () => {
   const theme = useTheme();
   const { mode } = useAppTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const features = [
@@ -139,11 +141,18 @@ const LandingPage = () => {
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Button color="inherit" sx={{ color: 'text.primary' }}>Features</Button>
               <Button color="inherit" sx={{ color: 'text.primary' }}>How It Works</Button>
-              <Button color="inherit" sx={{ color: 'text.primary' }}>About</Button>
               <Button 
                 color="inherit" 
                 sx={{ color: 'text.primary' }}
-                onClick={() => window.location.href = '/theme-demo'}
+                component={Link}
+                to="/about"
+              >
+                About
+              </Button>
+              <Button 
+                color="inherit" 
+                sx={{ color: 'text.primary' }}
+                onClick={() => navigate('/theme-demo')}
               >
                 Theme Demo
               </Button>
