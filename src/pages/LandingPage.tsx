@@ -156,6 +156,13 @@ const LandingPage = () => {
               >
                 Theme Demo
               </Button>
+              <Button 
+                color="inherit" 
+                sx={{ color: 'text.primary' }}
+                onClick={() => navigate('/create-quiz')}
+              >
+                Create Quiz
+              </Button>
               <Button variant="outlined" color="primary" sx={{ ml: 1 }}>
                 Login
               </Button>
