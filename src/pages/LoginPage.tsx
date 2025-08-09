@@ -71,10 +71,7 @@ export default function SignInPage() {
           sx={{
             borderRadius: { xs: 0, sm: 3 },
             overflow: "hidden",
-            background: {
-              xs: theme.palette.background.paper,
-              sm: "rgba(255, 255, 255, 0.95)",
-            },
+            background: theme.palette.background.paper, // Use theme color for all modes
             backdropFilter: { xs: "none", sm: "blur(10px)" },
             minHeight: { xs: "100vh", sm: "auto" },
             display: "flex",
