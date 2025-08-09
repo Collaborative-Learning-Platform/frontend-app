@@ -3,7 +3,7 @@ import {Box,Container,useTheme,Typography} from '@mui/material';
 
 const CreateQuiz = () => {
   const theme = useTheme();
-  const isMobile = theme.breakpoints.down('sm');
+  // const isMobile = theme.breakpoints.down('sm');
 
   return (
     <Container sx={{
