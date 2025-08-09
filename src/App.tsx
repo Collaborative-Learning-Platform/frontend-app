@@ -3,6 +3,7 @@ import { Routes, Route, Link } from 'react-router-dom'
 import LandingPage from './pages/LandingPage';
 import CreateQuiz from './pages/quiz/createquiz';
 import { ThemeDemo } from './theme';
+import  LoginPage from './pages/LoginPage';
 
 function About() {
   return (
@@ -36,6 +37,7 @@ function App() {
       <Route path="/about" element={<About />} />
       <Route path="/create-quiz" element={<CreateQuiz />} />
       <Route path="/theme-demo" element={<ThemeDemo />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
     )

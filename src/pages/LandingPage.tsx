@@ -163,7 +163,8 @@ const LandingPage = () => {
               >
                 Create Quiz
               </Button>
-              <Button variant="outlined" color="primary" sx={{ ml: 1 }}>
+              
+              <Button variant="outlined" color="primary" sx={{ ml: 1 }} component={Link} to="/login">
                 Login
               </Button>
               <ThemeToggle size="medium" variant='default' />
