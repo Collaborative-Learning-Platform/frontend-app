@@ -27,9 +27,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     return savedMode || 'light';
   });
 
-  // Update localStorage when mode changes
+  // Update localStorage and body attribute when mode changes
   useEffect(() => {
     localStorage.setItem('themeMode', mode);
+    document.body.setAttribute('data-theme', mode);
   }, [mode]);
 
   // Toggle theme function
