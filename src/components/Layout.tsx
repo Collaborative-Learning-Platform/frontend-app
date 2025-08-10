@@ -6,7 +6,6 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
-  Drawer,
   List,
   ListItem,
   ListItemButton,
