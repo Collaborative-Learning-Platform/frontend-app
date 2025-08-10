@@ -35,6 +35,7 @@ import {
   Search,
   Settings,
 } from "@mui/icons-material";
+import Sidebar from "./Sidebar";
 
 const DRAWER_WIDTH = 280;
 const APPBAR_HEIGHT = 70;
@@ -400,36 +401,7 @@ const Layout = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Optimized Drawer */}
-      <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
-        open={isMobile ? mobileOpen : true}
-        onClose={isMobile ? handleDrawerToggle : undefined}
-        ModalProps={isMobile ? { 
-          keepMounted: true,
-          BackdropProps: {
-            sx: {
-              backgroundColor: "rgba(0,0,0,0.3)",
-              backdropFilter: "blur(4px)",
-            }
-          }
-        } : undefined}
-        sx={{
-          width: DRAWER_WIDTH,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: DRAWER_WIDTH,
-            boxSizing: "border-box",
-            border: "none",
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: isMobile 
-              ? "0 8px 32px rgba(0,0,0,0.12)" 
-              : "0 0 20px rgba(0,0,0,0.04)",
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
+      <Sidebar/>
 
       {/* Enhanced Main Content */}
       <Box
