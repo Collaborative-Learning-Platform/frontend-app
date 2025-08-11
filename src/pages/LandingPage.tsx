@@ -248,6 +248,7 @@ const LandingPage = () => {
               variant="contained"
               size="large"
               endIcon={<ArrowForward />}
+              onClick={() => navigate('/about')}
               sx={{
                 backgroundColor: 'white',
                 color: 'primary.main',
