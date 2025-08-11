@@ -7,25 +7,34 @@ const CreateQuiz = () => {
 
   return (
     <Container sx={{
-      marginTop:'20px'
+      marginTop:'10px'
     }} >
+      {/* Create quiz top bar */}
+      <Box display={'flex'}>
+        <Box>
+          <Typography variant='h1'>
+            Create Quiz
+          </Typography>
+          <Typography variant='h6'>
+            Design assessments for your students
+          </Typography>
+        </Box>
+        <Box>
+          
+        </Box>
+
+      </Box>
       <Box>
-        <Typography variant='h1'>
-          Create Quiz
+        <Typography variant='body1' sx={{marginTop: '20px'}}>
+          This page is under construction. Please check back later.
         </Typography>
       </Box>
-      <Box height={'50vh'} sx={{
-        margin: '10rem',
-        background:theme.palette.secondary.dark
-      }}>
-          Quiz details
+      <Box>
+        <Typography variant='body1' sx={{marginTop: '20px'}}>
+          Add question
+        </Typography>
       </Box>
-      <Box height={'50vh'} sx={{
-        background: theme.palette.primary.main,
-        color: theme.palette.common.white,
-      }}>
-          Add Question 
-      </Box>
+
     </Container>
   )
 }
