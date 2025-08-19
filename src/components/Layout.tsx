@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import { Menu, Close, Notifications, Search } from "@mui/icons-material";
-import Sidebar from "./Sidebar";
+// import AdminSidebar from "./Sidebar/AdminSidebar";
+import UserSidebar from "./Sidebar/UserSidebar";
 
 const DRAWER_WIDTH = 280;
 const APPBAR_HEIGHT = 70;
@@ -96,7 +97,8 @@ const Layout = () => {
         </Toolbar>
       </AppBar>
 
-      <Sidebar />
+      <UserSidebar />
+      {/* <AdminSidebar /> */}
 
       {/* Enhanced Main Content */}
       <Box
