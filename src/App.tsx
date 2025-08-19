@@ -7,6 +7,7 @@ import  LoginPage from './pages/LoginPage';
 import NotFound from './pages/404';
 import About from './pages/About';
 import Layout from './components/Layout';
+import UserDashboard from './pages/UserDashboard';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="about" element={<About />} />
         <Route path="create-quiz" element={<CreateQuiz />} />
         <Route path="theme-demo" element={<ThemeDemo />} />
+        <Route path="user-dashboard" element={<UserDashboard />} />
       </Route>
       
       <Route path="*" element={<NotFound />} />
