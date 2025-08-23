@@ -21,13 +21,13 @@ import {
   Key,
   Shield,
   CheckCircle,
-  AlertTriangle,
+  Warning as AlertTriangle,
   Smartphone,
-  Eye,
-  EyeOff,
-  Camera,
-  CircleUser,
-} from "lucide-react";
+  Visibility as Eye,
+  VisibilityOff as EyeOff,
+  CameraAlt as Camera,
+  AccountCircle as CircleUser,
+} from "@mui/icons-material";
 
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState({
@@ -67,13 +67,7 @@ export default function ProfilePage() {
           {/* Profile Information Card */}
           <Card sx={{ mb: 4 }}>
             <CardHeader
-              avatar={
-                <CircleUser
-                  size={30}
-                  style={{ color: "#1976d2" }}
-                  strokeWidth={1.3}
-                />
-              }
+              avatar={<CircleUser sx={{ color: "#1976d2", fontSize: 30 }} />}
               title={<Typography variant="h6">Profile Information</Typography>}
               subheader={
                 <Typography variant="body2">
@@ -99,7 +93,7 @@ export default function ProfilePage() {
                     onClick={() => toast("Profile picture updated!")}
                     sx={{ mt: 1 }}
                   >
-                    <Camera size={16} style={{ marginRight: 6 }} />
+                    <Camera sx={{ mr: 0.75, fontSize: 16 }} />
                     Change Picture
                   </Button>
                 </Box>
@@ -159,7 +153,7 @@ export default function ProfilePage() {
           {/* Privacy Checkup Card */}
           <Card sx={{ mb: 4 }}>
             <CardHeader
-              avatar={<Shield size={20} style={{ color: "#1976d2" }} />}
+              avatar={<Shield sx={{ color: "#1976d2", fontSize: 20 }} />}
               title={<Typography variant="h6">Privacy Checkup</Typography>}
               subheader={
                 <Typography variant="body2">
@@ -252,7 +246,7 @@ export default function ProfilePage() {
           {/* Security Settings Card */}
           <Card>
             <CardHeader
-              avatar={<Key size={20} style={{ color: "#1976d2" }} />}
+              avatar={<Key sx={{ color: "#1976d2", fontSize: 20 }} />}
               title={<Typography variant="h6">Security Settings</Typography>}
               subheader={
                 <Typography variant="body2">
@@ -285,7 +279,7 @@ export default function ProfilePage() {
                             pl: 0,
                             minWidth: "auto",
                           }}
-                          startIcon={<CheckCircle size={14} />}
+                          startIcon={<CheckCircle sx={{ fontSize: 14 }} />}
                         >
                           Enabled
                         </Button>
@@ -299,7 +293,7 @@ export default function ProfilePage() {
                             pl: 0,
                             minWidth: "auto",
                           }}
-                          startIcon={<AlertTriangle size={14} />}
+                          startIcon={<AlertTriangle sx={{ fontSize: 14 }} />}
                         >
                           Disabled
                         </Button>
@@ -325,7 +319,7 @@ export default function ProfilePage() {
                       }}
                       disabled={isTestingTwoFactor}
                     >
-                      <Smartphone size={16} style={{ marginRight: 6 }} />
+                      <Smartphone sx={{ mr: 0.75, fontSize: 16 }} />
                       {isTestingTwoFactor ? "Testing..." : "Test 2FA"}
                     </Button>
                     <Button
@@ -383,9 +377,9 @@ export default function ProfilePage() {
                       size="small"
                     >
                       {showCurrentPassword ? (
-                        <Eye size={16} />
+                        <Eye sx={{ fontSize: 16 }} />
                       ) : (
-                        <EyeOff size={16} />
+                        <EyeOff sx={{ fontSize: 16 }} />
                       )}
                     </Button>
                   ),
@@ -403,9 +397,9 @@ export default function ProfilePage() {
                       size="small"
                     >
                       {showNewPassword ? (
-                        <Eye size={16} />
+                        <Eye sx={{ fontSize: 16 }} />
                       ) : (
-                        <EyeOff size={16} />
+                        <EyeOff sx={{ fontSize: 16 }} />
                       )}
                     </Button>
                   ),
@@ -425,9 +419,9 @@ export default function ProfilePage() {
                       size="small"
                     >
                       {showConfirmPassword ? (
-                        <Eye size={16} />
+                        <Eye sx={{ fontSize: 16 }} />
                       ) : (
-                        <EyeOff size={16} />
+                        <EyeOff sx={{ fontSize: 16 }} />
                       )}
                     </Button>
                   ),

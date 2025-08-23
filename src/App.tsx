@@ -19,6 +19,7 @@ import { UserAnalytics } from "./components/UserDashboard/UseAnalytics";
 import { AdminOverview } from "./components/AdminDashboard/AdminOverview";
 import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
+import { Whiteboard } from "./pages/Whiteboard";
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
           <Route path="admin-settings" element={<SystemSettings />} />
         </Route>
       </Route>
+
+      <Route path="/Whiteboard" element={<Whiteboard />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
