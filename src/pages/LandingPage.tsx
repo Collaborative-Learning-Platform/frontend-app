@@ -159,7 +159,7 @@ const LandingPage = () => {
               <Button 
                 color="inherit" 
                 sx={{ color: 'text.primary' }}
-                onClick={() => navigate('/create-quiz')}
+                onClick={() => navigate('/quiz')}
               >
                 Create Quiz
               </Button>

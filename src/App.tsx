@@ -1,12 +1,13 @@
 import './App.css'
 import { Routes, Route} from 'react-router-dom'
 import LandingPage from './pages/LandingPage';
-import CreateQuiz from './pages/quiz/createquiz';
+import CreateQuiz from './pages/quiz/Createquiz';
 import { ThemeDemo } from './theme';
 import  LoginPage from './pages/LoginPage';
 import NotFound from './pages/404';
 import About from './pages/About';
 import Layout from './components/Layout';
+import QuizRoutes from './pages/quiz/QuizRoutes';
 
 
 function App() {
@@ -19,8 +20,9 @@ function App() {
 
       <Route element={<Layout />}>
         <Route path="about" element={<About />} />
-        <Route path="create-quiz" element={<CreateQuiz />} />
+        {/* <Route path="create-quiz" element={<CreateQuiz />} /> */}
         <Route path="theme-demo" element={<ThemeDemo />} />
+        <Route path="/quiz/*" element={<QuizRoutes />} />
       </Route>
       
       <Route path="*" element={<NotFound />} />
