@@ -1,7 +1,6 @@
 import './App.css'
 import { Routes, Route} from 'react-router-dom'
 import LandingPage from './pages/LandingPage';
-import CreateQuiz from './pages/quiz/Createquiz';
 import { ThemeDemo } from './theme';
 import  LoginPage from './pages/LoginPage';
 import NotFound from './pages/404';
