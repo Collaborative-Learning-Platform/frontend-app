@@ -19,6 +19,8 @@ import { UserStudyPlan } from "./components/UserDashboard/UserStudyPlan";
 import { UserAnalytics } from "./components/UserDashboard/UseAnalytics";
 import { AdminOverview } from "./components/AdminDashboard/AdminOverview";
 import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
+import ProfilePage from "./pages/ProfilePage";
+import { Whiteboard } from "./pages/Whiteboard";
 
 
 function App() {
@@ -28,6 +30,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<Layout />}>
+        <Route path="user-profile" element={<ProfilePage />} />
         <Route path="about" element={<About />} />
         <Route path="/quiz/*" element={<QuizRoutes />} />
         <Route path="theme-demo" element={<ThemeDemo />} />
@@ -47,6 +50,8 @@ function App() {
           <Route path="admin-settings" element={<SystemSettings />} />
         </Route>
       </Route>
+
+      <Route path="/Whiteboard" element={<Whiteboard />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
