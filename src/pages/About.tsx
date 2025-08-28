@@ -5,7 +5,7 @@ import { useState } from "react";
 
 
 function About() {
-  const [loginResult, setLoginResult] = useState<any>(null);
+  
   const [loading, setLoading] = useState(false);
 
   const handleTestLogin = async () => {
