@@ -34,6 +34,7 @@ function App() {
         <Route path="about" element={<About />} />
         <Route path="/quiz/*" element={<QuizRoutes />} />
         <Route path="theme-demo" element={<ThemeDemo />} />
+        
 
         <Route element={<UserDashboard />}>
           <Route path="/user-dashboard" element={<UserOverview />} />

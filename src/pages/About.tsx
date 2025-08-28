@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { testLogin } from "../api/testLogin";
+
 
 
 
@@ -10,11 +10,8 @@ function About() {
 
   const handleTestLogin = async () => {
     setLoading(true);
-    // Demo credentials, replace with real ones if needed
-    const email = "testuser@gmail.com";
-    const password = "Testpass123123123";
-    const result = await testLogin(email, password);
-    setLoginResult(result);
+
+
     setLoading(false);
   };
 
