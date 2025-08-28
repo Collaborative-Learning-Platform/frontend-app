@@ -16,6 +16,7 @@ import { Outlet } from "react-router-dom";
 import { Menu, Close, Notifications, Search } from "@mui/icons-material";
 // import AdminSidebar from "./Sidebar/AdminSidebar";
 import UserSidebar from "./Sidebar/UserSidebar";
+import { ThemeToggle } from "./ThemeToggle";
 
 const DRAWER_WIDTH = 280;
 const APPBAR_HEIGHT = 70;
@@ -93,6 +94,7 @@ const Layout = () => {
                 </Badge>
               </IconButton>
             </Tooltip>
+            <ThemeToggle/>
           </Stack>
         </Toolbar>
       </AppBar>
