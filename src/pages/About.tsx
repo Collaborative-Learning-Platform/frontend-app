@@ -26,11 +26,7 @@ function About() {
       <button onClick={handleTestLogin} disabled={loading} style={{marginTop: 16}}>
         {loading ? "Testing /auth/login..." : "Test /auth/login"}
       </button>
-      {loginResult && (
-        <pre style={{background: 'black', padding: 8, marginTop: 8}}>
-          {JSON.stringify(loginResult, null, 2)}
-        </pre>
-      )}
+     
     </div>
   );
 }
