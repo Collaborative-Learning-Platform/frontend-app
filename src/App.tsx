@@ -20,6 +20,7 @@ import { AdminOverview } from "./components/AdminDashboard/AdminOverview";
 import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
 import { Whiteboard } from "./pages/Whiteboard";
+import { DocumentEditor } from "./pages/DocumentEditor";
 
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
       </Route>
 
       <Route path="/Whiteboard" element={<Whiteboard />} />
+      <Route path="/DocumentEditor" element={<DocumentEditor />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
