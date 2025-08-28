@@ -15,7 +15,8 @@ import {
   useTheme,
 } from "@mui/material";
 import { Lightbulb as LightbulbIcon } from "@mui/icons-material";
-import React from "react";
+import React, { useState } from "react";
+import StudyPlanGeneratorModal from "./StudyPlanGeneratorModal";
 
 const mockStudyPlan = [
   {
@@ -50,6 +51,7 @@ const mockStudyPlan = [
 
 export function UserStudyPlan() {
   const theme = useTheme();
+  const [openModal, setOpenModal] = useState(false);
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
@@ -62,6 +64,7 @@ export function UserStudyPlan() {
         return theme.palette.grey[500];
     }
   };
+
   return (
     <>
       <Box
@@ -80,11 +83,20 @@ export function UserStudyPlan() {
             AI-generated plan based on your performance and goals
           </Typography>
         </Box>
-        <Button variant="outlined" startIcon={<LightbulbIcon />}>
-          Regenerate Plan
+        <Button
+          variant="outlined"
+          startIcon={<LightbulbIcon />}
+          onClick={() => setOpenModal(true)}
+        >
+          Generate Plan
         </Button>
       </Box>
-
+      {openModal && (
+        <StudyPlanGeneratorModal
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+        />
+      )}
       <Card>
         <CardHeader
           title="Today's Tasks"
