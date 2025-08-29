@@ -82,7 +82,7 @@ export const darkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 1,
           backgroundImage: 'none',
         },
       },

@@ -14,7 +14,10 @@ import {
 } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import { Menu, Close, Notifications, Search } from "@mui/icons-material";
-import Sidebar from "./Sidebar";
+import AdminSidebar from "./Sidebar/AdminSidebar";
+import UserSidebar from "./Sidebar/UserSidebar";
+import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "../contexts/Authcontext";
 
 const DRAWER_WIDTH = 280;
 const APPBAR_HEIGHT = 70;
@@ -23,7 +26,7 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
-
+  const { role } = useAuth();
   // Memoized handlers to prevent unnecessary re-renders
   const handleDrawerToggle = useCallback(() => {
     setMobileOpen((prev) => !prev);
@@ -92,11 +95,12 @@ const Layout = () => {
                 </Badge>
               </IconButton>
             </Tooltip>
+            <ThemeToggle />
           </Stack>
         </Toolbar>
       </AppBar>
 
-      <Sidebar />
+      {role === "admin" ? <AdminSidebar /> : <UserSidebar />}
 
       {/* Enhanced Main Content */}
       <Box
