@@ -50,6 +50,11 @@ export const Whiteboard = () => {
     // fetchLoggedInUsers();
   }, []);
 
+  const handleBackClick = () => {
+    // Navigate back to previous page
+    window.history.back();
+  };
+
   const handleSelectedTool = (
     _event: React.MouseEvent<HTMLElement>,
     updatedSelectedTool: String
@@ -210,7 +215,10 @@ export const Whiteboard = () => {
                   <IconButton
                     size="small"
                     sx={{ color: theme.palette.text.primary }}
-                    onClick={() => setMiniAppBarOpen(false)}
+                    onClick={() => {
+                      handleBackClick();
+                      setMiniAppBarOpen(false);
+                    }}
                   >
                     <ArrowBack />
                   </IconButton>
