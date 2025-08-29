@@ -418,7 +418,12 @@ export const Titlebar = () => {
                     {theme.palette.mode === "light" ? "Dark" : "Light"} Mode
                   </ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => { handleBackClick(); handleMenuClose(); }}>
+                <MenuItem
+                  onClick={() => {
+                    handleBackClick();
+                    handleMenuClose();
+                  }}
+                >
                   <ListItemIcon>
                     <ArrowBack fontSize="small" />
                   </ListItemIcon>
