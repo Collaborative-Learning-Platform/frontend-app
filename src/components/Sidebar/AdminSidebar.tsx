@@ -18,7 +18,7 @@ import {
 import {
   Dashboard,
   School,
-  CalendarMonth,
+  // CalendarMonth,
   Analytics,
   Settings,
   ExpandLess,
@@ -54,11 +54,11 @@ const navigationItems = [
     badge: 2,
     urgent: true,
   },
-  {
-    text: "Calendar",
-    icon: <CalendarMonth />,
-    path: "/calendar",
-  },
+  // {
+  //   text: "Calendar",
+  //   icon: <CalendarMonth />,
+  //   path: "/calendar",
+  // },
   {
     text: "Resources",
     icon: <VideoLibrary />,

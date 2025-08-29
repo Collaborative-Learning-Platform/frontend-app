@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -108,6 +109,12 @@ export function UserManagement() {
     }
   };
 
+  const navigate = useNavigate();
+
+  const handleAddUser = () => {
+    navigate("/add-users");
+  };
+
   return (
     <Box sx={{ py: 3 }}>
       <Box
@@ -128,8 +135,12 @@ export function UserManagement() {
             Manage students, tutors, and administrators
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<UserPlusIcon />}>
-          Add User
+        <Button
+          variant="contained"
+          startIcon={<UserPlusIcon />}
+          onClick={handleAddUser}
+        >
+          Add Users
         </Button>
       </Box>
 

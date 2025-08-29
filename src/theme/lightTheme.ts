@@ -103,7 +103,7 @@ export const lightTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 1,
         },
       },
     },

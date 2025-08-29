@@ -139,30 +139,30 @@ const LandingPage = () => {
           </Typography>
           {!isMobile && (
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Button color="inherit" sx={{ color: 'text.primary' }}>Features</Button>
-              <Button color="inherit" sx={{ color: 'text.primary' }}>How It Works</Button>
-              <Button 
+              {/* <Button color="inherit" sx={{ color: 'text.primary' }}>Features</Button> */}
+              {/* <Button color="inherit" sx={{ color: 'text.primary' }}>How It Works</Button> */}
+              {/* <Button 
                 color="inherit" 
                 sx={{ color: 'text.primary' }}
                 component={Link}
                 to="/about"
               >
                 About
-              </Button>
-              <Button 
+              </Button> */}
+              {/* <Button 
                 color="inherit" 
                 sx={{ color: 'text.primary' }}
                 onClick={() => navigate('/theme-demo')}
               >
                 Theme Demo
-              </Button>
-              <Button 
+              </Button> */}
+              {/* <Button 
                 color="inherit" 
                 sx={{ color: 'text.primary' }}
                 onClick={() => navigate('/quiz')}
               >
                 Create Quiz
-              </Button>
+              </Button> */}
               
               <Button variant="outlined" color="primary" sx={{ ml: 1 }} component={Link} to="/login">
                 Login

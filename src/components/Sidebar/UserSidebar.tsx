@@ -25,7 +25,7 @@ import {
   Book,
   Quiz,
   VideoLibrary,
-  Group,
+  // Group,
   Assignment,
 } from "@mui/icons-material";
 import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
@@ -49,11 +49,11 @@ const navigationItems = [
     badge: 2,
     urgent: true,
   },
-  {
-    text: "Study Groups",
-    icon: <Group />,
-    path: "/study-groups",
-  },
+  // {
+  //   text: "Study Groups",
+  //   icon: <Group />,
+  //   path: "/study-groups",
+  // },
   {
     text: "Study Plans",
     icon: <Assignment />,
