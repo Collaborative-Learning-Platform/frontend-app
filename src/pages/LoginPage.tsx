@@ -15,56 +15,185 @@ import {
   InputAdornment,
   useTheme,
   useMediaQuery,
+  Alert,
+  Fade,
+  CircularProgress,
 } from "@mui/material";
 import {
   Visibility,
   VisibilityOff,
   School as SchoolIcon,
+  CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import axiosInstance from "../api/axiosInstance";
 import { useAuth } from "../contexts/Authcontext";
 
+// Validation functions
+const validateEmail = (email: string): string => {
+  if (!email) return "Email is required";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return "Please enter a valid email address";
+  return "";
+};
+
+const validatePassword = (password: string): string => {
+  if (!password) return "Password is required";
+  if (password.length < 6) return "Password must be at least 6 characters";
+  return "";
+};
+
 export default function SignInPage() {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [error, setError] = React.useState<string>("");
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [success, setSuccess] = React.useState<boolean>(false);
+
+  const [formData, setFormData] = React.useState({
+    email: "",
+    password: "",
+  });
+
+  const [fieldErrors, setFieldErrors] = React.useState({
+    email: "",
+    password: "",
+  });
+
+  const [touched, setTouched] = React.useState({
+    email: false,
+    password: false,
+  });
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const { setAuth } = useAuth();
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    setError("");
+
+    if (touched[field as keyof typeof touched]) {
+      validateField(field, value);
+    }
+  };
+
+  const handleInputBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    validateField(field, formData[field as keyof typeof formData]);
+  };
+
+  const validateField = (field: string, value: string) => {
+    let errorMessage = "";
+
+    switch (field) {
+      case "email":
+        errorMessage = validateEmail(value);
+        break;
+      case "password":
+        errorMessage = validatePassword(value);
+        break;
+    }
+
+    setFieldErrors((prev) => ({ ...prev, [field]: errorMessage }));
+    return errorMessage === "";
+  };
+
+  // Validate entire form
+  const validateForm = (): boolean => {
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+
+    setFieldErrors({
+      email: emailError,
+      password: passwordError,
+    });
+
+    setTouched({
+      email: true,
+      password: true,
+    });
+
+    return !emailError && !passwordError;
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    
-    
-    console.log({
-      email: data.get("email"),
-      password: data.get("Password"),
-    });
-    const response = await axiosInstance.post('/auth/login', {
-      email: data.get("email"),
-      password: data.get("Password"),
-    });
-    if (response.data.message == 'success'){
-      setAuth(response.data.role, response.data.user_id);
-      // navigate('/user-dashboard');
+
+    if (!validateForm()) {
+      setError("Please fix the errors above");
+      return;
     }
-    else{
-      alert("Login failed. Please check your credentials.");
-    }
-    if (response.data.role === "user") {
-      navigate("/user-dashboard");
-    }
-    else if (response.data.role === "admin") {
-      navigate("/admin-dashboard");
-    }
-    else if (response.data.role === "tutor") {
-      navigate("/tutor-dashboard");
+
+    setError("");
+    setSuccess(false);
+    setLoading(true);
+
+    try {
+      const response = await axiosInstance.post("/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      console.log(response);
+
+      if (response.data.message === "success") {
+        setAuth(response.data.role, response.data.user_id);
+        setSuccess(true);
+
+        setTimeout(() => {
+          if (response.data.role === "user") {
+            navigate("/user-dashboard");
+          } else if (response.data.role === "admin") {
+            navigate("/admin-dashboard");
+          } else if (response.data.role === "tutor") {
+            navigate("/tutor-dashboard");
+          }
+        }, 1000);
+      } else {
+        setError("Login failed. Please check your credentials.");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+
+      // Handle different types of errors
+      if (error.response) {
+        const status = error.response.status;
+        const message =
+          error.response.data?.message || error.response.data?.error;
+
+        if (status === 401) {
+          setError("Invalid email or password. Please try again.");
+        } else if (status === 400) {
+          setError("Invalid credentials. Please try again.");
+        } else if (status === 404) {
+          setError("User not found. Please check your email.");
+        } else if (status >= 500) {
+          setError("Server error. Please try again later.");
+        } else if (message) {
+          setError(message);
+        } else {
+          setError("Login failed. Please try again.");
+        }
+      } else if (error.request) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
+
+  const isFormValid =
+    !fieldErrors.email &&
+    !fieldErrors.password &&
+    formData.email &&
+    formData.password;
 
   return (
     <Box
@@ -98,30 +227,49 @@ export default function SignInPage() {
           sx={{
             borderRadius: { xs: 0, sm: 3 },
             overflow: "hidden",
-            background: theme.palette.background.paper, // Use theme color for all modes
+            background: theme.palette.background.paper,
             backdropFilter: { xs: "none", sm: "blur(10px)" },
             minHeight: { xs: "100vh", sm: "auto" },
             display: "flex",
             flexDirection: "column",
+            transition: "all 0.3s ease-in-out",
+            ...(success && {
+              border: `2px solid ${theme.palette.success.main}`,
+              boxShadow: `0 0 20px ${theme.palette.success.main}40`,
+            }),
           }}
         >
-          {/* Header */}
           <Box
             sx={{
-              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+              background: success
+                ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
+                : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
               color: theme.palette.common.white,
               textAlign: "center",
               py: { xs: 3, sm: 4 },
               px: { xs: 2, sm: 3 },
+              transition: "all 0.5s ease-in-out",
             }}
           >
-            <SchoolIcon
-              sx={{
-                fontSize: { xs: 40, sm: 48 },
-                mb: 1,
-                opacity: 0.9,
-              }}
-            />
+            {success ? (
+              <Fade in={success} timeout={500}>
+                <CheckCircleIcon
+                  sx={{
+                    fontSize: { xs: 40, sm: 48 },
+                    mb: 1,
+                    opacity: 0.9,
+                  }}
+                />
+              </Fade>
+            ) : (
+              <SchoolIcon
+                sx={{
+                  fontSize: { xs: 40, sm: 48 },
+                  mb: 1,
+                  opacity: 0.9,
+                }}
+              />
+            )}
             <Typography
               component="h1"
               variant={isMobile ? "h5" : "h4"}
@@ -131,7 +279,7 @@ export default function SignInPage() {
                 fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
               }}
             >
-              Learni
+              {success ? "Welcome!" : "Learni"}
             </Typography>
             <Typography
               variant={isMobile ? "body2" : "subtitle1"}
@@ -141,7 +289,9 @@ export default function SignInPage() {
                 fontSize: { xs: "0.875rem", sm: "1rem" },
               }}
             >
-              Welcome back to your learning journey
+              {success
+                ? "Login successful! Redirecting..."
+                : "Welcome back to your learning journey"}
             </Typography>
           </Box>
 
@@ -165,22 +315,30 @@ export default function SignInPage() {
                 maxWidth: { xs: "100%", sm: "400px" },
               }}
             >
+              {/* Email Field */}
               <TextField
                 margin="normal"
                 required
                 fullWidth
                 id="email"
-                label="email"
+                label="Email"
                 name="email"
                 autoComplete="email"
                 autoFocus
                 variant="outlined"
                 size="medium"
+                disabled={loading || success}
+                value={formData.email}
+                error={touched.email && !!fieldErrors.email}
+                helperText={touched.email && fieldErrors.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                onBlur={() => handleInputBlur("email")}
                 sx={{
                   mb: { xs: 2, sm: 1 },
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 2,
                     backgroundColor: theme.palette.action.hover,
+                    transition: "all 0.3s ease",
                     "&:hover": {
                       backgroundColor: theme.palette.action.selected,
                     },
@@ -188,20 +346,30 @@ export default function SignInPage() {
                       backgroundColor: theme.palette.background.paper,
                       boxShadow: theme.shadows[4],
                     },
+                    "&.Mui-disabled": {
+                      backgroundColor: theme.palette.action.disabledBackground,
+                    },
                   },
                 }}
               />
+
               <TextField
                 margin="normal"
                 required
                 fullWidth
-                name="Password"
+                name="password"
                 label="Password"
                 type={showPassword ? "text" : "password"}
                 id="password"
                 autoComplete="current-password"
                 variant="outlined"
                 size="medium"
+                disabled={loading || success}
+                value={formData.password}
+                error={touched.password && !!fieldErrors.password}
+                helperText={touched.password && fieldErrors.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                onBlur={() => handleInputBlur("password")}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -209,6 +377,7 @@ export default function SignInPage() {
                         onClick={handleClickShowPassword}
                         edge="end"
                         size={isMobile ? "large" : "medium"}
+                        disabled={loading || success}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -216,10 +385,11 @@ export default function SignInPage() {
                   ),
                 }}
                 sx={{
-                  mb: { xs: 3, sm: 2 },
+                  mb: { xs: 2, sm: 1 },
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 2,
                     backgroundColor: theme.palette.action.hover,
+                    transition: "all 0.3s ease",
                     "&:hover": {
                       backgroundColor: theme.palette.action.selected,
                     },
@@ -227,9 +397,51 @@ export default function SignInPage() {
                       backgroundColor: theme.palette.background.paper,
                       boxShadow: theme.shadows[4],
                     },
+                    "&.Mui-disabled": {
+                      backgroundColor: theme.palette.action.disabledBackground,
+                    },
                   },
                 }}
               />
+
+              <Fade in={!!error} timeout={300}>
+                <Box sx={{ mb: 2 }}>
+                  {error && (
+                    <Alert
+                      severity="error"
+                      onClose={() => setError("")}
+                      sx={{
+                        borderRadius: 2,
+                        "& .MuiAlert-message": {
+                          fontSize: "0.875rem",
+                        },
+                      }}
+                    >
+                      {error}
+                    </Alert>
+                  )}
+                </Box>
+              </Fade>
+
+              {/* Success Message */}
+              <Fade in={success} timeout={300}>
+                <Box sx={{ mb: 2 }}>
+                  {success && (
+                    <Alert
+                      severity="success"
+                      sx={{
+                        borderRadius: 2,
+                        "& .MuiAlert-message": {
+                          fontSize: "0.875rem",
+                        },
+                      }}
+                    >
+                      Login successful! Redirecting to your dashboard...
+                    </Alert>
+                  )}
+                </Box>
+              </Fade>
+
               <Box
                 sx={{
                   display: "flex",
@@ -237,7 +449,7 @@ export default function SignInPage() {
                   alignItems: "baseline",
                   flexDirection: { xs: "column", sm: "row" },
                   gap: { xs: 2, sm: 0 },
-                  mt: 1
+                  mt: 1,
                 }}
               >
                 <FormControlLabel
@@ -246,6 +458,7 @@ export default function SignInPage() {
                       name="remember"
                       color="primary"
                       size={isMobile ? "medium" : "small"}
+                      disabled={loading || success}
                     />
                   }
                   label={<Typography variant="body2">Remember me</Typography>}
@@ -257,31 +470,58 @@ export default function SignInPage() {
                     color: theme.palette.primary.main,
                     fontWeight: 500,
                     "&:hover": { textDecoration: "underline" },
+                    ...((loading || success) && {
+                      pointerEvents: "none",
+                      opacity: 0.5,
+                    }),
                   }}
                 >
                   Forgot password?
                 </Link>
               </Box>
+
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 size="large"
+                disabled={loading || success || !isFormValid}
                 sx={{
                   mt: 2,
                   py: { xs: 2, sm: 1.5 },
                   borderRadius: 2,
                   fontWeight: "bold",
                   textTransform: "none",
-                  background: theme.palette.primary.main,
+                  background: success
+                    ? theme.palette.success.main
+                    : theme.palette.primary.main,
                   boxShadow: theme.shadows[4],
+                  transition: "all 0.3s ease",
                   "&:hover": {
-                    background: theme.palette.primary.dark,
+                    background: success
+                      ? theme.palette.success.dark
+                      : theme.palette.primary.dark,
                     boxShadow: theme.shadows[6],
+                    transform: "translateY(-1px)",
+                  },
+                  "&:disabled": {
+                    backgroundColor: loading
+                      ? theme.palette.primary.main
+                      : theme.palette.action.disabledBackground,
+                    color: loading
+                      ? theme.palette.primary.contrastText
+                      : theme.palette.action.disabled,
                   },
                 }}
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : success ? (
+                    <CheckCircleIcon />
+                  ) : null
+                }
               >
-                Login
+                {loading ? "Signing in..." : success ? "Success!" : "Login"}
               </Button>
             </Box>
           </Box>
