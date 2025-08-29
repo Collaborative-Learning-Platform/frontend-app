@@ -21,6 +21,7 @@ import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
 import { Whiteboard } from "./pages/Whiteboard";
 import { DocumentEditor } from "./pages/DocumentEditor";
+import { FlashCardGenerator } from "./components/UserDashboard/FlashCardGenerator";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="/user-workspaces" element={<UserWorkspaces />} />
           <Route path="/study-plans" element={<UserStudyPlan />} />
           <Route path="/analytics" element={<UserAnalytics />} />
+          <Route path="/flashcard-generator" element={<FlashCardGenerator />} />
         </Route>
 
         <Route element={<AdminDashboard />}>
