@@ -38,7 +38,7 @@ const validateEmail = (email: string): string => {
 
 const validatePassword = (password: string): string => {
   if (!password) return "Password is required";
-  if (password.length < 6) return "Password must be at least 6 characters";
+  if (password.length < 8) return "Password must be at least 8 characters";
   return "";
 };
 
@@ -99,7 +99,6 @@ export default function SignInPage() {
     return errorMessage === "";
   };
 
-  // Validate entire form
   const validateForm = (): boolean => {
     const emailError = validateEmail(formData.email);
     const passwordError = validatePassword(formData.password);
