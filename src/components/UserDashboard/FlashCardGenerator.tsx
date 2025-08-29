@@ -22,7 +22,7 @@ import SettingsSuggestIcon from "@mui/icons-material/SettingsSuggest";
 import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Masonry } from "@mui/lab";
 
 export const FlashCardGenerator = () => {
@@ -137,7 +137,7 @@ export const FlashCardGenerator = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          mb: 3,
+          mb: theme.spacing(3),
         }}
       >
         <Box>
@@ -145,9 +145,10 @@ export const FlashCardGenerator = () => {
             Generate FlashCards
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Transform your study materials into interactive flashcards!
+            Transform your study materials into flashcards!
           </Typography>
         </Box>
+
         <Button variant="contained" startIcon={<StyleIcon />}>
           View Library
         </Button>
@@ -169,19 +170,28 @@ export const FlashCardGenerator = () => {
           >
             <Box
               sx={{
-                border: "2px dashed",
-                borderColor: isDragOver ? "primary.main" : "grey.300",
-                borderRadius: 2,
-                p: 4,
+                border: `2px dashed`,
+                borderColor: isDragOver
+                  ? theme.palette.primary.main
+                  : theme.palette.grey[300],
+                borderRadius: theme.shape.borderRadius,
+                p: theme.spacing(4),
                 textAlign: "center",
-                transition: "all 0.2s ease-in-out",
+                transition: theme.transitions.create(
+                  ["border-color", "background-color"],
+                  {
+                    duration: theme.transitions.duration.short,
+                  }
+                ),
                 width: "100%",
                 boxSizing: "border-box",
                 display: "block",
-                backgroundColor: isDragOver ? "primary.50" : "transparent",
+                backgroundColor: isDragOver
+                  ? theme.palette.primary.light
+                  : "transparent",
                 "&:hover": {
-                  borderColor: "primary.main",
-                  backgroundColor: "primary.50",
+                  borderColor: theme.palette.primary.main,
+                  backgroundColor: theme.palette.background.paper,
                 },
               }}
               onDragOver={handleDragOver}
@@ -200,7 +210,7 @@ export const FlashCardGenerator = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 2,
+                  gap: theme.spacing(2),
                 }}
               >
                 {uploadedFile ? (
@@ -208,7 +218,7 @@ export const FlashCardGenerator = () => {
                   <>
                     <CheckCircleIcon
                       sx={{
-                        fontSize: 48,
+                        fontSize: theme.spacing(6), // 48px equivalent
                         color: "success.main",
                       }}
                     />
@@ -220,7 +230,7 @@ export const FlashCardGenerator = () => {
                       >
                         File uploaded successfully!
                       </Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Typography variant="body2" sx={{ mt: theme.spacing(1) }}>
                         {uploadedFile.name}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -230,7 +240,7 @@ export const FlashCardGenerator = () => {
                     <IconButton
                       onClick={handleRemoveFile}
                       color="error"
-                      sx={{ mt: 1 }}
+                      sx={{ mt: theme.spacing(1) }}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -240,7 +250,7 @@ export const FlashCardGenerator = () => {
                   <>
                     <DescriptionIcon
                       sx={{
-                        fontSize: 48,
+                        fontSize: theme.spacing(6), // 48px equivalent
                         color: "text.secondary",
                       }}
                     />
@@ -259,7 +269,7 @@ export const FlashCardGenerator = () => {
           </label>
         </CardContent>
       </Card>
-      <Card sx={{ mt: 3 }}>
+      <Card sx={{ mt: theme.spacing(3) }}>
         <CardHeader
           avatar={<SettingsSuggestIcon />}
           title="Flashcard Settings"
@@ -267,7 +277,14 @@ export const FlashCardGenerator = () => {
         />
         <Box>
           <CardContent>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: theme.spacing(2),
+                mb: theme.spacing(2),
+              }}
+            >
               <Stack gap={2}>
                 <FormControl sx={{ minWidth: 120 }}>
                   <Select
@@ -291,13 +308,14 @@ export const FlashCardGenerator = () => {
                   onClick={handleSubmit}
                   disabled={!uploadedFile}
                   sx={{
-                    backgroundColor: "primary.main",
-                    color: "white",
+                    backgroundColor: theme.palette.primary.main,
+                    color: theme.palette.common.white,
                     "&:hover": {
-                      backgroundColor: "primary.dark",
+                      backgroundColor: theme.palette.primary.dark,
                     },
                     "&:disabled": {
-                      backgroundColor: "grey.400",
+                      backgroundColor: theme.palette.grey[400],
+                      color: theme.palette.text.disabled,
                     },
                   }}
                 >
@@ -308,7 +326,7 @@ export const FlashCardGenerator = () => {
           </CardContent>
         </Box>
       </Card>
-      <Box sx={{ mt: 4 }}>
+      <Box sx={{ mt: theme.spacing(4) }}>
         <Masonry columns={3} spacing={3}>
           <Card>
             <CardContent sx={{ textAlign: "center" }}>
