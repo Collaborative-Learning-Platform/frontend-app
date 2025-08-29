@@ -1,4 +1,4 @@
-import { useState, useCallback} from "react";
+import { useState, useCallback } from "react";
 import {
   Box,
   AppBar,
@@ -26,7 +26,7 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
-   const {role} = useAuth();
+  const { role } = useAuth();
   // Memoized handlers to prevent unnecessary re-renders
   const handleDrawerToggle = useCallback(() => {
     setMobileOpen((prev) => !prev);
