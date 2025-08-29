@@ -10,6 +10,7 @@ import {
   Fade,
   Tooltip,
   IconButton,
+  useTheme,
 } from "@mui/material";
 import {
   ZoomIn as ZoomInIcon,
@@ -20,6 +21,7 @@ import { Formatbar } from "../components/DocumentEditor/Formatbar";
 import { Titlebar } from "../components/DocumentEditor/Titlebar";
 
 export const DocumentEditor = () => {
+  const theme = useTheme();
   const [documentContent, setDocumentContent] = useState("");
   const [wordCount, setWordCount] = useState(0);
   const [characterCount, setCharacterCount] = useState(0);
@@ -74,11 +76,17 @@ export const DocumentEditor = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
-        backgroundImage: `
-          radial-gradient(circle at 25px 25px, rgba(255,255,255,0.2) 2px, transparent 0),
-          radial-gradient(circle at 75px 75px, rgba(255,255,255,0.1) 1px, transparent 0)
-        `,
+        backgroundColor: theme.palette.background.default,
+        backgroundImage:
+          theme.palette.mode === "dark"
+            ? `
+            radial-gradient(circle at 25px 25px, rgba(255,255,255,0.02) 1px, transparent 0),
+            radial-gradient(circle at 75px 75px, rgba(255,255,255,0.01) 1px, transparent 0)
+          `
+            : `
+            radial-gradient(circle at 25px 25px, rgba(255,255,255,0.2) 2px, transparent 0),
+            radial-gradient(circle at 75px 75px, rgba(255,255,255,0.1) 1px, transparent 0)
+          `,
         backgroundSize: "100px 100px",
         display: "flex",
         flexDirection: "column",
@@ -165,14 +173,20 @@ export const DocumentEditor = () => {
             elevation={8}
             sx={{
               position: "relative",
-              backgroundColor: "white",
+              backgroundColor: theme.palette.background.paper,
               borderRadius: { xs: 2, md: 3 },
               overflow: "hidden",
-              boxShadow: {
-                xs: "0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04)",
-                md: "0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)",
-              },
-              border: "1px solid rgba(0, 0, 0, 0.05)",
+              boxShadow:
+                theme.palette.mode === "dark"
+                  ? {
+                      xs: "0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2)",
+                      md: "0 10px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)",
+                    }
+                  : {
+                      xs: "0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04)",
+                      md: "0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)",
+                    },
+              border: `1px solid ${theme.palette.divider}`,
               transform: { xs: "none", lg: `scale(${zoomLevel / 100})` },
               transformOrigin: "top center",
               transition: "transform 0.2s ease-in-out",
@@ -200,8 +214,7 @@ export const DocumentEditor = () => {
                 left: 0,
                 right: 0,
                 height: "4px",
-                background:
-                  "linear-gradient(90deg, #1976d2 0%, #2196f3 50%, #1976d2 100%)",
+                background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 50%, ${theme.palette.primary.main} 100%)`,
                 opacity: isTyping ? 1 : 0,
                 transition: "opacity 0.3s ease-in-out",
               },
@@ -250,7 +263,7 @@ export const DocumentEditor = () => {
                 "& .MuiInputBase-input": {
                   height: "100% !important",
                   "&::placeholder": {
-                    color: "#9ca3af",
+                    color: theme.palette.text.disabled,
                     fontStyle: "normal",
                     fontSize: { xs: "14px", md: "16px" },
                     fontWeight: 400,
@@ -303,26 +316,19 @@ export const DocumentEditor = () => {
                   width: 24,
                   height: 24,
                   fontSize: "0.7rem",
-                  border: "2px solid white",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  border: `2px solid ${theme.palette.background.paper}`,
+                  boxShadow:
+                    theme.palette.mode === "dark"
+                      ? "0 2px 8px rgba(0,0,0,0.4)"
+                      : "0 2px 8px rgba(0,0,0,0.1)",
                 },
               }}
             >
-              <Avatar sx={{ bgcolor: "#1976d2" }}>Y</Avatar>
+              <Avatar sx={{ bgcolor: theme.palette.primary.main }}>Y</Avatar>
             </AvatarGroup>
           </Box>
         </Box>
       </Box>
-
-      {/* Custom Animations */}
-      <style>
-        {`
-          @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-          }
-        `}
-      </style>
     </Box>
   );
 };

@@ -9,6 +9,7 @@ import {
   Button,
   Divider,
   Tooltip,
+  useTheme,
 } from "@mui/material";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import AddLinkIcon from "@mui/icons-material/AddLink";
@@ -29,6 +30,7 @@ import TextFieldsIcon from "@mui/icons-material/TextFields";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 
 export const Formatbar = () => {
+  const theme = useTheme();
   const [selectedFormat, setSelectedFormat] = useState<string[]>([]);
   const [selectedAlignment, setSelectedAlignment] = useState<string | null>(
     "Left"
@@ -76,27 +78,36 @@ export const Formatbar = () => {
     "& .MuiToggleButton-root, & .MuiButton-root": {
       minWidth: 40,
       height: 36,
-      border: "1px solid rgba(0, 0, 0, 0.08)",
+      border: `1px solid ${theme.palette.divider}`,
       borderRadius: 2,
-      color: "rgba(0, 0, 0, 0.7)",
-      backgroundColor: "rgba(255, 255, 255, 0.8)",
+      color: theme.palette.text.secondary,
+      backgroundColor:
+        theme.palette.mode === "dark"
+          ? "rgba(0,0,0,0.2)"
+          : "rgba(255,255,255,0.8)",
       backdropFilter: "blur(8px)",
       transition: "all 0.2s ease-in-out",
       "&:hover": {
-        backgroundColor: "rgba(25, 118, 210, 0.08)",
+        backgroundColor: theme.palette.action.hover,
         borderColor: "primary.main",
         color: "primary.main",
         transform: "translateY(-1px)",
-        boxShadow: "0 2px 8px rgba(25, 118, 210, 0.2)",
+        boxShadow:
+          theme.palette.mode === "dark"
+            ? `0 2px 8px rgba(0,0,0,0.4)`
+            : `0 2px 8px rgba(0,0,0,0.1)`,
       },
       "&.Mui-selected": {
         backgroundColor: "primary.main",
-        color: "white",
+        color: theme.palette.primary.contrastText,
         borderColor: "primary.main",
-        boxShadow: "0 2px 8px rgba(25, 118, 210, 0.3)",
+        boxShadow:
+          theme.palette.mode === "dark"
+            ? `0 2px 8px rgba(0,0,0,0.5)`
+            : `0 2px 8px rgba(0,0,0,0.15)`,
         "&:hover": {
           backgroundColor: "primary.dark",
-          color: "white",
+          color: theme.palette.primary.contrastText,
         },
       },
       "& .MuiSvgIcon-root": {
@@ -114,10 +125,12 @@ export const Formatbar = () => {
         sx={{
           width: "100%",
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)",
+            theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.grey[900]} 100%)`
+              : `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)`,
           backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
-          color: "text.primary",
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          color: theme.palette.text.primary,
         }}
       >
         <Toolbar sx={{ minHeight: 56, px: 3, py: 1 }} variant="dense">

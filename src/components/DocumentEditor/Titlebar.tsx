@@ -11,6 +11,14 @@ import {
   IconButton,
   Tooltip,
   Fade,
+  Stack,
+  Badge,
+  useTheme,
+  useMediaQuery,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import {
   Share as ShareIcon,
@@ -19,13 +27,42 @@ import {
   Sync as SyncIcon,
   MoreVert as MoreVertIcon,
   InsertDriveFile as DocumentIcon,
+  Search,
+  Notifications,
+  LightMode,
+  DarkMode,
+  ArrowBack,
 } from "@mui/icons-material";
+import { ThemeToggle, useTheme as useAppTheme } from "../../theme";
 
 export const Titlebar = () => {
+  const theme = useTheme();
+  const { toggleTheme } = useAppTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [loggedInUsers, setLoggedInUsers] = useState<string[]>([]);
   const [documentName, setDocumentName] = useState<string>("Untitled Document");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleBackClick = () => {
+    // Navigate back to previous page or documents list
+    window.history.back();
+  };
+
+  const handleThemeToggle = () => {
+    toggleTheme();
+    handleMenuClose();
+  };
 
   const handleDocumentNameChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -57,10 +94,12 @@ export const Titlebar = () => {
         sx={{
           width: "100%",
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)",
+            theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.grey[900]} 100%)`
+              : `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)`,
           backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(0,0,0,0.08)",
-          color: "text.primary",
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          color: theme.palette.text.primary,
         }}
       >
         <Toolbar sx={{ minHeight: 72, px: 3 }}>
@@ -85,12 +124,18 @@ export const Titlebar = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 1.5,
-                  backgroundColor: "rgba(255,255,255,0.8)",
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(0,0,0,0.2)"
+                      : "rgba(255,255,255,0.8)",
                   borderRadius: 3,
                   px: 2,
                   py: 1,
-                  border: "1px solid rgba(0,0,0,0.06)",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+                  border: `1px solid ${theme.palette.divider}`,
+                  boxShadow:
+                    theme.palette.mode === "dark"
+                      ? `0 2px 12px rgba(0,0,0,0.3)`
+                      : `0 2px 12px rgba(0,0,0,0.04)`,
                 }}
               >
                 <DocumentIcon sx={{ color: "primary.main", fontSize: 20 }} />
@@ -184,10 +229,14 @@ export const Titlebar = () => {
                     borderRadius: 3,
                     textTransform: "none",
                     fontWeight: 600,
-                    backgroundColor: "rgba(255,255,255,0.8)",
-                    borderColor: "rgba(0,0,0,0.1)",
+                    backgroundColor:
+                      theme.palette.mode === "dark"
+                        ? "rgba(0,0,0,0.2)"
+                        : "rgba(255,255,255,0.8)",
+                    borderColor: theme.palette.divider,
+                    color: theme.palette.text.primary,
                     "&:hover": {
-                      backgroundColor: "rgba(25,118,210,0.04)",
+                      backgroundColor: theme.palette.action.hover,
                       borderColor: "primary.main",
                     },
                   }}
@@ -203,12 +252,16 @@ export const Titlebar = () => {
                     textTransform: "none",
                     fontWeight: 600,
                     background:
-                      "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                    boxShadow: "0 2px 8px rgba(25,118,210,0.3)",
+                      theme.palette.mode === "dark"
+                        ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`
+                        : "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                    boxShadow: `0 2px 8px ${theme.palette.primary.main}40`,
                     "&:hover": {
                       background:
-                        "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
-                      boxShadow: "0 4px 12px rgba(25,118,210,0.4)",
+                        theme.palette.mode === "dark"
+                          ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`
+                          : "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
+                      boxShadow: `0 4px 12px ${theme.palette.primary.main}66`,
                     },
                   }}
                 >
@@ -222,11 +275,14 @@ export const Titlebar = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 1.5,
-                  backgroundColor: "rgba(255,255,255,0.8)",
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(0,0,0,0.2)"
+                      : "rgba(255,255,255,0.8)",
                   borderRadius: 3,
                   px: 2,
                   py: 1,
-                  border: "1px solid rgba(0,0,0,0.06)",
+                  border: `1px solid ${theme.palette.divider}`,
                 }}
               >
                 <Typography
@@ -247,8 +303,11 @@ export const Titlebar = () => {
                       height: 32,
                       fontSize: "0.75rem",
                       fontWeight: 600,
-                      border: "2px solid white",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                      border: `2px solid ${theme.palette.background.paper}`,
+                      boxShadow:
+                        theme.palette.mode === "dark"
+                          ? `0 2px 8px rgba(0,0,0,0.4)`
+                          : `0 2px 8px rgba(0,0,0,0.1)`,
                     },
                   }}
                 >
@@ -258,19 +317,19 @@ export const Titlebar = () => {
                         sx={{
                           background: `linear-gradient(135deg, ${
                             [
-                              "#FF6B6B",
-                              "#4ECDC4",
-                              "#45B7D1",
-                              "#96CEB4",
-                              "#FFEAA7",
+                              theme.palette.error.main,
+                              theme.palette.info.main,
+                              theme.palette.primary.main,
+                              theme.palette.success.main,
+                              theme.palette.warning.main,
                             ][index % 5]
                           }, ${
                             [
-                              "#FF8E53",
-                              "#26D0CE",
-                              "#6C5CE7",
-                              "#81ECEC",
-                              "#FDCB6E",
+                              theme.palette.error.light,
+                              theme.palette.info.light,
+                              theme.palette.primary.light,
+                              theme.palette.success.light,
+                              theme.palette.warning.light,
                             ][index % 5]
                           })`,
                           animation: "pulse 2s infinite",
@@ -283,19 +342,157 @@ export const Titlebar = () => {
                 </AvatarGroup>
               </Box>
 
-              {/* More Options */}
-              <Tooltip title="More options">
+              {/* More Options - Only visible on mobile */}
+              {isMobile && (
+                <Tooltip title="More options">
+                  <IconButton
+                    size="small"
+                    onClick={handleMenuClick}
+                    sx={{
+                      backgroundColor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(0,0,0,0.2)"
+                          : "rgba(255,255,255,0.8)",
+                      border: `1px solid ${theme.palette.divider}`,
+                      width: 40,
+                      height: 40,
+                      "&:hover": {
+                        backgroundColor: theme.palette.action.hover,
+                      },
+                    }}
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              {/* Menu */}
+              <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                sx={{
+                  "& .MuiPaper-root": {
+                    borderRadius: 2,
+                    mt: 1,
+                    minWidth: 180,
+                    boxShadow:
+                      theme.palette.mode === "dark"
+                        ? "0 8px 32px rgba(0,0,0,0.4)"
+                        : "0 8px 32px rgba(0,0,0,0.12)",
+                  },
+                }}
+              >
+                <MenuItem onClick={handleMenuClose}>
+                  <ListItemIcon>
+                    <Search fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Search</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleMenuClose}>
+                  <ListItemIcon>
+                    <Badge badgeContent={3} color="error" variant="dot">
+                      <Notifications fontSize="small" />
+                    </Badge>
+                  </ListItemIcon>
+                  <ListItemText>Notifications</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleThemeToggle}>
+                  <ListItemIcon>
+                    {theme.palette.mode === "light" ? (
+                      <DarkMode fontSize="small" />
+                    ) : (
+                      <LightMode fontSize="small" />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText>
+                    Switch to{" "}
+                    {theme.palette.mode === "light" ? "Dark" : "Light"} Mode
+                  </ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => { handleBackClick(); handleMenuClose(); }}>
+                  <ListItemIcon>
+                    <ArrowBack fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Go Back</ListItemText>
+                </MenuItem>
+              </Menu>
+
+              {/* Search, Notifications, and Theme Toggle - Only visible on desktop */}
+              {!isMobile && (
+                <Stack direction="row" spacing={1}>
+                  <Tooltip title="Search">
+                    <IconButton
+                      size="small"
+                      sx={{
+                        backgroundColor:
+                          theme.palette.mode === "dark"
+                            ? "rgba(0,0,0,0.2)"
+                            : "rgba(255,255,255,0.8)",
+                        border: `1px solid ${theme.palette.divider}`,
+                        width: 40,
+                        height: 40,
+                        "&:hover": {
+                          backgroundColor: theme.palette.action.hover,
+                        },
+                      }}
+                    >
+                      <Search fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Notifications">
+                    <IconButton
+                      size="small"
+                      sx={{
+                        backgroundColor:
+                          theme.palette.mode === "dark"
+                            ? "rgba(0,0,0,0.2)"
+                            : "rgba(255,255,255,0.8)",
+                        border: `1px solid ${theme.palette.divider}`,
+                        width: 40,
+                        height: 40,
+                        "&:hover": {
+                          backgroundColor: theme.palette.action.hover,
+                        },
+                      }}
+                    >
+                      <Badge badgeContent={3} color="error" variant="dot">
+                        <Notifications fontSize="small" />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
+                  <ThemeToggle size="small" showTooltip={true} />
+                </Stack>
+              )}
+
+              {/* Back Button - Always visible */}
+              <Tooltip title="Go Back">
                 <IconButton
                   size="small"
+                  onClick={handleBackClick}
                   sx={{
-                    backgroundColor: "rgba(255,255,255,0.8)",
-                    border: "1px solid rgba(0,0,0,0.06)",
+                    backgroundColor:
+                      theme.palette.mode === "dark"
+                        ? "rgba(0,0,0,0.2)"
+                        : "rgba(255,255,255,0.8)",
+                    border: `1px solid ${theme.palette.divider}`,
+                    width: 40,
+                    height: 40,
+                    ml: isMobile ? 0 : 1,
                     "&:hover": {
-                      backgroundColor: "rgba(0,0,0,0.04)",
+                      backgroundColor: theme.palette.action.hover,
                     },
                   }}
                 >
-                  <MoreVertIcon fontSize="small" />
+                  <ArrowBack fontSize="small" />
                 </IconButton>
               </Tooltip>
             </Box>
