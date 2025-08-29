@@ -1,12 +1,36 @@
-import { Paper, Card } from "@mui/material";
-import { CardContent, Typography, Avatar, AvatarGroup } from "@mui/material";
+import { Paper, Card, useTheme, alpha } from "@mui/material";
+import {
+  CardContent,
+  Typography,
+  Avatar,
+  AvatarGroup,
+  IconButton,
+  Badge,
+  Fab,
+  Collapse,
+  Stack,
+  ClickAwayListener,
+} from "@mui/material";
+import {
+  Search,
+  Notifications,
+  ArrowBack,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  LightMode,
+  DarkMode,
+} from "@mui/icons-material";
 
 import { useState, useEffect } from "react";
 import Toolbar from "../components/Whiteboard/Toolbar";
+import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
 
 export const Whiteboard = () => {
+  const theme = useTheme();
+  const { mode, toggleTheme } = useCustomTheme();
   const [selectedTool, setSelectedTool] = useState<String | null>(null);
   const [loggedInUsers, setLoggedInUsers] = useState<String[]>([]);
+  const [miniAppBarOpen, setMiniAppBarOpen] = useState(false);
 
   useEffect(() => {
     // // Fetch logged in users from backend
@@ -42,20 +66,24 @@ export const Whiteboard = () => {
   return (
     <Paper
       sx={{
-        backgroundColor: "#f8f9fa",
-        backgroundImage: "radial-gradient(#e0e0e0 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
+        backgroundColor:
+          theme.palette.mode === "dark" ? "#1a1a1a" : theme.palette.grey[50],
+        backgroundImage:
+          theme.palette.mode === "dark"
+            ? `radial-gradient(${theme.palette.grey[700]} 1px, transparent 1px)`
+            : `radial-gradient(${theme.palette.grey[300]} 1px, transparent 1px)`,
+        backgroundSize: `${theme.spacing(2.5)} ${theme.spacing(2.5)}`,
         position: "fixed",
-        top: "8px",
-        left: "8px",
-        width: "calc(100vw - 16px)",
-        height: "calc(100vh - 16px)",
+        top: theme.spacing(1),
+        left: theme.spacing(1),
+        width: `calc(100vw - ${theme.spacing(2)})`,
+        height: `calc(100vh - ${theme.spacing(2)})`,
         padding: 0,
         margin: 0,
-        borderRadius: 3,
+        borderRadius: "5",
         boxSizing: "border-box",
         overflow: "hidden",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        boxShadow: theme.shadows[8],
         cursor:
           selectedTool === "Draw"
             ? "crosshair"
@@ -71,26 +99,35 @@ export const Whiteboard = () => {
       <Card
         sx={{
           position: "absolute",
-          top: 16,
-          right: 16,
+          top: theme.spacing(2),
+          right: theme.spacing(2),
           width: "fit-content",
-          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          backgroundColor: theme.palette.background.paper,
           backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
+          border: `1px solid ${theme.palette.divider}`,
         }}
         elevation={0}
       >
-        <CardContent sx={{ padding: 2, "&:last-child": { paddingBottom: 2 } }}>
+        <CardContent
+          sx={{
+            padding: theme.spacing(2),
+            "&:last-child": { paddingBottom: theme.spacing(2) },
+          }}
+        >
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ mb: 1, display: "block" }}
+            sx={{ mb: theme.spacing(1), display: "block" }}
           >
             Collaborators Online
           </Typography>
           <AvatarGroup
             max={4}
-            sx={{ "& .MuiAvatar-root": { border: "2px solid white" } }}
+            sx={{
+              "& .MuiAvatar-root": {
+                border: `2px solid ${theme.palette.background.paper}`,
+              },
+            }}
           >
             {loggedInUsers.map((user, index) => (
               <Avatar
@@ -98,16 +135,24 @@ export const Whiteboard = () => {
                 sx={{
                   width: 36,
                   height: 36,
-                  fontSize: "0.875rem",
-                  fontWeight: 600,
+                  fontSize: theme.typography.caption.fontSize,
+                  fontWeight: theme.typography.fontWeightMedium,
                   background: `linear-gradient(45deg, ${
-                    ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"][
-                      index % 5
-                    ]
+                    [
+                      theme.palette.error.main,
+                      theme.palette.info.main,
+                      theme.palette.primary.main,
+                      theme.palette.success.main,
+                      theme.palette.warning.main,
+                    ][index % 5]
                   }, ${
-                    ["#FF8E53", "#26D0CE", "#6C5CE7", "#81ECEC", "#FDCB6E"][
-                      index % 5
-                    ]
+                    [
+                      theme.palette.error.light,
+                      theme.palette.info.light,
+                      theme.palette.primary.light,
+                      theme.palette.success.light,
+                      theme.palette.warning.light,
+                    ][index % 5]
                   })`,
                 }}
               >
@@ -118,18 +163,113 @@ export const Whiteboard = () => {
         </CardContent>
       </Card>
 
+      {/* Floating Action Button for Mini AppBar */}
+      <ClickAwayListener onClickAway={() => setMiniAppBarOpen(false)}>
+        <div>
+          <Fab
+            size="small"
+            sx={{
+              position: "absolute",
+              top: theme.spacing(15),
+              right: theme.spacing(2),
+              backgroundColor: theme.palette.primary.main,
+              "&:hover": {
+                backgroundColor: theme.palette.primary.dark,
+              },
+              transition: "all 0.3s ease-in-out",
+            }}
+            onClick={() => setMiniAppBarOpen(!miniAppBarOpen)}
+          >
+            {miniAppBarOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          </Fab>
+
+          {/* Collapsible Mini AppBar */}
+          <Collapse in={miniAppBarOpen} timeout={400}>
+            <Card
+              sx={{
+                position: "absolute",
+                top: theme.spacing(20),
+                right: theme.spacing(1.5),
+                width: "auto",
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? alpha(theme.palette.grey[900], 0.95)
+                    : alpha(theme.palette.background.paper, 0.95),
+                backdropFilter: "blur(10px)",
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 2,
+                boxShadow:
+                  theme.palette.mode === "dark"
+                    ? "0 4px 20px rgba(255, 255, 255, 0.1)"
+                    : theme.shadows[8],
+              }}
+              elevation={0}
+            >
+              <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+                <Stack direction="column" spacing={0.5}>
+                  <IconButton
+                    size="small"
+                    sx={{ color: theme.palette.text.primary }}
+                    onClick={() => setMiniAppBarOpen(false)}
+                  >
+                    <ArrowBack />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    sx={{ color: theme.palette.text.primary }}
+                    onClick={() => setMiniAppBarOpen(false)}
+                  >
+                    <Search />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    sx={{ color: theme.palette.text.primary }}
+                    onClick={() => setMiniAppBarOpen(false)}
+                  >
+                    <Badge badgeContent={3} color="error" variant="dot">
+                      <Notifications />
+                    </Badge>
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    sx={{ color: theme.palette.text.primary }}
+                    onClick={() => {
+                      toggleTheme();
+                      setMiniAppBarOpen(false);
+                    }}
+                  >
+                    {mode === "dark" ? <LightMode /> : <DarkMode />}
+                  </IconButton>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Collapse>
+        </div>
+      </ClickAwayListener>
+
       {/* Enhanced toolbar */}
       <Card
         sx={{
           width: "fit-content",
           position: "absolute",
-          bottom: "24px",
+          bottom: theme.spacing(3),
           left: "50%",
           transform: "translateX(-50%)",
-          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          backgroundColor:
+            theme.palette.mode === "dark"
+              ? alpha(theme.palette.grey[900], 0.95)
+              : alpha(theme.palette.background.paper, 0.95),
           backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
+          border: `1px solid ${theme.palette.divider}`,
           borderRadius: 3,
+          boxShadow: theme.palette.mode === "dark" ? "none" : theme.shadows[8],
+          transition: "box-shadow 0.3s ease-in-out",
+          "&:hover": {
+            boxShadow:
+              theme.palette.mode === "dark"
+                ? "0 4px 20px rgba(255, 255, 255, 0.1)"
+                : theme.shadows[12],
+          },
         }}
         elevation={0}
       >
@@ -146,15 +286,18 @@ export const Whiteboard = () => {
         variant="h6"
         sx={{
           position: "absolute",
-          top: 24,
-          left: 24,
-          color: "rgba(0, 0, 0, 0.1)",
-          fontWeight: 300,
-          letterSpacing: 1,
+          top: theme.spacing(3),
+          left: theme.spacing(3),
+          color:
+            theme.palette.mode === "dark"
+              ? "rgba(255, 255, 255, 0.1)"
+              : theme.palette.action.disabled,
+          fontWeight: theme.typography.fontWeightLight,
+          letterSpacing: theme.spacing(0.125),
           userSelect: "none",
         }}
       >
-        Whiteboard
+        {theme.palette.mode === "dark" ? "Blackboard" : "Whiteboard"}
       </Typography>
     </Paper>
   );

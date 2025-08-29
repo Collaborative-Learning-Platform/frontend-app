@@ -4,6 +4,7 @@ import {
   ToggleButtonGroup,
   toggleButtonClasses,
   toggleButtonGroupClasses,
+  useTheme,
 } from "@mui/material";
 import DrawIcon from "@mui/icons-material/Draw";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -41,6 +42,7 @@ interface ToolbarProps {
 }
 
 const Toolbar = (Props: ToolbarProps) => {
+  const theme = useTheme();
   return (
     <>
       <Stack direction="row" spacing={0.5}>
@@ -58,8 +60,15 @@ const Toolbar = (Props: ToolbarProps) => {
               margin: "0 2px",
               transition: "all 0.2s ease-in-out",
               "&:hover": {
-                backgroundColor: "rgba(25, 118, 210, 0.08)",
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? "rgba(144, 202, 249, 0.16)"
+                    : "rgba(25, 118, 210, 0.08)",
                 transform: "translateY(-1px)",
+                boxShadow:
+                  theme.palette.mode === "dark"
+                    ? "0 2px 8px rgba(144, 202, 249, 0.2)"
+                    : "0 2px 8px rgba(25, 118, 210, 0.15)",
               },
               "&.Mui-selected": {
                 backgroundColor: "primary.main",
@@ -101,7 +110,14 @@ const Toolbar = (Props: ToolbarProps) => {
               "&.MuiToggleButton-root": {
                 color: "error.main",
                 "&:hover": {
-                  backgroundColor: "rgba(211, 47, 47, 0.08)",
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(244, 143, 177, 0.16)"
+                      : "rgba(211, 47, 47, 0.08)",
+                  boxShadow:
+                    theme.palette.mode === "dark"
+                      ? "0 2px 8px rgba(244, 143, 177, 0.2)"
+                      : "0 2px 8px rgba(211, 47, 47, 0.15)",
                 },
                 "&.Mui-selected": {
                   backgroundColor: "error.main",
