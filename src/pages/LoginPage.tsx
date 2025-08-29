@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -20,19 +21,45 @@ import {
   VisibilityOff,
   School as SchoolIcon,
 } from "@mui/icons-material";
+import axiosInstance from "../api/axiosInstance";
+import { useAuth } from "../contexts/Authcontext";
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = React.useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    
+    
     console.log({
-      username: data.get("Username"),
+      email: data.get("email"),
       password: data.get("Password"),
     });
+    const response = await axiosInstance.post('/auth/login', {
+      email: data.get("email"),
+      password: data.get("Password"),
+    });
+    if (response.data.message == 'success'){
+      setAuth(response.data.role, response.data.user_id);
+      // navigate('/user-dashboard');
+    }
+    else{
+      alert("Login failed. Please check your credentials.");
+    }
+    if (response.data.role === "user") {
+      navigate("/user-dashboard");
+    }
+    else if (response.data.role === "admin") {
+      navigate("/admin-dashboard");
+    }
+    else if (response.data.role === "tutor") {
+      navigate("/tutor-dashboard");
+    }
   };
 
   const handleClickShowPassword = () => {
@@ -142,10 +169,10 @@ export default function SignInPage() {
                 margin="normal"
                 required
                 fullWidth
-                id="Username"
-                label="Username"
-                name="Username"
-                autoComplete="username"
+                id="email"
+                label="email"
+                name="email"
+                autoComplete="email"
                 autoFocus
                 variant="outlined"
                 size="medium"

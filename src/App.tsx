@@ -1,12 +1,12 @@
-import "./App.css";
-import { Routes, Route } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
-import CreateQuiz from "./pages/quiz/createquiz";
-import { ThemeDemo } from "./theme";
-import LoginPage from "./pages/LoginPage";
-import NotFound from "./pages/404";
-import About from "./pages/About";
-import Layout from "./components/Layout";
+import './App.css'
+import { Routes, Route} from 'react-router-dom'
+import LandingPage from './pages/LandingPage';
+import { ThemeDemo } from './theme';
+import  LoginPage from './pages/LoginPage';
+import NotFound from './pages/404';
+import About from './pages/About';
+import Layout from './components/Layout';
+import QuizRoutes from './pages/quiz/QuizRoutes';
 import AdminDashboard from "./pages/AdminDashboard";
 import { UserManagement } from "./components/AdminDashboard/UserManagement";
 import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceMAnagement";
@@ -22,18 +22,21 @@ import ProfilePage from "./pages/ProfilePage";
 import { Whiteboard } from "./pages/Whiteboard";
 import { DocumentEditor } from "./pages/DocumentEditor";
 import { FlashCardGenerator } from "./components/UserDashboard/FlashCardGenerator";
+import AddUsers from './pages/AddUsers';
+
 
 function App() {
   return (
-    <Routes>
+<Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<Layout />}>
         <Route path="user-profile" element={<ProfilePage />} />
         <Route path="about" element={<About />} />
-        <Route path="create-quiz" element={<CreateQuiz />} />
+        <Route path="/quiz/*" element={<QuizRoutes />} />
         <Route path="theme-demo" element={<ThemeDemo />} />
+        <Route path="add-users" element={<AddUsers />} />
 
         <Route element={<UserDashboard />}>
           <Route path="/user-dashboard" element={<UserOverview />} />
