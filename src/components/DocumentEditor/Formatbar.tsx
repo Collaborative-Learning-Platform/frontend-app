@@ -10,6 +10,11 @@ import {
   Divider,
   Tooltip,
   useTheme,
+  IconButton,
+  Collapse,
+  Card,
+  CardContent,
+  ClickAwayListener,
 } from "@mui/material";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import AddLinkIcon from "@mui/icons-material/AddLink";
@@ -28,6 +33,7 @@ import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
+import { KeyboardArrowUp, KeyboardArrowDown } from "@mui/icons-material";
 
 export const Formatbar = () => {
   const theme = useTheme();
@@ -38,6 +44,7 @@ export const Formatbar = () => {
   const [selectedList, setSelectedList] = useState<string | null>(null);
   const [selectedInsert, setSelectedInsert] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+  const [miniAppBarOpen, setMiniAppBarOpen] = useState(false);
 
   const handleSelectedFormat = (
     _event: React.MouseEvent<HTMLElement>,
@@ -196,58 +203,161 @@ export const Formatbar = () => {
                 flexItem
                 sx={{ mx: 0.5, height: 24 }}
               />
+              {/* More Options - Mobile only */}
+              <ClickAwayListener onClickAway={() => setMiniAppBarOpen(false)}>
+                <Box sx={{ position: "relative" }}>
+                  <Tooltip title="More options">
+                    <IconButton
+                      size="small"
+                      onClick={() => setMiniAppBarOpen(!miniAppBarOpen)}
+                      sx={{
+                        backgroundColor:
+                          theme.palette.mode === "dark"
+                            ? "rgba(0,0,0,0.2)"
+                            : "rgba(255,255,255,0.8)",
+                        width: 36,
+                        height: 36,
+                        display: { xs: "flex", md: "none" },
+                        transition: "all 0.2s ease-in-out",
+                        "& .MuiSvgIcon-root": {
+                          transition: "all 0.2s ease-in-out",
+                        },
+                        "&:hover": {
+                          backgroundColor: theme.palette.action.hover,
+                        },
+                      }}
+                    >
+                      {miniAppBarOpen ? (
+                        <KeyboardArrowUp />
+                      ) : (
+                        <KeyboardArrowDown />
+                      )}
+                    </IconButton>
+                  </Tooltip>
 
-              {/* Alignment Group */}
-              <Tooltip title="Text alignment">
-                <ToggleButtonGroup
-                  aria-label="alignment"
-                  value={selectedAlignment}
-                  onChange={handleSelectedAlignment}
-                  exclusive
-                  size="small"
-                  sx={buttonGroupStyles}
-                >
-                  <ToggleButton value="Left" aria-label="align-left">
-                    <FormatAlignLeftIcon />
-                  </ToggleButton>
-                  <ToggleButton value="Center" aria-label="align-center">
-                    <FormatAlignCenterIcon />
-                  </ToggleButton>
-                  <ToggleButton value="Right" aria-label="align-right">
-                    <FormatAlignRightIcon />
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Tooltip>
+                  <Collapse
+                    in={miniAppBarOpen}
+                    timeout={{ enter: 500, exit: 400 }}
+                    easing={{
+                      enter: "cubic-bezier(0.4, 0, 0.2, 1)",
+                      exit: "ease-in-out",
+                    }}
+                  >
+                    <Card
+                      sx={{
+                        position: "absolute",
+                        top: 45,
+                        right: 0,
+                        backgroundColor:
+                          theme.palette.mode === "dark"
+                            ? "rgba(0,0,0,0.95)"
+                            : "rgba(255,255,255,0.95)",
+                        backdropFilter: "blur(10px)",
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 2,
+                        zIndex: 999,
+                        maxWidth: 300,
+                      }}
+                    >
+                      <CardContent sx={{ p: 2 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                          }}
+                        >
+                          {/* Insert Tools */}
+                          <Box>
+                            <Tooltip title="Insert">
+                              <ToggleButtonGroup
+                                aria-label="inserts"
+                                value={selectedInsert}
+                                onChange={handleSelectedInsert}
+                                exclusive
+                                size="small"
+                                sx={buttonGroupStyles}
+                              >
+                                <ToggleButton
+                                  value="Image"
+                                  aria-label="insert-image"
+                                >
+                                  <InsertPhotoIcon />
+                                </ToggleButton>
+                                <ToggleButton
+                                  value="Hyperlink"
+                                  aria-label="insert-hyperlink"
+                                >
+                                  <AddLinkIcon />
+                                </ToggleButton>
+                                <ToggleButton
+                                  value="Table"
+                                  aria-label="insert-table"
+                                >
+                                  <TableChartIcon />
+                                </ToggleButton>
+                              </ToggleButtonGroup>
+                            </Tooltip>
+                          </Box>
 
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ mx: 0.5, height: 24 }}
-              />
+                          {/* Edit Actions */}
+                          <Box>
+                            <Tooltip title="Edit actions">
+                              <ButtonGroup
+                                variant="outlined"
+                                size="small"
+                                sx={buttonGroupStyles}
+                              >
+                                <Button aria-label="undo">
+                                  <UndoIcon />
+                                </Button>
+                                <Button aria-label="redo">
+                                  <RedoIcon />
+                                </Button>
+                                <Button aria-label="copy">
+                                  <CopyIcon />
+                                </Button>
+                                <Button aria-label="paste">
+                                  <PasteIcon />
+                                </Button>
+                              </ButtonGroup>
+                            </Tooltip>
+                          </Box>
 
-              {/* Lists Group */}
-              <Tooltip title="Lists">
-                <ToggleButtonGroup
-                  aria-label="lists"
-                  value={selectedList}
-                  onChange={handleSelectedList}
-                  exclusive
-                  size="small"
-                  sx={buttonGroupStyles}
-                >
-                  <ToggleButton value="Bullets" aria-label="bullets">
-                    <FormatListBulletedIcon />
-                  </ToggleButton>
-                  <ToggleButton value="Numbering" aria-label="numbering">
-                    <FormatListNumberedIcon />
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Tooltip>
-            </Box>
+                          {/* Lists */}
+                          <Box>
+                            <Tooltip title="Lists">
+                              <ToggleButtonGroup
+                                aria-label="lists"
+                                value={selectedList}
+                                onChange={handleSelectedList}
+                                exclusive
+                                size="small"
+                                sx={buttonGroupStyles}
+                              >
+                                <ToggleButton
+                                  value="Bullets"
+                                  aria-label="bullets"
+                                >
+                                  <FormatListBulletedIcon />
+                                </ToggleButton>
+                                <ToggleButton
+                                  value="Numbering"
+                                  aria-label="numbering"
+                                >
+                                  <FormatListNumberedIcon />
+                                </ToggleButton>
+                              </ToggleButtonGroup>
+                            </Tooltip>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Collapse>
+                </Box>
+              </ClickAwayListener>
 
-            {/* Right Side Groups */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              {/* Insert Tools Group */}
+              {/* Desktop Tools */}
               <Box
                 sx={{
                   display: { xs: "none", md: "flex" },
@@ -255,12 +365,60 @@ export const Formatbar = () => {
                   gap: 2,
                 }}
               >
+                {/* Alignment Group */}
+                <Tooltip title="Text alignment">
+                  <ToggleButtonGroup
+                    aria-label="alignment"
+                    value={selectedAlignment}
+                    onChange={handleSelectedAlignment}
+                    exclusive
+                    size="small"
+                    sx={buttonGroupStyles}
+                  >
+                    <ToggleButton value="Left" aria-label="align-left">
+                      <FormatAlignLeftIcon />
+                    </ToggleButton>
+                    <ToggleButton value="Center" aria-label="align-center">
+                      <FormatAlignCenterIcon />
+                    </ToggleButton>
+                    <ToggleButton value="Right" aria-label="align-right">
+                      <FormatAlignRightIcon />
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Tooltip>
+
                 <Divider
                   orientation="vertical"
                   flexItem
                   sx={{ mx: 0.5, height: 24 }}
                 />
 
+                {/* Lists Group */}
+                <Tooltip title="Lists">
+                  <ToggleButtonGroup
+                    aria-label="lists"
+                    value={selectedList}
+                    onChange={handleSelectedList}
+                    exclusive
+                    size="small"
+                    sx={buttonGroupStyles}
+                  >
+                    <ToggleButton value="Bullets" aria-label="bullets">
+                      <FormatListBulletedIcon />
+                    </ToggleButton>
+                    <ToggleButton value="Numbering" aria-label="numbering">
+                      <FormatListNumberedIcon />
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Tooltip>
+
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{ mx: 0.5, height: 24 }}
+                />
+
+                {/* Insert Tools */}
                 <Tooltip title="Insert">
                   <ToggleButtonGroup
                     aria-label="inserts"
@@ -273,10 +431,7 @@ export const Formatbar = () => {
                     <ToggleButton value="Image" aria-label="insert-image">
                       <InsertPhotoIcon />
                     </ToggleButton>
-                    <ToggleButton
-                      value="Hyperlink"
-                      aria-label="insert-hyperlink"
-                    >
+                    <ToggleButton value="Hyperlink" aria-label="insert-hyperlink">
                       <AddLinkIcon />
                     </ToggleButton>
                     <ToggleButton value="Table" aria-label="insert-table">
@@ -284,22 +439,14 @@ export const Formatbar = () => {
                     </ToggleButton>
                   </ToggleButtonGroup>
                 </Tooltip>
-              </Box>
 
-              {/* Edit Actions Group */}
-              <Box
-                sx={{
-                  display: { xs: "none", lg: "flex" },
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
                 <Divider
                   orientation="vertical"
                   flexItem
                   sx={{ mx: 0.5, height: 24 }}
                 />
 
+                {/* Edit Actions */}
                 <Tooltip title="Edit actions">
                   <ButtonGroup
                     variant="outlined"
@@ -322,6 +469,8 @@ export const Formatbar = () => {
                 </Tooltip>
               </Box>
             </Box>
+
+
           </Box>
         </Toolbar>
       </AppBar>

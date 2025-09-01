@@ -12,7 +12,6 @@ import {
   Tooltip,
   Fade,
   Stack,
-  Badge,
   useTheme,
   useMediaQuery,
   Menu,
@@ -27,24 +26,22 @@ import {
   Sync as SyncIcon,
   MoreVert as MoreVertIcon,
   InsertDriveFile as DocumentIcon,
-  Search,
-  Notifications,
-  LightMode,
-  DarkMode,
-  ArrowBack,
 } from "@mui/icons-material";
-import { ThemeToggle, useTheme as useAppTheme } from "../../theme";
+import { Chats } from "../Chats";
+import { ThemeToggle } from "../ThemeToggle";
+import { BackButton } from "../BackButton";
+import { NotificationsButton } from "../NotificationsButton";
 
 export const Titlebar = () => {
   const theme = useTheme();
-  const { toggleTheme } = useAppTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("md", "lg"));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [loggedInUsers, setLoggedInUsers] = useState<string[]>([]);
   const [documentName, setDocumentName] = useState<string>("Untitled Document");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -54,26 +51,19 @@ export const Titlebar = () => {
     setAnchorEl(null);
   };
 
-  const handleBackClick = () => {
-    // Navigate back to previous page or documents list
-    window.history.back();
-  };
-
-  const handleThemeToggle = () => {
-    toggleTheme();
-    handleMenuClose();
+  const simulateAutoSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setLastSaved(new Date());
+    }, 1500);
   };
 
   const handleDocumentNameChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setDocumentName(event.target.value);
-    // Simulate auto-save trigger
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      setLastSaved(new Date());
-    }, 1500);
+    simulateAutoSave();
   };
 
   useEffect(() => {
@@ -82,7 +72,6 @@ export const Titlebar = () => {
       // Mock data for demo
       setLoggedInUsers(["Sarah", "Mike", "Alex", "Emma"]);
     };
-
     fetchLoggedInUsers();
   }, []);
 
@@ -102,13 +91,21 @@ export const Titlebar = () => {
           color: theme.palette.text.primary,
         }}
       >
-        <Toolbar sx={{ minHeight: 72, px: 3 }}>
+        <Toolbar
+          sx={{
+            minHeight: { xs: 56, sm: 64, md: 72 },
+            px: { xs: 1, sm: 2, md: 3 },
+            py: { xs: 0.5, sm: 1 },
+          }}
+        >
           <Box
             sx={{
               width: "100%",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              flexDirection: { xs: "row" },
+              gap: { xs: 0.5, sm: 1, md: 2 },
             }}
           >
             {/* Left Section - Document Info */}
@@ -116,29 +113,44 @@ export const Titlebar = () => {
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 2,
+                gap: { xs: 0.5, sm: 1, md: 2 },
+                flex: { md: "none" },
+                flexShrink: 1,
+                flexGrow: 0,
               }}
             >
               <Box
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 1.5,
+                  gap: { xs: 0.5, sm: 1, md: 1.5 },
                   backgroundColor:
                     theme.palette.mode === "dark"
                       ? "rgba(0,0,0,0.2)"
                       : "rgba(255,255,255,0.8)",
-                  borderRadius: 3,
-                  px: 2,
-                  py: 1,
+                  borderRadius: { xs: 2, md: 3 },
+                  px: { xs: 1, sm: 1.5, md: 2 },
+                  py: { xs: 0.5, md: 1 },
                   border: `1px solid ${theme.palette.divider}`,
                   boxShadow:
                     theme.palette.mode === "dark"
                       ? `0 2px 12px rgba(0,0,0,0.3)`
                       : `0 2px 12px rgba(0,0,0,0.04)`,
+                  flex: 1,
+                  minWidth: 0,
+                  maxWidth: { xs: "100%", sm: 300, md: 400, lg: 500 },
                 }}
               >
-                <DocumentIcon sx={{ color: "primary.main", fontSize: 20 }} />
+                <DocumentIcon
+                  sx={{
+                    color: "primary.main",
+                    fontSize: { xs: 18, sm: 20 },
+                    display: {
+                      md: "block",
+                      sm: "block",
+                    },
+                  }}
+                />
                 <TextField
                   value={documentName}
                   onChange={handleDocumentNameChange}
@@ -146,14 +158,17 @@ export const Titlebar = () => {
                   InputProps={{
                     disableUnderline: true,
                     sx: {
-                      fontSize: "1rem",
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
                       color: "text.primary",
-                      width: { xs: 140, sm: 200, md: 280 },
+                      width: "100%",
+                      minWidth: 0, // Allow shrinking
                     },
                   }}
                   sx={{
+                    flex: 1,
+                    minWidth: 0,
                     "& .MuiInputBase-input": {
-                      padding: "4px 0",
+                      padding: { xs: "2px 0", md: "4px 0" },
                       "&:focus": {
                         backgroundColor: "transparent",
                       },
@@ -162,15 +177,15 @@ export const Titlebar = () => {
                 />
               </Box>
 
-              {/* Save Status */}
+              {/* Save Status - Hidden on mobile and small tablets */}
               <Box
                 sx={{
                   display: { xs: "none", lg: "flex" },
                   alignItems: "center",
                   gap: 1,
                   backgroundColor: isSaving
-                    ? "rgba(33, 150, 243, 0.08)"
-                    : "rgba(76, 175, 80, 0.08)",
+                    ? "background.paper"
+                    : "background.paper",
                   borderRadius: 3,
                   px: 2,
                   py: 1,
@@ -216,19 +231,30 @@ export const Titlebar = () => {
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 2,
+                gap: { xs: 0.75, sm: 1, md: 2 },
+                flexShrink: 0,
               }}
             >
-              {/* Action Buttons */}
-              <Box sx={{ display: "flex", gap: 1 }}>
+              {/* Action Buttons - Responsive display */}
+              <Box
+                sx={{
+                  display: { xs: "flex", sm: "flex" },
+                  gap: { xs: 1, sm: 1, md: 2 },
+                }}
+              >
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={<ShareIcon />}
+                  startIcon={
+                    <ShareIcon sx={{ fontSize: { xs: 16, md: 18 } }} />
+                  }
                   sx={{
-                    borderRadius: 3,
+                    borderRadius: { xs: 2, md: 3 },
                     textTransform: "none",
-                    fontWeight: 600,
+                    fontSize: { xs: "0.75rem", md: "0.875rem" },
+                    px: { xs: 1, md: 2 },
+                    py: { xs: 0.5, md: 1 },
+                    minWidth: { xs: 80, sm: 90, md: 100 },
                     backgroundColor:
                       theme.palette.mode === "dark"
                         ? "rgba(0,0,0,0.2)"
@@ -238,19 +264,23 @@ export const Titlebar = () => {
                     "&:hover": {
                       backgroundColor: theme.palette.action.hover,
                       borderColor: "primary.main",
+                      color: "primary.main",
                     },
                   }}
                 >
-                  Share
+                  {isTablet ? "" : "Share"}
                 </Button>
                 <Button
                   variant="contained"
-                  size="small"
-                  startIcon={<SaveIcon />}
+                  size={isTablet ? "medium" : "small"}
+                  startIcon={<SaveIcon sx={{ fontSize: { xs: 16, md: 18 } }} />}
                   sx={{
-                    borderRadius: 3,
+                    borderRadius: { xs: 2, md: 3 },
                     textTransform: "none",
-                    fontWeight: 600,
+                    fontSize: { xs: "0.75rem", md: "0.875rem" },
+                    px: { xs: 1, md: 2 },
+                    py: { xs: 0.5, md: 1 },
+                    minWidth: { xs: 80, sm: 90, md: 100 },
                     background:
                       theme.palette.mode === "dark"
                         ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`
@@ -265,23 +295,23 @@ export const Titlebar = () => {
                     },
                   }}
                 >
-                  Save
+                  {isTablet ? "" : "Save"}
                 </Button>
               </Box>
 
-              {/* Collaborators */}
+              {/* Collaborators - Responsive */}
               <Box
                 sx={{
-                  display: "flex",
+                  display: { xs: "none", md: "flex", sm: "flex" },
                   alignItems: "center",
-                  gap: 1.5,
+                  gap: { xs: 0.5, md: 1.5 },
                   backgroundColor:
                     theme.palette.mode === "dark"
                       ? "rgba(0,0,0,0.2)"
                       : "rgba(255,255,255,0.8)",
-                  borderRadius: 3,
-                  px: 2,
-                  py: 1,
+                  borderRadius: { xs: 2, md: 3 },
+                  px: { xs: 1, md: 2 },
+                  py: { xs: 0.5, md: 1 },
                   border: `1px solid ${theme.palette.divider}`,
                 }}
               >
@@ -291,17 +321,18 @@ export const Titlebar = () => {
                   sx={{
                     fontWeight: 600,
                     display: { xs: "none", md: "block" },
+                    fontSize: { xs: "0.6rem", md: "0.75rem" },
                   }}
                 >
                   {loggedInUsers.length} online
                 </Typography>
                 <AvatarGroup
-                  max={3}
+                  max={isSmallMobile ? 2 : isMobile ? 3 : 4}
                   sx={{
                     "& .MuiAvatar-root": {
-                      width: 32,
-                      height: 32,
-                      fontSize: "0.75rem",
+                      width: { xs: 24, sm: 28, md: 32 },
+                      height: { xs: 24, sm: 28, md: 32 },
+                      fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.75rem" },
                       fontWeight: 600,
                       border: `2px solid ${theme.palette.background.paper}`,
                       boxShadow:
@@ -342,170 +373,89 @@ export const Titlebar = () => {
                 </AvatarGroup>
               </Box>
 
-              {/* More Options - Only visible on mobile */}
-              {isMobile && (
-                <Tooltip title="More options">
-                  <IconButton
-                    size="small"
-                    onClick={handleMenuClick}
-                    sx={{
-                      backgroundColor:
-                        theme.palette.mode === "dark"
-                          ? "rgba(0,0,0,0.2)"
-                          : "rgba(255,255,255,0.8)",
-                      border: `1px solid ${theme.palette.divider}`,
-                      width: 40,
-                      height: 40,
-                      "&:hover": {
-                        backgroundColor: theme.palette.action.hover,
-                      },
-                    }}
-                  >
-                    <MoreVertIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-              {/* Menu */}
-              <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleMenuClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                sx={{
-                  "& .MuiPaper-root": {
-                    borderRadius: 2,
-                    mt: 1,
-                    minWidth: 180,
-                    boxShadow:
-                      theme.palette.mode === "dark"
-                        ? "0 8px 32px rgba(0,0,0,0.4)"
-                        : "0 8px 32px rgba(0,0,0,0.12)",
-                  },
-                }}
-              >
-                <MenuItem onClick={handleMenuClose}>
-                  <ListItemIcon>
-                    <Search fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Search</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={handleMenuClose}>
-                  <ListItemIcon>
-                    <Badge badgeContent={3} color="error" variant="dot">
-                      <Notifications fontSize="small" />
-                    </Badge>
-                  </ListItemIcon>
-                  <ListItemText>Notifications</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={handleThemeToggle}>
-                  <ListItemIcon>
-                    {theme.palette.mode === "light" ? (
-                      <DarkMode fontSize="small" />
-                    ) : (
-                      <LightMode fontSize="small" />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText>
-                    Switch to{" "}
-                    {theme.palette.mode === "light" ? "Dark" : "Light"} Mode
-                  </ListItemText>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleBackClick();
-                    handleMenuClose();
-                  }}
-                >
-                  <ListItemIcon>
-                    <ArrowBack fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Go Back</ListItemText>
-                </MenuItem>
-              </Menu>
-
-              {/* Search, Notifications, and Theme Toggle - Only visible on desktop */}
-              {!isMobile && (
-                <Stack direction="row" spacing={1}>
-                  <Tooltip title="Search">
-                    <IconButton
-                      size="small"
-                      sx={{
-                        backgroundColor:
-                          theme.palette.mode === "dark"
-                            ? "rgba(0,0,0,0.2)"
-                            : "rgba(255,255,255,0.8)",
-                        border: `1px solid ${theme.palette.divider}`,
-                        width: 40,
-                        height: 40,
-                        "&:hover": {
-                          backgroundColor: theme.palette.action.hover,
-                        },
-                      }}
-                    >
-                      <Search fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Notifications">
-                    <IconButton
-                      size="small"
-                      sx={{
-                        backgroundColor:
-                          theme.palette.mode === "dark"
-                            ? "rgba(0,0,0,0.2)"
-                            : "rgba(255,255,255,0.8)",
-                        border: `1px solid ${theme.palette.divider}`,
-                        width: 40,
-                        height: 40,
-                        "&:hover": {
-                          backgroundColor: theme.palette.action.hover,
-                        },
-                      }}
-                    >
-                      <Badge badgeContent={3} color="error" variant="dot">
-                        <Notifications fontSize="small" />
-                      </Badge>
-                    </IconButton>
-                  </Tooltip>
-                  <ThemeToggle size="small" showTooltip={true} />
-                </Stack>
-              )}
-
-              {/* Back Button - Always visible */}
-              <Tooltip title="Go Back">
+              {/* More Options - Visible on small screens */}
+              <Tooltip title="More options">
                 <IconButton
                   size="small"
-                  onClick={handleBackClick}
+                  onClick={handleMenuClick}
                   sx={{
                     backgroundColor:
                       theme.palette.mode === "dark"
                         ? "rgba(0,0,0,0.2)"
                         : "rgba(255,255,255,0.8)",
-                    border: `1px solid ${theme.palette.divider}`,
-                    width: 40,
-                    height: 40,
-                    ml: isMobile ? 0 : 1,
+
+                    width: { xs: 32, sm: 36, md: 40 },
+                    height: { xs: 32, sm: 36, md: 40 },
+                    display: { xs: "flex", sm: "flex", md: "none" },
                     "&:hover": {
                       backgroundColor: theme.palette.action.hover,
                     },
                   }}
                 >
-                  <ArrowBack fontSize="small" />
+                  <MoreVertIcon
+                    fontSize="small"
+                    sx={{
+                      color: theme.palette.text.primary,
+                    }}
+                  />
                 </IconButton>
               </Tooltip>
+
+              {/* Messages, Notifications, and Theme Toggle - Desktop only */}
+              <Stack
+                direction="row"
+                spacing={{ sm: 0.5, md: 1 }}
+                sx={{ display: { xs: "none", sm: "none", md: "flex" } }}
+              >
+                <Chats size="small" showTooltip={true} badgeContent={3} />
+                <NotificationsButton
+                  size="small"
+                  showTooltip={true}
+                  badgeContent={3}
+                />
+                <ThemeToggle size="small" showTooltip={true} />
+              </Stack>
+              <BackButton size="small" showTooltip={true} />
             </Box>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Custom Animations */}
+      {/* Mobile Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        sx={{
+          "& .MuiPaper-root": {
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 2,
+            minWidth: 200,
+          },
+        }}
+      >
+        <MenuItem onClick={handleMenuClose}>
+          <ListItemIcon>
+            <Chats size="small" showTooltip={false} badgeContent={3} />
+          </ListItemIcon>
+          <ListItemText primary="Messages" />
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>
+          <ListItemIcon>
+            <NotificationsButton size="small" showTooltip={false} badgeContent={3} />
+          </ListItemIcon>
+          <ListItemText primary="Notifications" />
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>
+          <ListItemIcon>
+            <ThemeToggle size="small" showTooltip={false} />
+          </ListItemIcon>
+          <ListItemText primary="Toggle Theme" />
+        </MenuItem>
+      </Menu>
+
+      {/* Custom Animations and Responsive Styles */}
       <style>
         {`
           @keyframes spin {
@@ -516,6 +466,26 @@ export const Titlebar = () => {
           @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.8; }
+          }
+
+          @media (max-width: 600px) {
+            .MuiAppBar-root .MuiToolbar-root {
+              min-height: 56px !important;
+            }
+          }
+
+          @media (max-width: 400px) {
+            .MuiAppBar-root .MuiToolbar-root {
+              padding-left: 8px !important;
+              padding-right: 8px !important;
+            }
+          }
+
+          /* Ensure proper text overflow handling on mobile */
+          @media (max-width: 480px) {
+            .MuiTextField-root .MuiInputBase-input {
+              text-overflow: ellipsis;
+            }
           }
         `}
       </style>
