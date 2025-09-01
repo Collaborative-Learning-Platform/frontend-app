@@ -33,6 +33,7 @@ interface QuizSectionProps {
 }
 
 const QuizSection = ({ groupId }: QuizSectionProps) => {
+  console.log(groupId)
   const quizzes: QuizItem[] = [
     {
       id: '1',

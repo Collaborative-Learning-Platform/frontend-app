@@ -35,6 +35,7 @@ interface ResourceSectionProps {
 }
 
 const ResourceSection = ({ groupId }: ResourceSectionProps) => {
+  console.log(groupId)
   const resources: Resource[] = [
     {
       id: '1',

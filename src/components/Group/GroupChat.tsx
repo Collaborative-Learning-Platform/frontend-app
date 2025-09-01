@@ -25,6 +25,7 @@ interface GroupChatProps {
 }
 
 const GroupChat = ({ groupId }: GroupChatProps) => {
+  console.log(groupId)
   const [message, setMessage] = useState('');
   const [messages] = useState<Message[]>([
     {
@@ -99,7 +100,7 @@ const GroupChat = ({ groupId }: GroupChatProps) => {
       <Divider />
       
       <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 3 } }}>
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <Box key={msg.id} sx={{ mb: { xs: 2, sm: 2.5 }, display: 'flex', gap: { xs: 1, sm: 1.5 } }}>
             <Avatar sx={{ 
               width: { xs: 32, sm: 36 }, 
