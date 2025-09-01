@@ -13,7 +13,7 @@ import Toolbar from "../components/Whiteboard/Toolbar";
 import { useTheme } from "../theme";
 
 export const Whiteboard = () => {
-  const { theme, mode, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [selectedTool, setSelectedTool] = useState<String | null>(null);
   const [loggedInUsers, setLoggedInUsers] = useState<String[]>([]);
 
