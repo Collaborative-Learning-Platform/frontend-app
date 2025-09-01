@@ -1,36 +1,21 @@
-import { Paper, Card, useTheme, alpha } from "@mui/material";
+import { Paper, Card, alpha } from "@mui/material";
 import {
   CardContent,
   Typography,
   Avatar,
   AvatarGroup,
-  IconButton,
-  Badge,
   Fab,
-  Collapse,
   Stack,
-  ClickAwayListener,
 } from "@mui/material";
-import {
-  Search,
-  Notifications,
-  ArrowBack,
-  KeyboardArrowDown,
-  KeyboardArrowUp,
-  LightMode,
-  DarkMode,
-} from "@mui/icons-material";
-
+import { Reply, LightMode, DarkMode } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import Toolbar from "../components/Whiteboard/Toolbar";
-import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
+import { useTheme } from "../theme";
 
 export const Whiteboard = () => {
-  const theme = useTheme();
-  const { mode, toggleTheme } = useCustomTheme();
+  const { theme, toggleTheme } = useTheme();
   const [selectedTool, setSelectedTool] = useState<String | null>(null);
   const [loggedInUsers, setLoggedInUsers] = useState<String[]>([]);
-  const [miniAppBarOpen, setMiniAppBarOpen] = useState(false);
 
   useEffect(() => {
     // // Fetch logged in users from backend
@@ -46,12 +31,11 @@ export const Whiteboard = () => {
 
     //   }
     // };
-    setLoggedInUsers(["User2", "User3"]);
+    setLoggedInUsers(["User2", "User3", "James", "Brandon"]);
     // fetchLoggedInUsers();
   }, []);
 
   const handleBackClick = () => {
-    // Navigate back to previous page
     window.history.back();
   };
 
@@ -167,93 +151,32 @@ export const Whiteboard = () => {
           </AvatarGroup>
         </CardContent>
       </Card>
-
-      {/* Floating Action Button for Mini AppBar */}
-      <ClickAwayListener onClickAway={() => setMiniAppBarOpen(false)}>
-        <div>
-          <Fab
-            size="small"
-            sx={{
-              position: "absolute",
-              top: theme.spacing(15),
-              right: theme.spacing(2),
-              backgroundColor: theme.palette.primary.main,
-              "&:hover": {
-                backgroundColor: theme.palette.primary.dark,
-              },
-              transition: "all 0.3s ease-in-out",
-            }}
-            onClick={() => setMiniAppBarOpen(!miniAppBarOpen)}
-          >
-            {miniAppBarOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-          </Fab>
-
-          {/* Collapsible Mini AppBar */}
-          <Collapse in={miniAppBarOpen} timeout={400}>
-            <Card
-              sx={{
-                position: "absolute",
-                top: theme.spacing(20),
-                right: theme.spacing(1.5),
-                width: "auto",
-                backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? alpha(theme.palette.grey[900], 0.95)
-                    : alpha(theme.palette.background.paper, 0.95),
-                backdropFilter: "blur(10px)",
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 2,
-                boxShadow:
-                  theme.palette.mode === "dark"
-                    ? "0 4px 20px rgba(255, 255, 255, 0.1)"
-                    : theme.shadows[8],
-              }}
-              elevation={0}
-            >
-              <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
-                <Stack direction="column" spacing={0.5}>
-                  <IconButton
-                    size="small"
-                    sx={{ color: theme.palette.text.primary }}
-                    onClick={() => {
-                      handleBackClick();
-                      setMiniAppBarOpen(false);
-                    }}
-                  >
-                    <ArrowBack />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    sx={{ color: theme.palette.text.primary }}
-                    onClick={() => setMiniAppBarOpen(false)}
-                  >
-                    <Search />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    sx={{ color: theme.palette.text.primary }}
-                    onClick={() => setMiniAppBarOpen(false)}
-                  >
-                    <Badge badgeContent={3} color="error" variant="dot">
-                      <Notifications />
-                    </Badge>
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    sx={{ color: theme.palette.text.primary }}
-                    onClick={() => {
-                      toggleTheme();
-                      setMiniAppBarOpen(false);
-                    }}
-                  >
-                    {mode === "dark" ? <LightMode /> : <DarkMode />}
-                  </IconButton>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Collapse>
-        </div>
-      </ClickAwayListener>
+      <Stack
+        direction={{ xs: "column", sm: "column", md: "row" }}
+        gap={2}
+        sx={{
+          position: "absolute",
+          bottom: theme.spacing(2),
+          right: theme.spacing(2),
+        }}
+      >
+        <Fab
+          size="small"
+          aria-label="Go back"
+          color="primary"
+          onClick={handleBackClick}
+        >
+          <Reply />
+        </Fab>
+        <Fab
+          size="small"
+          aria-label="Toggle theme"
+          color="primary"
+          onClick={toggleTheme}
+        >
+          {theme.palette.mode === "dark" ? <LightMode /> : <DarkMode />}
+        </Fab>
+      </Stack>
 
       {/* Enhanced toolbar */}
       <Card
