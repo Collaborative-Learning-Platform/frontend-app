@@ -1,19 +1,53 @@
 import { createTheme } from '@mui/material/styles';
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    accent: {
+      chat: string;
+      whiteboard: string;
+      editor: string;
+      quiz: string;
+      resources: string;
+    };
+  }
+
+  interface PaletteOptions {
+    accent?: {
+      chat?: string;
+      whiteboard?: string;
+      editor?: string;
+      quiz?: string;
+      resources?: string;
+    };
+  }
+}
+
 export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#64b5f6', // Vibrant sky blue
-      light: '#90caf9',
-      dark: '#42a5f5',
+      main: '#818cf8',
+      light: '#a5b4fc',
+      dark: '#6366f1',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#ff80ab', // Brighter pink
-      light: '#ffb2dd',
-      dark: '#f06292',
+      main: '#a78bfa',
+      light: '#c4b5fd',
+      dark: '#8b5cf6',
       contrastText: '#ffffff',
+    },
+    success: {
+      main: '#34d399',
+      dark: '#10b981',
+      light: '#6ee7b7',
+    },
+    accent: {
+      chat: '#34d399',
+      whiteboard: '#60a5fa',
+      editor: '#fbbf24',
+      quiz: '#a78bfa',
+      resources: '#f87171',
     },
     background: {
       default: '#0f0f0f', // Deeper black for contrast
@@ -32,13 +66,13 @@ export const darkTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: { fontWeight: 700, fontSize: '2.5rem' },
     h2: { fontWeight: 600, fontSize: '2rem' },
     h3: { fontWeight: 600, fontSize: '1.75rem' },
-    h4: { fontWeight: 500, fontSize: '1.5rem' },
-    h5: { fontWeight: 500, fontSize: '1.25rem' },
-    h6: { fontWeight: 500, fontSize: '1rem' },
+    h4: { fontWeight: 700, fontSize: '1.5rem' },
+    h5: { fontWeight: 700, fontSize: '1.25rem' },
+    h6: { fontWeight: 700, fontSize: '1rem' },
     body1: { fontSize: '1rem', lineHeight: 1.5 },
     body2: { fontSize: '0.875rem', lineHeight: 1.43 },
   },
@@ -47,8 +81,8 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 8,
-          fontWeight: 500,
+          borderRadius: 12,
+          fontWeight: 600,
           padding: '8px 16px',
           boxShadow: 'none',
           transition: 'all 0.2s ease-in-out',
@@ -64,9 +98,9 @@ export const darkTheme = createTheme({
         root: {
           borderRadius: 12,
           backgroundColor: '#1a1a1a',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           '&:hover': {
-            boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.5)',
           },
         },
       },
@@ -90,6 +124,6 @@ export const darkTheme = createTheme({
 
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 12,
   },
 });
