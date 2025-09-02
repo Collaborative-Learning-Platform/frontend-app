@@ -8,15 +8,15 @@ import {
   useMediaQuery,
   IconButton,
   alpha,
-  Badge,
   Stack,
-  Tooltip,
 } from "@mui/material";
 import { Outlet } from "react-router-dom";
-import { Menu, Close, Notifications, Search } from "@mui/icons-material";
+import { Menu, Close } from "@mui/icons-material";
 import AdminSidebar from "./Sidebar/AdminSidebar";
 import UserSidebar from "./Sidebar/UserSidebar";
 import { ThemeToggle } from "./ThemeToggle";
+import { Chats } from "./Chats";
+import { NotificationsButton } from "./NotificationsButton";
 import { useAuth } from "../contexts/Authcontext";
 
 const DRAWER_WIDTH = 280;
@@ -83,18 +83,8 @@ const Layout = () => {
 
           {/* Modern header actions */}
           <Stack direction="row" spacing={1}>
-            <Tooltip title="Search">
-              <IconButton size="small">
-                <Search />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Notifications">
-              <IconButton size="small">
-                <Badge badgeContent={3} color="error" variant="dot">
-                  <Notifications />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            <Chats size="small" badgeContent={2} />
+            <NotificationsButton size="small" badgeContent={3} />
             <ThemeToggle />
           </Stack>
         </Toolbar>
