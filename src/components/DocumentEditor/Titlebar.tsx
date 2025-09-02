@@ -31,6 +31,7 @@ import { Chats } from "../Chats";
 import { ThemeToggle } from "../ThemeToggle";
 import { BackButton } from "../BackButton";
 import { NotificationsButton } from "../NotificationsButton";
+import { docEditorToolbar } from "../../styles/components/DocumentEditor/common";
 
 export const Titlebar = () => {
   const theme = useTheme();
@@ -76,7 +77,7 @@ export const Titlebar = () => {
   }, []);
 
   return (
-    <Box sx={{ width: "100%", flexGrow: 1, padding: 0 }}>
+    <Box sx={docEditorToolbar}>
       <AppBar
         position="static"
         elevation={0}
@@ -443,7 +444,11 @@ export const Titlebar = () => {
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>
           <ListItemIcon>
-            <NotificationsButton size="small" showTooltip={false} badgeContent={3} />
+            <NotificationsButton
+              size="small"
+              showTooltip={false}
+              badgeContent={3}
+            />
           </ListItemIcon>
           <ListItemText primary="Notifications" />
         </MenuItem>

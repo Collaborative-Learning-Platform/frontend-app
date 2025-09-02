@@ -34,9 +34,28 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import { KeyboardArrowUp, KeyboardArrowDown } from "@mui/icons-material";
+import {
+  buttonGroupWrapper,
+  desktopToolsWrapper,
+  getAppBarStyling,
+  getButtonGroupStyles,
+  getMiniAppBarCardStyles,
+  getMoreIconStyles,
+  responsiveLayoutWrapper,
+  toolBarStyles,
+} from "../../styles/components/DocumentEditor/Formatbar";
+import {
+  dividerStyles,
+  docEditorToolbar,
+  miniAppBarStyles,
+} from "../../styles/components/DocumentEditor/common";
 
 export const Formatbar = () => {
   const theme = useTheme();
+  const buttonGroupStyles = getButtonGroupStyles(theme);
+  const appBarStyles = getAppBarStyling(theme);
+  const moreIconStyles = getMoreIconStyles(theme);
+  const miniAppBarCardStyles = getMiniAppBarCardStyles(theme);
   const [selectedFormat, setSelectedFormat] = useState<string[]>([]);
   const [selectedAlignment, setSelectedAlignment] = useState<string | null>(
     "Left"
@@ -81,78 +100,13 @@ export const Formatbar = () => {
     setSelectedStyle(updatedSelectedStyle);
   };
 
-  const buttonGroupStyles = {
-    "& .MuiToggleButton-root, & .MuiButton-root": {
-      minWidth: 40,
-      height: 36,
-      border: `1px solid ${theme.palette.divider}`,
-      borderRadius: 2,
-      color: theme.palette.text.secondary,
-      backgroundColor:
-        theme.palette.mode === "dark"
-          ? "rgba(0,0,0,0.2)"
-          : "rgba(255,255,255,0.8)",
-      backdropFilter: "blur(8px)",
-      transition: "all 0.2s ease-in-out",
-      "&:hover": {
-        backgroundColor: theme.palette.action.hover,
-        borderColor: "primary.main",
-        color: "primary.main",
-        transform: "translateY(-1px)",
-        boxShadow:
-          theme.palette.mode === "dark"
-            ? `0 2px 8px rgba(0,0,0,0.4)`
-            : `0 2px 8px rgba(0,0,0,0.1)`,
-      },
-      "&.Mui-selected": {
-        backgroundColor: "primary.main",
-        color: theme.palette.primary.contrastText,
-        borderColor: "primary.main",
-        boxShadow:
-          theme.palette.mode === "dark"
-            ? `0 2px 8px rgba(0,0,0,0.5)`
-            : `0 2px 8px rgba(0,0,0,0.15)`,
-        "&:hover": {
-          backgroundColor: "primary.dark",
-          color: theme.palette.primary.contrastText,
-        },
-      },
-      "& .MuiSvgIcon-root": {
-        fontSize: 18,
-      },
-    },
-    gap: 0.5,
-  };
-
   return (
-    <Box sx={{ width: "100%" }}>
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={{
-          width: "100%",
-          background:
-            theme.palette.mode === "dark"
-              ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.grey[900]} 100%)`
-              : `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)`,
-          backdropFilter: "blur(20px)",
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          color: theme.palette.text.primary,
-        }}
-      >
-        <Toolbar sx={{ minHeight: 56, px: 3, py: 1 }} variant="dense">
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: { xs: 1, sm: 2 },
-              flexWrap: { xs: "wrap", lg: "nowrap" },
-              justifyContent: { xs: "flex-start", lg: "space-between" },
-            }}
-          >
+    <Box sx={docEditorToolbar}>
+      <AppBar position="static" elevation={0} sx={appBarStyles}>
+        <Toolbar sx={toolBarStyles} variant="dense">
+          <Box sx={responsiveLayoutWrapper}>
             {/* Text Formatting Group */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={buttonGroupWrapper}>
               <Tooltip title="Text formatting">
                 <ToggleButtonGroup
                   aria-label="text formatting"
@@ -173,11 +127,7 @@ export const Formatbar = () => {
                 </ToggleButtonGroup>
               </Tooltip>
 
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ mx: 0.5, height: 24 }}
-              />
+              <Divider orientation="vertical" flexItem sx={dividerStyles} />
 
               {/* Text Color and Style Tools */}
               <Tooltip title="Text style">
@@ -198,34 +148,15 @@ export const Formatbar = () => {
                 </ToggleButtonGroup>
               </Tooltip>
 
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ mx: 0.5, height: 24 }}
-              />
+              <Divider orientation="vertical" flexItem sx={dividerStyles} />
               {/* More Options - Mobile only */}
               <ClickAwayListener onClickAway={() => setMiniAppBarOpen(false)}>
-                <Box sx={{ position: "relative" }}>
+                <Box sx={miniAppBarStyles}>
                   <Tooltip title="More options">
                     <IconButton
                       size="small"
                       onClick={() => setMiniAppBarOpen(!miniAppBarOpen)}
-                      sx={{
-                        backgroundColor:
-                          theme.palette.mode === "dark"
-                            ? "rgba(0,0,0,0.2)"
-                            : "rgba(255,255,255,0.8)",
-                        width: 36,
-                        height: 36,
-                        display: { xs: "flex", md: "none" },
-                        transition: "all 0.2s ease-in-out",
-                        "& .MuiSvgIcon-root": {
-                          transition: "all 0.2s ease-in-out",
-                        },
-                        "&:hover": {
-                          backgroundColor: theme.palette.action.hover,
-                        },
-                      }}
+                      sx={moreIconStyles}
                     >
                       {miniAppBarOpen ? (
                         <KeyboardArrowUp />
@@ -243,32 +174,11 @@ export const Formatbar = () => {
                       exit: "ease-in-out",
                     }}
                   >
-                    <Card
-                      sx={{
-                        position: "absolute",
-                        top: 45,
-                        right: 0,
-                        backgroundColor:
-                          theme.palette.mode === "dark"
-                            ? "rgba(0,0,0,0.95)"
-                            : "rgba(255,255,255,0.95)",
-                        backdropFilter: "blur(10px)",
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: 2,
-                        zIndex: 999,
-                        maxWidth: 300,
-                      }}
-                    >
-                      <CardContent sx={{ p: 2 }}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 2,
-                          }}
-                        >
+                    <Card sx={miniAppBarCardStyles}>
+                      <CardContent>
+                        <Box sx={buttonGroupWrapper}>
                           {/* Insert Tools */}
-                          <Box>
+                          <Box sx={buttonGroupWrapper}>
                             <Tooltip title="Insert">
                               <ToggleButtonGroup
                                 aria-label="inserts"
@@ -358,13 +268,7 @@ export const Formatbar = () => {
               </ClickAwayListener>
 
               {/* Desktop Tools */}
-              <Box
-                sx={{
-                  display: { xs: "none", md: "flex" },
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
+              <Box sx={desktopToolsWrapper}>
                 {/* Alignment Group */}
                 <Tooltip title="Text alignment">
                   <ToggleButtonGroup
@@ -387,11 +291,7 @@ export const Formatbar = () => {
                   </ToggleButtonGroup>
                 </Tooltip>
 
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  sx={{ mx: 0.5, height: 24 }}
-                />
+                <Divider orientation="vertical" flexItem sx={dividerStyles} />
 
                 {/* Lists Group */}
                 <Tooltip title="Lists">
@@ -412,11 +312,7 @@ export const Formatbar = () => {
                   </ToggleButtonGroup>
                 </Tooltip>
 
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  sx={{ mx: 0.5, height: 24 }}
-                />
+                <Divider orientation="vertical" flexItem sx={dividerStyles} />
 
                 {/* Insert Tools */}
                 <Tooltip title="Insert">
@@ -431,7 +327,10 @@ export const Formatbar = () => {
                     <ToggleButton value="Image" aria-label="insert-image">
                       <InsertPhotoIcon />
                     </ToggleButton>
-                    <ToggleButton value="Hyperlink" aria-label="insert-hyperlink">
+                    <ToggleButton
+                      value="Hyperlink"
+                      aria-label="insert-hyperlink"
+                    >
                       <AddLinkIcon />
                     </ToggleButton>
                     <ToggleButton value="Table" aria-label="insert-table">
@@ -440,11 +339,7 @@ export const Formatbar = () => {
                   </ToggleButtonGroup>
                 </Tooltip>
 
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  sx={{ mx: 0.5, height: 24 }}
-                />
+                <Divider orientation="vertical" flexItem sx={dividerStyles} />
 
                 {/* Edit Actions */}
                 <Tooltip title="Edit actions">
@@ -469,8 +364,6 @@ export const Formatbar = () => {
                 </Tooltip>
               </Box>
             </Box>
-
-
           </Box>
         </Toolbar>
       </AppBar>
