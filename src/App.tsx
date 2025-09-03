@@ -73,8 +73,8 @@ function App() {
         </Route>
       </Route>
 
-      <Route path="/Whiteboard" element={<Whiteboard />} />
-      <Route path="/DocumentEditor" element={<DocumentEditor />} />
+      <Route path="/whiteboard" element={<Whiteboard />} />
+      <Route path="/document-editor" element={<DocumentEditor />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>

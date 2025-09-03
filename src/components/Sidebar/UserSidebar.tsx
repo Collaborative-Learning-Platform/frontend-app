@@ -57,7 +57,7 @@ const navigationItems = [
   {
     text: "Documents",
     icon: <FileCopyIcon />,
-    path: "/documents",
+    path: "/user-documents",
   },
 ];
 
