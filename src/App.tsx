@@ -1,12 +1,12 @@
-import './App.css'
-import { Routes, Route} from 'react-router-dom'
-import LandingPage from './pages/LandingPage';
-import { ThemeDemo } from './theme';
-import  LoginPage from './pages/LoginPage';
-import NotFound from './pages/404';
-import About from './pages/About';
-import Layout from './components/Layout';
-import QuizRoutes from './pages/quiz/QuizRoutes';
+import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import { ThemeDemo } from "./theme";
+import LoginPage from "./pages/LoginPage";
+import NotFound from "./pages/404";
+import About from "./pages/About";
+import Layout from "./components/Layout";
+import QuizRoutes from "./pages/quiz/QuizRoutes";
 import AdminDashboard from "./pages/AdminDashboard";
 import { UserManagement } from "./components/AdminDashboard/UserManagement";
 import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceMAnagement";
@@ -22,12 +22,13 @@ import ProfilePage from "./pages/ProfilePage";
 import { Whiteboard } from "./pages/Whiteboard";
 import { DocumentEditor } from "./pages/DocumentEditor";
 import { FlashCardGenerator } from "./components/UserDashboard/FlashCardGenerator";
-import AddUsers from './pages/AddUsers';
-
+import AddUsers from "./pages/AddUsers";
+import { FlashCardLibrary } from "./components/UserDashboard/FlashCardLibrary";
+import { FlashCardLayout } from "./components/UserDashboard/FlashCardLayout";
 
 function App() {
   return (
-<Routes>
+    <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
 
@@ -43,7 +44,15 @@ function App() {
           <Route path="/user-workspaces" element={<UserWorkspaces />} />
           <Route path="/study-plans" element={<UserStudyPlan />} />
           <Route path="/analytics" element={<UserAnalytics />} />
-          <Route path="/flashcard-generator" element={<FlashCardGenerator />} />
+
+          {/* Flashcard pages with shared stats */}
+          <Route element={<FlashCardLayout />}>
+            <Route
+              path="/flashcard-generator"
+              element={<FlashCardGenerator />}
+            />
+            <Route path="/flashcard-library" element={<FlashCardLibrary />} />
+          </Route>
         </Route>
 
         <Route element={<AdminDashboard />}>
