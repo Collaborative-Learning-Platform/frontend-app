@@ -5,6 +5,7 @@ import {
   toggleButtonClasses,
   toggleButtonGroupClasses,
   useTheme,
+  Box
 } from "@mui/material";
 import DrawIcon from "@mui/icons-material/Draw";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -44,7 +45,7 @@ interface ToolbarProps {
 const Toolbar = (Props: ToolbarProps) => {
   const theme = useTheme();
   return (
-    <>
+    <Box>
       <Stack direction="row" spacing={0.5}>
         <StyledToggleButtonGroup
           color="primary"
@@ -133,7 +134,7 @@ const Toolbar = (Props: ToolbarProps) => {
           </ToggleButton>
         </StyledToggleButtonGroup>
       </Stack>
-    </>
+    </Box>
   );
 };
 

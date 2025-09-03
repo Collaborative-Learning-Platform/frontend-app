@@ -10,7 +10,6 @@ import {
   Typography,
   Divider,
   Badge,
-  Collapse,
   useTheme,
   alpha,
   useMediaQuery,
@@ -18,17 +17,12 @@ import {
 import {
   Dashboard,
   School,
-  // CalendarMonth,
   Analytics,
   Settings,
-  ExpandLess,
-  ExpandMore,
-  Book,
-  Quiz,
-  VideoLibrary,
   Group,
 } from "@mui/icons-material";
 import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -54,32 +48,17 @@ const navigationItems = [
     badge: 2,
     urgent: true,
   },
-  // {
-  //   text: "Calendar",
-  //   icon: <CalendarMonth />,
-  //   path: "/calendar",
-  // },
-  {
-    text: "Resources",
-    icon: <VideoLibrary />,
-    path: "/resources",
-    subItems: [
-      { text: "Video Library", icon: <VideoLibrary /> },
-      { text: "Documents", icon: <Book /> },
-      { text: "Practice Tests", icon: <Quiz /> },
-    ],
-  },
 ];
 
 const bottomItems = [
   { text: "Analytics", icon: <Analytics />, path: "/admin-analytics" },
   { text: "Settings", icon: <Settings />, path: "/admin-settings" },
+  {text : "User Profile", icon: <AccountCircleIcon />, path: "/admin-profile"}
 ];
 
 export default function AdminSidebar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -88,18 +67,8 @@ export default function AdminSidebar() {
     setMobileOpen((prev) => !prev);
   };
 
-  const handleExpandClick = (item: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
-    );
-  };
-
   const handleItemClick = (item: any) => {
-    if (item.subItems) {
-      handleExpandClick(item.text);
-    } else if (item.path) {
-      navigate(item.path);
-    }
+    navigate(item.path);
   };
   const sidebarContent = (
     <Box
@@ -188,68 +157,15 @@ export default function AdminSidebar() {
                         fontSize: "0.9rem",
                       }}
                     />
-                    {item.subItems &&
-                      (expandedItems.includes(item.text) ? (
-                        <ExpandLess sx={{ fontSize: 20 }} />
-                      ) : (
-                        <ExpandMore sx={{ fontSize: 20 }} />
-                      ))}
                   </ListItemButton>
                 </ListItem>
-
-                {item.subItems && (
-                  <Collapse
-                    in={expandedItems.includes(item.text)}
-                    timeout="auto"
-                    unmountOnExit
-                  >
-                    <List disablePadding sx={{ pl: 2 }}>
-                      {item.subItems.map((subItem) => (
-                        <ListItem
-                          key={subItem.text}
-                          disablePadding
-                          sx={{ mb: 0.5 }}
-                        >
-                          <ListItemButton
-                            sx={{
-                              borderRadius: 2,
-                              minHeight: 40,
-                              pl: 2,
-                              "&:hover": {
-                                bgcolor: alpha(
-                                  theme.palette.action.hover,
-                                  0.04
-                                ),
-                              },
-                            }}
-                          >
-                            <ListItemIcon
-                              sx={{
-                                color: "text.secondary",
-                                minWidth: 36,
-                                "& .MuiSvgIcon-root": { fontSize: 18 },
-                              }}
-                            >
-                              {subItem.icon}
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={subItem.text}
-                              primaryTypographyProps={{
-                                fontSize: "0.85rem",
-                                color: "text.secondary",
-                              }}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Collapse>
-                )}
               </Box>
             );
           })}
         </List>
+      </Box>
 
+      <Box sx={{ mt: "auto" }}>
         <Divider sx={{ mx: 2, my: 2 }} />
 
         <List sx={{ px: 2 }}>
@@ -306,7 +222,7 @@ export default function AdminSidebar() {
   );
 
   return (
-    <>
+    <Box>
       {isMobile && (
         <IconButton onClick={handleDrawerToggle} sx={{ color: "text.primary" }}>
           <MenuIcon />
@@ -330,6 +246,6 @@ export default function AdminSidebar() {
       >
         {sidebarContent}
       </Drawer>
-    </>
+    </Box>
   );
 }

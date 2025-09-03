@@ -271,7 +271,7 @@ const AddUsers = () => {
                     >
                       {selectedFile ? (
                         // Show uploaded file details
-                        <>
+                        <Box>
                           <CheckCircle
                             sx={{
                               fontSize: theme.spacing(6),
@@ -306,10 +306,10 @@ const AddUsers = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </>
+                        </Box>
                       ) : (
                         // Show upload prompt
-                        <>
+                        <Box>
                           <CloudUpload
                             sx={{
                               fontSize: theme.spacing(6),
@@ -327,7 +327,7 @@ const AddUsers = () => {
                               CSV, Excel (.xlsx, .xls) - max 10MB
                             </Typography>
                           </Box>
-                        </>
+                        </Box>
                       )}
                     </Box>
                   </Box>

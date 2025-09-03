@@ -131,7 +131,7 @@ export const FlashCardGenerator = () => {
   };
 
   return (
-    <>
+    <Box>
       <Box
         sx={{
           display: "flex",
@@ -215,7 +215,7 @@ export const FlashCardGenerator = () => {
               >
                 {uploadedFile ? (
                   // Show uploaded file details
-                  <>
+                  <Box>
                     <CheckCircleIcon
                       sx={{
                         fontSize: theme.spacing(6), // 48px equivalent
@@ -244,10 +244,10 @@ export const FlashCardGenerator = () => {
                     >
                       <DeleteIcon />
                     </IconButton>
-                  </>
+                  </Box>
                 ) : (
                   // Show upload prompt
-                  <>
+                  <Box>
                     <DescriptionIcon
                       sx={{
                         fontSize: theme.spacing(6), // 48px equivalent
@@ -262,7 +262,7 @@ export const FlashCardGenerator = () => {
                         PDF, DOC, DOCX, TXT, MD (max 50MB)
                       </Typography>
                     </Box>
-                  </>
+                  </Box>
                 )}
               </Box>
             </Box>
@@ -362,6 +362,6 @@ export const FlashCardGenerator = () => {
           </Card>
         </Masonry>
       </Box>
-    </>
+    </Box>
   );
 };

@@ -15,7 +15,7 @@ import { StatsCards } from "./StatsCards";
 
 export function AdminOverview() {
   return (
-    <>
+    <Box>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -193,6 +193,6 @@ export function AdminOverview() {
           </Box>
         </Box>
       </Box>
-    </>
+    </Box>
   );
 }

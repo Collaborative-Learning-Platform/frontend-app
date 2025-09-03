@@ -103,7 +103,7 @@ const getActivityIcon = (type: string) => {
 
 export function UserOverview() {
   return (
-    <>
+    <Box>
       <Box
         sx={{
           display: "flex",
@@ -268,6 +268,6 @@ export function UserOverview() {
           </Card>
         </Box>
       </Box>
-    </>
+    </Box>
   );
 }
