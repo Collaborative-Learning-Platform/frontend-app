@@ -41,6 +41,7 @@ import {
   getButtonGroupStyles,
   getMiniAppBarCardStyles,
   getMoreIconStyles,
+  miniAppBarContentWrapper,
   responsiveLayoutWrapper,
   toolBarStyles,
 } from "../../styles/components/DocumentEditor/Formatbar";
@@ -176,7 +177,7 @@ export const Formatbar = () => {
                   >
                     <Card sx={miniAppBarCardStyles}>
                       <CardContent>
-                        <Box sx={buttonGroupWrapper}>
+                        <Box sx={miniAppBarContentWrapper}>
                           {/* Insert Tools */}
                           <Box sx={buttonGroupWrapper}>
                             <Tooltip title="Insert">

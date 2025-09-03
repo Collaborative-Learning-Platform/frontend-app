@@ -72,6 +72,14 @@ export const buttonGroupWrapper = {
   gap: 2,
 };
 
+export const miniAppBarContentWrapper = {
+  display: "flex",
+  alignItems: "center",
+  gap: 2,
+  flexWrap: "wrap",
+  justifyContent: "flex-start",
+};
+
 export const getMoreIconStyles = (theme: Theme) => ({
   backgroundColor:
     theme.palette.mode === "dark" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.8)",
