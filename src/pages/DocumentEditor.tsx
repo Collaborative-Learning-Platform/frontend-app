@@ -39,7 +39,9 @@ export const DocumentEditor = () => {
   const textAreaRefs = useRef<(HTMLDivElement | null)[]>([]);
   const typingTimeoutRef = useRef<number | null>(null);
 
-  const totalContent = pages.map(p => p.content.replace(/<[^>]*>/g, '')).join(" ");
+  const totalContent = pages
+    .map((p) => p.content.replace(/<[^>]*>/g, ""))
+    .join(" ");
 
   useEffect(() => {
     const words = totalContent
@@ -52,65 +54,71 @@ export const DocumentEditor = () => {
 
   const handleContentChange = useCallback(
     (pageIndex: number, content: string) => {
-      setPages(prev => prev.map((page, index) => 
-        index === pageIndex ? { ...page, content } : page
-      ));
+      setPages((prev) =>
+        prev.map((page, index) =>
+          index === pageIndex ? { ...page, content } : page
+        )
+      );
       setIsTyping(true);
 
       // Auto page break - check if content exceeds page capacity
       const element = textAreaRefs.current[pageIndex];
       if (element) {
         const maxHeight = 550; // Fixed height for page content area (accounting for padding)
-        
+
         if (element.scrollHeight > maxHeight) {
           // Get text content for splitting
-          const textContent = element.textContent || '';
-          const words = textContent.split(' ');
-          let pageContent = '';
-          let overflowContent = '';
-          
+          const textContent = element.textContent || "";
+          const words = textContent.split(" ");
+          let pageContent = "";
+          let overflowContent = "";
+
           // Find the breaking point by testing text length
           for (let i = 0; i < words.length; i++) {
-            const testText = words.slice(0, i + 1).join(' ');
+            const testText = words.slice(0, i + 1).join(" ");
             // Create temporary element to test height
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.style.cssText = window.getComputedStyle(element).cssText;
-            tempDiv.style.height = 'auto';
-            tempDiv.style.position = 'absolute';
-            tempDiv.style.visibility = 'hidden';
+            tempDiv.style.height = "auto";
+            tempDiv.style.position = "absolute";
+            tempDiv.style.visibility = "hidden";
             tempDiv.textContent = testText;
             document.body.appendChild(tempDiv);
-            
+
             if (tempDiv.scrollHeight > maxHeight) {
-              pageContent = words.slice(0, i).join(' ').replace(/\n/g, '<br>');
-              overflowContent = words.slice(i).join(' ').replace(/\n/g, '<br>');
+              pageContent = words.slice(0, i).join(" ").replace(/\n/g, "<br>");
+              overflowContent = words.slice(i).join(" ").replace(/\n/g, "<br>");
               document.body.removeChild(tempDiv);
               break;
             }
             document.body.removeChild(tempDiv);
           }
-          
+
           if (overflowContent) {
-            setPages(prev => {
+            setPages((prev) => {
               const newPages = [...prev];
-              newPages[pageIndex] = { ...newPages[pageIndex], content: pageContent };
-              
+              newPages[pageIndex] = {
+                ...newPages[pageIndex],
+                content: pageContent,
+              };
+
               // Add new page with overflow content
               if (pageIndex === newPages.length - 1) {
                 newPages.push({
                   id: Date.now().toString(),
-                  content: overflowContent
+                  content: overflowContent,
                 });
               } else {
                 newPages[pageIndex + 1] = {
                   ...newPages[pageIndex + 1],
-                  content: overflowContent + ' ' + newPages[pageIndex + 1].content
+                  content:
+                    overflowContent + " " + newPages[pageIndex + 1].content,
                 };
               }
-              
+
               return newPages;
             });
-            
+
             // Focus next page
             setTimeout(() => {
               if (textAreaRefs.current[pageIndex + 1]) {
@@ -136,17 +144,17 @@ export const DocumentEditor = () => {
   const addNewPage = () => {
     const newPage: Page = {
       id: Date.now().toString(),
-      content: ""
+      content: "",
     };
-    setPages(prev => [...prev, newPage]);
+    setPages((prev) => [...prev, newPage]);
     setCurrentPageIndex(pages.length);
   };
 
   const deletePage = (pageIndex: number) => {
     if (pages.length > 1) {
-      setPages(prev => prev.filter((_, index) => index !== pageIndex));
+      setPages((prev) => prev.filter((_, index) => index !== pageIndex));
       if (currentPageIndex >= pageIndex && currentPageIndex > 0) {
-        setCurrentPageIndex(prev => prev - 1);
+        setCurrentPageIndex((prev) => prev - 1);
       }
     }
   };
@@ -226,7 +234,8 @@ export const DocumentEditor = () => {
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                {wordCount} words • {characterCount} characters • {pages.length} pages
+                {wordCount} words • {characterCount} characters • {pages.length}{" "}
+                pages
               </Typography>
               {isTyping && (
                 <Fade in={isTyping}>
@@ -328,11 +337,13 @@ export const DocumentEditor = () => {
 
                 {/* Document Content */}
                 <Box
-                  ref={(el) => (textAreaRefs.current[pageIndex] = el)}
+                  ref={(el: HTMLDivElement | null) => {
+                    textAreaRefs.current[pageIndex] = el;
+                  }}
                   contentEditable
                   suppressContentEditableWarning
                   onInput={(e) => {
-                    const content = e.currentTarget.innerHTML || '';
+                    const content = e.currentTarget.innerHTML || "";
                     handleContentChange(pageIndex, content);
                     setCurrentPageIndex(pageIndex);
                   }}
@@ -355,10 +366,16 @@ export const DocumentEditor = () => {
                       sm: "24px",
                       md: "72px",
                     },
-                    paddingTop: pages.length > 1 ? "48px" : { xs: "16px", sm: "24px", md: "72px" },
+                    paddingTop:
+                      pages.length > 1
+                        ? "48px"
+                        : { xs: "16px", sm: "24px", md: "72px" },
                     paddingBottom: "100px",
                     "&:empty::before": {
-                      content: pageIndex === 0 ? '"Type something amazing..."' : '"Continue writing..."',
+                      content:
+                        pageIndex === 0
+                          ? '"Type something amazing..."'
+                          : '"Continue writing..."',
                       color: theme.palette.text.disabled,
                       fontStyle: "normal",
                       fontSize: { xs: "14px", md: "16px" },
@@ -389,7 +406,7 @@ export const DocumentEditor = () => {
                       opacity: 0.3,
                     }}
                   />
-                  
+
                   {/* Footer content */}
                   <Box
                     sx={{
