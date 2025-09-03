@@ -23,6 +23,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
+import Masonry from "@mui/lab/Masonry";
 import { FlashCardLibrary } from "./FlashCardLibrary";
 
 export const FlashCardGenerator = () => {
