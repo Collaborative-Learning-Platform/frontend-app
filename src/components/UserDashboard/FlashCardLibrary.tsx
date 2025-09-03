@@ -93,6 +93,41 @@ export const FlashCardLibrary = () => {
     setSelectedSetId(null);
   };
 
+  const getSelectedSet = () => {
+    if (!selectedSetId) return null;
+    return flashcardSets.find((set) => set.id === selectedSetId);
+  };
+
+  const handleShareSet = () => {
+    if (!selectedSetId) return;
+    const selectedSet = getSelectedSet();
+    if (selectedSet) {
+      console.log(`Sharing set: ${selectedSet.title}`);
+      // Implement sharing logic here
+    }
+    handleMenuClose();
+  };
+
+  const handleEditSet = () => {
+    if (!selectedSetId) return;
+    const selectedSet = getSelectedSet();
+    if (selectedSet) {
+      console.log(`Editing set: ${selectedSet.title}`);
+      // Navigate to edit page or open edit modal
+    }
+    handleMenuClose();
+  };
+
+  const handleDeleteSet = () => {
+    if (!selectedSetId) return;
+    const selectedSet = getSelectedSet();
+    if (selectedSet) {
+      console.log(`Deleting set: ${selectedSet.title}`);
+      // Implement delete logic here
+    }
+    handleMenuClose();
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -238,12 +273,12 @@ export const FlashCardLibrary = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem onClick={handleShareSet}>
           <ShareIcon sx={{ mr: 1 }} />
           Share
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
-        <MenuItem onClick={handleMenuClose} sx={{ color: "error.main" }}>
+        <MenuItem onClick={handleEditSet}>Edit</MenuItem>
+        <MenuItem onClick={handleDeleteSet} sx={{ color: "error.main" }}>
           Delete
         </MenuItem>
       </Menu>
