@@ -18,8 +18,9 @@ import {
   Dashboard,
   School,
   Analytics,
-  Settings,
+  Tune,
   Group,
+  Settings,
 } from "@mui/icons-material";
 import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -48,15 +49,14 @@ const navigationItems = [
     badge: 3,
     urgent: true,
   },
-  { text: "Analytics", 
-    icon: <Analytics />, 
-    path: "/admin-analytics" 
-  },
+  { text: "Analytics", icon: <Analytics />, path: "/admin-analytics" },
 ];
 
 const bottomItems = [
+  { text: "System Settings", icon: <Tune />, path: "/admin-settings" },
   { text: "Settings", icon: <Settings />, path: "/admin-settings" },
-  { text: "User Profile", icon: <AccountCircleIcon />, path: "/admin-profile" },
+  //Change it to admin-profile later
+  { text: "User Profile", icon: <AccountCircleIcon />, path: "/user-profile" },
 ];
 
 export default function AdminSidebar() {
