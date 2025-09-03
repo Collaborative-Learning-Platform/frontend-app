@@ -27,6 +27,7 @@ import {
   VideoLibrary,
   // Group,
   Assignment,
+  Description,
 } from "@mui/icons-material";
 import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -58,6 +59,11 @@ const navigationItems = [
     text: "Study Plans",
     icon: <Assignment />,
     path: "/study-plans",
+  },
+  {
+    text: "Documents",
+    icon: <Description />,
+    path: "/user-documents",
   },
   {
     text: "Resources",
