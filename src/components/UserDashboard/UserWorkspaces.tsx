@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { Add as PlusIcon } from "@mui/icons-material";
 import WorkspaceCard from "./WorkspaceCard";
+import { useNavigate } from "react-router-dom";
 
 const mockWorkspaces = [
   {
@@ -47,11 +48,16 @@ const mockWorkspaces = [
   },
 ];
 
-const handleEnterWorkspace = (id: number) => {
-  console.log("Entering workspace:", id);
-};
+
 
 export function UserWorkspaces() {
+    const navigate = useNavigate();
+
+    const handleEnterWorkspace = (id: number | string) => {
+    // console.log("Entering workspace:", id);
+    navigate(`/workspace/${id}`); // Adjust the route as necessary
+    };
+
     return (
       <>
         <Box
@@ -107,7 +113,7 @@ export function UserWorkspaces() {
             >
               <WorkspaceCard
                 workspace={workspace}
-                onEnter={handleEnterWorkspace}
+                onEnter={() => handleEnterWorkspace(workspace.id)}
               />
             </Box>
           ))}

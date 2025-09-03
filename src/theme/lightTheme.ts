@@ -1,20 +1,56 @@
 import { createTheme } from "@mui/material/styles";
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    accent: {
+      chat: string;
+      whiteboard: string;
+      editor: string;
+      quiz: string;
+      resources: string;
+    };
+  }
+
+  interface PaletteOptions {
+    accent?: {
+      chat?: string;
+      whiteboard?: string;
+      editor?: string;
+      quiz?: string;
+      resources?: string;
+    };
+  }
+}
+
 // Light theme configuration
 export const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#1976d2",
-      light: "#42a5f5",
-      dark: "#1565c0",
-      contrastText: "#ffffff",
+
+      main: '#6366f1',
+      light: '#818cf8',
+      dark: '#4f46e5',
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: "#dc004e",
-      light: "#f50057",
-      dark: "#c51162",
-      contrastText: "#ffffff",
+      main: '#8b5cf6',
+      light: '#a78bfa',
+      dark: '#7c3aed',
+      contrastText: '#ffffff',
+
+    },
+    success: {
+      main: '#10b981',
+      dark: '#059669',
+      light: '#34d399',
+    },
+    accent: {
+      chat: '#10b981',
+      whiteboard: '#3b82f6',
+      editor: '#f59e0b',
+      quiz: '#8b5cf6',
+      resources: '#ef4444',
     },
     background: {
       default: "#fafafa",
@@ -33,7 +69,7 @@ export const lightTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 700,
       fontSize: "2.5rem",
@@ -47,16 +83,18 @@ export const lightTheme = createTheme({
       fontSize: "1.75rem",
     },
     h4: {
-      fontWeight: 500,
-      fontSize: "1.5rem",
+
+      fontWeight: 700,
+      fontSize: '1.5rem',
     },
     h5: {
-      fontWeight: 500,
-      fontSize: "1.25rem",
+      fontWeight: 700,
+      fontSize: '1.25rem',
     },
     h6: {
-      fontWeight: 500,
-      fontSize: "1rem",
+      fontWeight: 700,
+      fontSize: '1rem',
+
     },
     body1: {
       fontSize: "1rem",
@@ -71,13 +109,15 @@ export const lightTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: "none",
-          borderRadius: 8,
-          fontWeight: 500,
-          padding: "8px 16px",
-          boxShadow: "none",
-          "&:hover": {
-            boxShadow: "0 2px 4px rgba(0,0,0,0.12)",
+
+          textTransform: 'none',
+          borderRadius: 12,
+          fontWeight: 600,
+          padding: '8px 16px',
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: '0 2px 4px rgba(0,0,0,0.12)',
+
           },
         },
       },
@@ -86,9 +126,11 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          "&:hover": {
-            boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          '&:hover': {
+            boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+
           },
         },
       },
@@ -109,6 +151,6 @@ export const lightTheme = createTheme({
     },
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 12,
   },
 });
