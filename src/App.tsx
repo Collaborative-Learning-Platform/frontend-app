@@ -22,9 +22,14 @@ import ProfilePage from "./pages/ProfilePage";
 import { Whiteboard } from "./pages/Whiteboard";
 import { DocumentEditor } from "./pages/DocumentEditor";
 import { FlashCardGenerator } from "./components/UserDashboard/FlashCardGenerator";
-import AddUsers from "./pages/AddUsers";
+
 import { FlashCardLibrary } from "./components/UserDashboard/FlashCardLibrary";
 import { FlashCardLayout } from "./components/UserDashboard/FlashCardLayout";
+
+import AddUsers from './pages/AddUsers';
+import WorkspacePage from './pages/WorkspacePage';
+import GroupPage from './pages/GroupPage';
+
 
 function App() {
   return (
@@ -38,6 +43,8 @@ function App() {
         <Route path="/quiz/*" element={<QuizRoutes />} />
         <Route path="theme-demo" element={<ThemeDemo />} />
         <Route path="add-users" element={<AddUsers />} />
+        <Route path="workspace/:workspaceId" element={<WorkspacePage />} />
+        <Route path="workspace/:workspaceId/group/:groupId" element={<GroupPage />} />
 
         <Route element={<UserDashboard />}>
           <Route path="/user-dashboard" element={<UserOverview />} />
