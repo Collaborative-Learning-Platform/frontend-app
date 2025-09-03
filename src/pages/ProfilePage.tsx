@@ -52,7 +52,7 @@ export default function ProfilePage() {
   const toast = (msg: string) => alert(msg);
 
   return (
-    <>
+    <Box>
       <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
         <Container maxWidth="md">
           <Box sx={{ textAlign: "center", mb: 4 }}>
@@ -470,6 +470,6 @@ export default function ProfilePage() {
           </Dialog>
         </Container>
       </Box>
-    </>
+    </Box>
   );
 }

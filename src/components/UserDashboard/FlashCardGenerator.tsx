@@ -23,6 +23,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
+import Masonry from "@mui/lab/Masonry";
 import { FlashCardLibrary } from "./FlashCardLibrary";
 
 export const FlashCardGenerator = () => {
@@ -136,7 +137,7 @@ export const FlashCardGenerator = () => {
   }
 
   return (
-    <>
+    <Box>
       <Box
         sx={{
           display: "flex",
@@ -224,7 +225,7 @@ export const FlashCardGenerator = () => {
               >
                 {uploadedFile ? (
                   // Show uploaded file details
-                  <>
+                  <Box>
                     <CheckCircleIcon
                       sx={{
                         fontSize: theme.spacing(6), // 48px equivalent
@@ -253,10 +254,10 @@ export const FlashCardGenerator = () => {
                     >
                       <DeleteIcon />
                     </IconButton>
-                  </>
+                  </Box>
                 ) : (
                   // Show upload prompt
-                  <>
+                  <Box>
                     <DescriptionIcon
                       sx={{
                         fontSize: theme.spacing(6), // 48px equivalent
@@ -271,7 +272,7 @@ export const FlashCardGenerator = () => {
                         PDF, DOC, DOCX, TXT, MD (max 50MB)
                       </Typography>
                     </Box>
-                  </>
+                  </Box>
                 )}
               </Box>
             </Box>
@@ -335,6 +336,44 @@ export const FlashCardGenerator = () => {
           </CardContent>
         </Box>
       </Card>
-    </>
+
+      <Box sx={{ mt: theme.spacing(4) }}>
+        <Masonry columns={3} spacing={3}>
+          <Card>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h3" fontWeight="bold" color="primary.main">
+                24
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Sets
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h3" fontWeight="bold" color="primary.main">
+                340
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Cards
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h3" fontWeight="bold" color="info.main">
+                12
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                This Week
+              </Typography>
+            </CardContent>
+          </Card>
+        </Masonry>
+      </Box>
+    </Box>
+
   );
 };

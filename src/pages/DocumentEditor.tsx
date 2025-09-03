@@ -37,7 +37,7 @@ export const DocumentEditor = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
   const textAreaRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const typingTimeoutRef = useRef<number | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalContent = pages
     .map((p) => p.content.replace(/<[^>]*>/g, ""))

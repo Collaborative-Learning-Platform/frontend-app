@@ -66,7 +66,7 @@ export function UserStudyPlan() {
   };
 
   return (
-    <>
+    <Box>
       <Box
         sx={{
           display: "flex",
@@ -149,6 +149,6 @@ export function UserStudyPlan() {
           </List>
         </CardContent>
       </Card>
-    </>
+    </Box>
   );
 }

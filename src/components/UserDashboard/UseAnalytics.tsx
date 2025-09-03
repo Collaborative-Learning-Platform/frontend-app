@@ -3,7 +3,7 @@ import { BarChart as BarChart3Icon } from "@mui/icons-material";
 
 export function UserAnalytics(){
     return (
-      <>
+      <Box>
         <Box
           sx={{
             display: "flex",
@@ -84,6 +84,6 @@ export function UserAnalytics(){
             </Card>
           </Box>
         </Box>
-      </>
+      </Box>
     );
 }
