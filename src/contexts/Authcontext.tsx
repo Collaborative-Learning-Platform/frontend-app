@@ -27,6 +27,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const setAuth = (newRole: string, newUserId: string) => {
     setRole(newRole);
     setUser_id(newUserId);
+    localStorage.setItem("role", newRole);
+    localStorage.setItem("user_id", newUserId);
   };
 
   const clearAuth = () => {

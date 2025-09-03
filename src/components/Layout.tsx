@@ -10,12 +10,12 @@ import {
   alpha,
   Stack,
 } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { Outlet, useNavigate } from "react-router-dom";
 import { Menu, Close } from "@mui/icons-material";
 import AdminSidebar from "./Sidebar/AdminSidebar";
 import UserSidebar from "./Sidebar/UserSidebar";
 import { ThemeToggle } from "./ThemeToggle";
-import { Chats } from "./Chats";
 import { NotificationsButton } from "./NotificationsButton";
 import { useAuth } from "../contexts/Authcontext";
 
@@ -26,11 +26,17 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { role } = useAuth();
+  const { role, clearAuth } = useAuth();
+  const navigate = useNavigate();
   // Memoized handlers to prevent unnecessary re-renders
   const handleDrawerToggle = useCallback(() => {
     setMobileOpen((prev) => !prev);
   }, []);
+
+  const handleLogout = () => {
+    clearAuth();
+    navigate("/login");
+  };
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
@@ -82,8 +88,10 @@ const Layout = () => {
           <Box sx={{ flexGrow: 1 }} />
 
           {/* Modern header actions */}
-          <Stack direction="row" spacing={1}>
-            <Chats size="small" badgeContent={2} />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconButton color="inherit" onClick={handleLogout}>
+              <LogoutIcon fontSize="small" />
+            </IconButton>
             <NotificationsButton size="small" badgeContent={3} />
             <ThemeToggle />
           </Stack>
