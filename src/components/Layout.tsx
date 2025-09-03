@@ -99,16 +99,6 @@ const Layout = () => {
           flexGrow: 1,
           minHeight: "100vh",
           backgroundColor: theme.palette.background.default,
-          backgroundImage: `
-            radial-gradient(circle at 25% 25%, ${alpha(
-              theme.palette.primary.light,
-              0.05
-            )} 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, ${alpha(
-              theme.palette.secondary.light,
-              0.05
-            )} 0%, transparent 50%)
-          `,
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           transition: theme.transitions.create(["margin", "width"], {
             easing: theme.transitions.easing.sharp,

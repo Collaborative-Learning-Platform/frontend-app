@@ -23,7 +23,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
-import { Masonry } from "@mui/lab";
+import { FlashCardLibrary } from "./FlashCardLibrary";
 
 export const FlashCardGenerator = () => {
   const theme = useTheme();
@@ -31,6 +31,7 @@ export const FlashCardGenerator = () => {
   const [numberOfCards, SetNumberOfCards] = useState("Ten");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -130,6 +131,10 @@ export const FlashCardGenerator = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  if (showLibrary) {
+    return <FlashCardLibrary />;
+  }
+
   return (
     <>
       <Box
@@ -141,16 +146,20 @@ export const FlashCardGenerator = () => {
         }}
       >
         <Box>
-          <Typography variant="h4" fontWeight="bold">
+          <Typography variant="h5" fontWeight="bold">
             Generate FlashCards
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Transform your study materials into flashcards!
           </Typography>
         </Box>
 
-        <Button variant="contained" startIcon={<StyleIcon />}>
-          View Library
+        <Button
+          variant="contained"
+          startIcon={<StyleIcon />}
+          onClick={() => setShowLibrary(!showLibrary)}
+        >
+          {showLibrary ? "Generate Cards" : "View Library"}
         </Button>
       </Box>
       <Card>
@@ -326,42 +335,6 @@ export const FlashCardGenerator = () => {
           </CardContent>
         </Box>
       </Card>
-      <Box sx={{ mt: theme.spacing(4) }}>
-        <Masonry columns={3} spacing={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight="bold" color="primary.main">
-                24
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Sets
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight="bold" color="primary.main">
-                340
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Cards
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight="bold" color="info.main">
-                12
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                This Week
-              </Typography>
-            </CardContent>
-          </Card>
-        </Masonry>
-      </Box>
     </>
   );
 };
