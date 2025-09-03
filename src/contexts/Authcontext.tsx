@@ -1,10 +1,10 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 type AuthContextType = {
   role: string | null;
-  userId: string | null;
-  setAuth: (role: string, userId: string) => void;
+  user_id: string | null;
+  setAuth: (role: string, user_id: string) => void;
   clearAuth: () => void;
 };
 
@@ -12,20 +12,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [user_id, setUser_id] = useState<string | null>(null);
+
+  useEffect(()=>{
+    const storedRole = localStorage.getItem("role");
+    const storedUserId = localStorage.getItem("user_id");
+    if (storedRole && storedUserId) {
+      setRole(storedRole);
+      setUser_id(storedUserId);
+    }
+  }, [])
+
 
   const setAuth = (newRole: string, newUserId: string) => {
     setRole(newRole);
-    setUserId(newUserId);
+    setUser_id(newUserId);
   };
 
   const clearAuth = () => {
     setRole(null);
-    setUserId(null);
+    setUser_id(null);
+    localStorage.removeItem("role");
+    localStorage.removeItem("user_id");
   };
 
   return (
-    <AuthContext.Provider value={{ role, userId, setAuth, clearAuth }}>
+    <AuthContext.Provider value={{ role, user_id, setAuth, clearAuth }}>
       {children}
     </AuthContext.Provider>
   );
