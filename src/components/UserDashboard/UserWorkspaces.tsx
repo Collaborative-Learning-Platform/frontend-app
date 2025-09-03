@@ -59,7 +59,7 @@ export function UserWorkspaces() {
     };
 
     return (
-      <>
+      <Box>
         <Box
           sx={{
             display: "flex",
@@ -118,6 +118,6 @@ export function UserWorkspaces() {
             </Box>
           ))}
         </Box>
-      </>
+      </Box>
     );
 }

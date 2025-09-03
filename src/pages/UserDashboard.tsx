@@ -3,10 +3,9 @@ import {
   Container,
   Typography,
   Avatar,
-  Button,
   Paper,
 } from "@mui/material";
-import { Add as PlusIcon } from "@mui/icons-material";
+// import { Add as PlusIcon } from "@mui/icons-material";
 import { Outlet } from "react-router-dom";
 
 
@@ -69,7 +68,7 @@ export default function UserDashboard() {
               </Box>
             </Box>
 
-            <Box
+            {/* <Box
               sx={{
                 display: "flex",
                 width: { xs: "100%", sm: "auto" },
@@ -88,7 +87,7 @@ export default function UserDashboard() {
               >
                 Join Group
               </Button>
-            </Box>
+            </Box> */}
           </Box>
         </Container>
       </Paper>
