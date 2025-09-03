@@ -34,7 +34,7 @@ const GroupPage = () => {
       description: 'Software Engineering project group focused on developing a collaborative learning platform',
       memberCount: 6,
       members: [
-        { id: '1', name: 'Theekshana Dissanayake', avatar: '' },
+        { id: '1', name: 'Theekshana ', avatar: '' },
         { id: '2', name: 'Kavindi Silva', avatar: '' },
         { id: '3', name: 'Ravindu Perera', avatar: '' },
         { id: '4', name: 'Sachini Fernando', avatar: '' },
@@ -46,11 +46,11 @@ const GroupPage = () => {
   }, [workspaceId, groupId]);
 
   const handleNavigateToWhiteboard = () => {
-    navigate(`/workspace/${workspaceId}/group/${groupId}/whiteboard`);
+    navigate(`/whiteboard`);
   };
 
   const handleNavigateToEditor = () => {
-    navigate(`/workspace/${workspaceId}/group/${groupId}/editor`);
+    navigate(`/DocumentEditor`);
   };
 
   if (!groupData) {

@@ -111,8 +111,8 @@ const AddUsers = () => {
       });
       console.log(res);
       const data = res.data;
-      if (data.error) {
-        setError(data.error?.message || "Bulk Addition failed");
+      if (!data.success) {
+        setError(data.error || "Bulk Addition failed");
       } else {
         setResponse(data);
       }

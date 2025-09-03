@@ -136,7 +136,7 @@ export default function SignInPage() {
 
       console.log(response);
 
-      if (response.data.message === "success") {
+      if (response.data.success) {
         setAuth(response.data.role, response.data.user_id);
         setSuccess(true);
 
