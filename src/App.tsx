@@ -9,7 +9,7 @@ import Layout from "./components/Layout";
 import QuizRoutes from "./pages/quiz/QuizRoutes";
 import AdminDashboard from "./pages/AdminDashboard";
 import { UserManagement } from "./components/AdminDashboard/UserManagement";
-import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceManagement";
+import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceMAnagement";
 import { AnalyticsDashboard } from "./components/AdminDashboard/AnalyticsDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import { UserOverview } from "./components/UserDashboard/UserOverview";
