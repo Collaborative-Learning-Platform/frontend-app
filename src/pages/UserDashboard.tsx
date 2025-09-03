@@ -8,7 +8,6 @@ import {
 // import { Add as PlusIcon } from "@mui/icons-material";
 import { Outlet } from "react-router-dom";
 
-
 const mockUser = {
   name: "Vinuka Buddhima",
   role: "Student",
@@ -91,7 +90,7 @@ export default function UserDashboard() {
           </Box>
         </Container>
       </Paper>
-      <Box sx={{ flex: 1, p: 2 }}>
+      <Box sx={{ flex: 1, paddingTop: 2 }}>
         <Outlet />
       </Box>
     </Box>

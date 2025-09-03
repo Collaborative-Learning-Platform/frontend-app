@@ -140,6 +140,7 @@ export const FlashCardLibrary = () => {
           justifyContent: "space-between",
           alignItems: "flex-start",
           mb: theme.spacing(3),
+          width: "100%",
         }}
       >
         <Box>

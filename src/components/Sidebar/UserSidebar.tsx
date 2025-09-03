@@ -63,7 +63,7 @@ const navigationItems = [
 
 const bottomItems = [
   { text: "Settings", icon: <Settings />, path: "/settings" },
-  {text : "User Profile", icon: <AccountCircleIcon />, path: "/user-profile"}
+  { text: "User Profile", icon: <AccountCircleIcon />, path: "/user-profile" },
 ];
 
 export default function UserSidebar() {
@@ -175,61 +175,60 @@ export default function UserSidebar() {
           })}
         </List>
       </Box>
-        <Box sx={{ mt: "auto" }}>
-          <Divider sx={{ mx: 2, my: 2}} />
+      <Box sx={{ mt: "auto" }}>
+        <Divider sx={{ mx: 2, my: 2 }} />
 
-          <List sx={{ px: 2 }}>
-            {bottomItems.map((item) => {
-              const isActive =
-                !!item.path && location.pathname.startsWith(item.path);
-              return (
-                <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-                  <ListItemButton
-                    onClick={() => item.path && navigate(item.path)}
-                    sx={{
-                      borderRadius: 2,
-                      minHeight: 48,
+        <List sx={{ px: 2 }}>
+          {bottomItems.map((item) => {
+            const isActive =
+              !!item.path && location.pathname.startsWith(item.path);
+            return (
+              <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  onClick={() => item.path && navigate(item.path)}
+                  sx={{
+                    borderRadius: 2,
+                    minHeight: 48,
+                    bgcolor: isActive
+                      ? alpha(theme.palette.primary.main, 0.08)
+                      : "transparent",
+                    "&:hover": {
                       bgcolor: isActive
-                        ? alpha(theme.palette.primary.main, 0.08)
-                        : "transparent",
-                      "&:hover": {
-                        bgcolor: isActive
-                          ? alpha(theme.palette.primary.main, 0.12)
-                          : alpha(theme.palette.action.hover, 0.04),
-                      },
+                        ? alpha(theme.palette.primary.main, 0.12)
+                        : alpha(theme.palette.action.hover, 0.04),
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      color: "text.secondary",
+                      minWidth: 40,
+                      "& .MuiSvgIcon-root": { fontSize: 22 },
                     }}
                   >
-                    <ListItemIcon
-                      sx={{
-                        color: "text.secondary",
-                        minWidth: 40,
-                        "& .MuiSvgIcon-root": { fontSize: 22 },
-                      }}
-                    >
-                      {item.text === "Settings" ? (
-                        <Badge badgeContent={1} color="warning" variant="dot">
-                          {item.icon}
-                        </Badge>
-                      ) : (
-                        item.icon
-                      )}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.text}
-                      primaryTypographyProps={{
-                        fontWeight: 500,
-                        fontSize: "0.9rem",
-                        color: "text.secondary",
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        </Box>
+                    {item.text === "Settings" ? (
+                      <Badge badgeContent={1} color="warning" variant="dot">
+                        {item.icon}
+                      </Badge>
+                    ) : (
+                      item.icon
+                    )}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{
+                      fontWeight: 500,
+                      fontSize: "0.9rem",
+                      color: "text.secondary",
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
       </Box>
-    
+    </Box>
   );
 
   return (

@@ -16,6 +16,7 @@ import { UserOverview } from "./components/UserDashboard/UserOverview";
 import { UserWorkspaces } from "./components/UserDashboard/UserWorkspaces";
 import { UserStudyPlan } from "./components/UserDashboard/UserStudyPlan";
 import { UserAnalytics } from "./components/UserDashboard/UseAnalytics";
+import { UserDocuments } from "./components/UserDashboard/UserDocuments";
 import { AdminOverview } from "./components/AdminDashboard/AdminOverview";
 import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
@@ -51,6 +52,7 @@ function App() {
           <Route path="/user-workspaces" element={<UserWorkspaces />} />
           <Route path="/study-plans" element={<UserStudyPlan />} />
           <Route path="/analytics" element={<UserAnalytics />} />
+          <Route path="/user-documents" element={<UserDocuments />} />
 
           {/* Flashcard pages with shared stats */}
           <Route element={<FlashCardLayout />}>
