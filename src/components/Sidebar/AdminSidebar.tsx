@@ -45,15 +45,18 @@ const navigationItems = [
     text: "Workspace Management",
     icon: <WorkspacesOutlineIcon />,
     path: "/admin-workspaces",
-    badge: 2,
+    badge: 3,
     urgent: true,
+  },
+  { text: "Analytics", 
+    icon: <Analytics />, 
+    path: "/admin-analytics" 
   },
 ];
 
 const bottomItems = [
-  { text: "Analytics", icon: <Analytics />, path: "/admin-analytics" },
   { text: "Settings", icon: <Settings />, path: "/admin-settings" },
-  {text : "User Profile", icon: <AccountCircleIcon />, path: "/admin-profile"}
+  { text: "User Profile", icon: <AccountCircleIcon />, path: "/admin-profile" },
 ];
 
 export default function AdminSidebar() {
