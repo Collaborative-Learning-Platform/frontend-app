@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Paper,
-  TextField,
   Typography,
   Avatar,
   AvatarGroup,
@@ -11,40 +10,126 @@ import {
   Tooltip,
   IconButton,
   useTheme,
+  Button,
+  Divider,
 } from "@mui/material";
 import {
   ZoomIn as ZoomInIcon,
   ZoomOut as ZoomOutIcon,
   Print as PrintIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { Formatbar } from "../components/DocumentEditor/Formatbar";
 import { Titlebar } from "../components/DocumentEditor/Titlebar";
 
+interface Page {
+  id: string;
+  content: string;
+}
+
 export const DocumentEditor = () => {
   const theme = useTheme();
-  const [documentContent, setDocumentContent] = useState("");
+  const [pages, setPages] = useState<Page[]>([{ id: "1", content: "" }]);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [wordCount, setWordCount] = useState(0);
   const [characterCount, setCharacterCount] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
-
+  const textAreaRefs = useRef<(HTMLDivElement | null)[]>([]);
   const typingTimeoutRef = useRef<number | null>(null);
 
+  const totalContent = pages
+    .map((p) => p.content.replace(/<[^>]*>/g, ""))
+    .join(" ");
+
   useEffect(() => {
-    const words = documentContent
+    const words = totalContent
       .trim()
       .split(/\s+/)
       .filter((word) => word.length > 0);
     setWordCount(words.length);
-    setCharacterCount(documentContent.length);
-  }, [documentContent]);
+    setCharacterCount(totalContent.length);
+  }, [totalContent]);
 
   const handleContentChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setDocumentContent(event.target.value);
+    (pageIndex: number, content: string) => {
+      setPages((prev) =>
+        prev.map((page, index) =>
+          index === pageIndex ? { ...page, content } : page
+        )
+      );
       setIsTyping(true);
 
-      // Clear existing timeout
+      // Auto page break - check if content exceeds page capacity
+      const element = textAreaRefs.current[pageIndex];
+      if (element) {
+        const maxHeight = 550; // Fixed height for page content area (accounting for padding)
+
+        if (element.scrollHeight > maxHeight) {
+          // Get text content for splitting
+          const textContent = element.textContent || "";
+          const words = textContent.split(" ");
+          let pageContent = "";
+          let overflowContent = "";
+
+          // Find the breaking point by testing text length
+          for (let i = 0; i < words.length; i++) {
+            const testText = words.slice(0, i + 1).join(" ");
+            // Create temporary element to test height
+            const tempDiv = document.createElement("div");
+            tempDiv.style.cssText = window.getComputedStyle(element).cssText;
+            tempDiv.style.height = "auto";
+            tempDiv.style.position = "absolute";
+            tempDiv.style.visibility = "hidden";
+            tempDiv.textContent = testText;
+            document.body.appendChild(tempDiv);
+
+            if (tempDiv.scrollHeight > maxHeight) {
+              pageContent = words.slice(0, i).join(" ").replace(/\n/g, "<br>");
+              overflowContent = words.slice(i).join(" ").replace(/\n/g, "<br>");
+              document.body.removeChild(tempDiv);
+              break;
+            }
+            document.body.removeChild(tempDiv);
+          }
+
+          if (overflowContent) {
+            setPages((prev) => {
+              const newPages = [...prev];
+              newPages[pageIndex] = {
+                ...newPages[pageIndex],
+                content: pageContent,
+              };
+
+              // Add new page with overflow content
+              if (pageIndex === newPages.length - 1) {
+                newPages.push({
+                  id: Date.now().toString(),
+                  content: overflowContent,
+                });
+              } else {
+                newPages[pageIndex + 1] = {
+                  ...newPages[pageIndex + 1],
+                  content:
+                    overflowContent + " " + newPages[pageIndex + 1].content,
+                };
+              }
+
+              return newPages;
+            });
+
+            // Focus next page
+            setTimeout(() => {
+              if (textAreaRefs.current[pageIndex + 1]) {
+                textAreaRefs.current[pageIndex + 1]?.focus();
+                setCurrentPageIndex(pageIndex + 1);
+              }
+            }, 100);
+          }
+        }
+      }
+
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
@@ -55,6 +140,24 @@ export const DocumentEditor = () => {
     },
     []
   );
+
+  const addNewPage = () => {
+    const newPage: Page = {
+      id: Date.now().toString(),
+      content: "",
+    };
+    setPages((prev) => [...prev, newPage]);
+    setCurrentPageIndex(pages.length);
+  };
+
+  const deletePage = (pageIndex: number) => {
+    if (pages.length > 1) {
+      setPages((prev) => prev.filter((_, index) => index !== pageIndex));
+      if (currentPageIndex >= pageIndex && currentPageIndex > 0) {
+        setCurrentPageIndex((prev) => prev - 1);
+      }
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -90,7 +193,6 @@ export const DocumentEditor = () => {
         backgroundSize: "100px 100px",
         display: "flex",
         flexDirection: "column",
-        overflowX: "hidden",
         width: "100%",
       }}
     >
@@ -106,9 +208,10 @@ export const DocumentEditor = () => {
           flex: 1,
           display: "flex",
           justifyContent: "center",
-          alignItems: "flex-start",
           p: { xs: 2, md: 4 },
           pt: 3,
+          overflow: "auto",
+          maxHeight: "calc(100vh - 120px)",
         }}
       >
         <Box
@@ -116,7 +219,6 @@ export const DocumentEditor = () => {
             width: "100%",
             maxWidth: { xs: "100%", md: "8.5in" },
             position: "relative",
-            mx: "auto",
           }}
         >
           {/* Document Controls */}
@@ -127,11 +229,13 @@ export const DocumentEditor = () => {
               alignItems: "center",
               mb: 2,
               px: 1,
+              py: 1,
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                {wordCount} words • {characterCount} characters
+                {wordCount} words • {characterCount} characters • {pages.length}{" "}
+                pages
               </Typography>
               {isTyping && (
                 <Fade in={isTyping}>
@@ -147,6 +251,11 @@ export const DocumentEditor = () => {
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Tooltip title="Add new page">
+                <IconButton size="small" onClick={addNewPage}>
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
               <Typography variant="caption" color="text.secondary">
                 {zoomLevel}%
               </Typography>
@@ -168,142 +277,188 @@ export const DocumentEditor = () => {
             </Box>
           </Box>
 
-          {/* Document Paper */}
-          <Paper
-            elevation={8}
-            sx={{
-              position: "relative",
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: { xs: 2, md: 3 },
-              overflow: "hidden",
-              boxShadow:
-                theme.palette.mode === "dark"
-                  ? {
-                      xs: "0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2)",
-                      md: "0 10px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)",
-                    }
-                  : {
-                      xs: "0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04)",
-                      md: "0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)",
+          {/* Document Pages */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {pages.map((page, pageIndex) => (
+              <Paper
+                key={page.id}
+                elevation={8}
+                sx={{
+                  position: "relative",
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: { xs: 2, md: 3 },
+                  boxShadow:
+                    theme.palette.mode === "dark"
+                      ? "0 10px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)"
+                      : "0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)",
+                  border: `1px solid ${theme.palette.divider}`,
+                  transform: { xs: "none", lg: `scale(${zoomLevel / 100})` },
+                  transformOrigin: "top center",
+                  transition: "transform 0.2s ease-in-out",
+                  height: "850px",
+                  width: "650px",
+                  aspectRatio: "8.5 / 11",
+                  margin: "0 auto",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 50%, ${theme.palette.primary.main} 100%)`,
+                    opacity: isTyping && currentPageIndex === pageIndex ? 1 : 0,
+                    transition: "opacity 0.3s ease-in-out",
+                  },
+                }}
+              >
+                {/* Page Delete Button */}
+                {pages.length > 1 && (
+                  <Tooltip title="Delete page">
+                    <IconButton
+                      size="small"
+                      onClick={() => deletePage(pageIndex)}
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        zIndex: 10,
+                        backgroundColor: theme.palette.error.main,
+                        color: "white",
+                        "&:hover": {
+                          backgroundColor: theme.palette.error.dark,
+                        },
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+
+                {/* Document Content */}
+                <Box
+                  ref={(el: HTMLDivElement | null) => {
+                    textAreaRefs.current[pageIndex] = el;
+                  }}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={(e) => {
+                    const content = e.currentTarget.innerHTML || "";
+                    handleContentChange(pageIndex, content);
+                    setCurrentPageIndex(pageIndex);
+                  }}
+                  onFocus={() => setCurrentPageIndex(pageIndex)}
+                  sx={{
+                    width: "100%",
+                    height: "650px",
+                    border: "none",
+                    outline: "none",
+                    overflow: "hidden",
+                    whiteSpace: "pre-wrap",
+                    wordWrap: "break-word",
+                    fontSize: { xs: "14px", md: "16px" },
+                    lineHeight: 1.6,
+                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                    color: "text.primary",
+                    backgroundColor: "transparent",
+                    padding: {
+                      xs: "16px",
+                      sm: "24px",
+                      md: "72px",
                     },
-              border: `1px solid ${theme.palette.divider}`,
-              transform: { xs: "none", lg: `scale(${zoomLevel / 100})` },
-              transformOrigin: "top center",
-              transition: "transform 0.2s ease-in-out",
-              minHeight: {
-                xs: "calc(100vh - 220px)",
-                sm: "calc(100vh - 200px)",
-                md: "11in",
-              },
-              width: {
-                xs: "100%",
-                sm: "100%",
-                md: "8.5in",
-                lg: "8.5in",
-              },
-              maxWidth: {
-                xs: "100%",
-                sm: "100%",
-                md: "8.5in",
-              },
-              margin: "0 auto",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 50%, ${theme.palette.primary.main} 100%)`,
-                opacity: isTyping ? 1 : 0,
-                transition: "opacity 0.3s ease-in-out",
-              },
+                    paddingTop:
+                      pages.length > 1
+                        ? "48px"
+                        : { xs: "16px", sm: "24px", md: "72px" },
+                    paddingBottom: "100px",
+                    "&:empty::before": {
+                      content:
+                        pageIndex === 0
+                          ? '"Type something amazing..."'
+                          : '"Continue writing..."',
+                      color: theme.palette.text.disabled,
+                      fontStyle: "normal",
+                      fontSize: { xs: "14px", md: "16px" },
+                      fontWeight: 400,
+                      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                    },
+                  }}
+                  dangerouslySetInnerHTML={{ __html: page.content }}
+                />
+
+                {/* Page Footer */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    pointerEvents: "none",
+                  }}
+                >
+                  {/* Footer divider line */}
+                  <Box
+                    sx={{
+                      height: "1px",
+                      backgroundColor: theme.palette.divider,
+                      mx: "1in",
+                      mb: 1,
+                      opacity: 0.3,
+                    }}
+                  />
+
+                  {/* Footer content */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      px: "1in",
+                      pb: "24px",
+                      opacity: 0.5,
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Document Editor
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Page {pageIndex + 1}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Paper>
+            ))}
+          </Box>
+
+          {/* Page Management */}
+          <Box
+            sx={{
+              mt: 3,
+              display: "flex",
+              justifyContent: "center",
+              gap: 2,
             }}
           >
-            {/* Document Content */}
-            <TextField
-              multiline
-              fullWidth
-              value={documentContent}
-              onChange={handleContentChange}
-              placeholder="Type something amazing..."
-              variant="standard"
-              InputProps={{
-                disableUnderline: true,
-                sx: {
-                  fontSize: { xs: "14px", md: "16px" },
-                  lineHeight: 1.6,
-                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  color: "text.primary",
-                  padding: {
-                    xs: "16px",
-                    sm: "24px",
-                    md: "1in",
-                  },
-                  minHeight: {
-                    xs: "calc(100vh - 280px)",
-                    sm: "calc(100vh - 260px)",
-                    md: "9in",
-                  },
-                  display: "flex",
-                  alignItems: "flex-start",
-                  "& textarea": {
-                    resize: "none",
-                    verticalAlign: "top",
-                    textAlign: "left",
-                  },
-                },
-              }}
-              sx={{
-                height: "100%",
-                "& .MuiInputBase-root": {
-                  height: "100%",
-                  alignItems: "flex-start",
-                },
-                "& .MuiInputBase-input": {
-                  height: "100% !important",
-                  "&::placeholder": {
-                    color: theme.palette.text.disabled,
-                    fontStyle: "normal",
-                    fontSize: { xs: "14px", md: "16px" },
-                    fontWeight: 400,
-                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  },
-                },
-              }}
-            />
-
-            {/* Page Footer */}
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: 24,
-                left: 0,
-                right: 0,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                px: "1in",
-                opacity: 0.5,
-              }}
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={addNewPage}
+              size="small"
             >
-              <Typography variant="caption" color="text.secondary">
-                Document Editor
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Page 1
-              </Typography>
-            </Box>
-          </Paper>
+              Add Page
+            </Button>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
 
           {/* Collaboration Status */}
           <Box
             sx={{
-              mt: 2,
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               gap: 2,
+              pb: 2,
             }}
           >
             <Typography variant="caption" color="text.secondary">
