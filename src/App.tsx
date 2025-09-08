@@ -2,7 +2,7 @@ import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import { ThemeDemo } from "./theme";
-import LoginPage from "./pages/LoginPage";
+import SignInPage from "./pages/signIn/signInPage";
 import NotFound from "./pages/404";
 import About from "./pages/About";
 import Layout from "./components/Layout";
@@ -28,13 +28,14 @@ import { FlashCardLayout } from "./components/UserDashboard/FlashCardLayout";
 import AddUsers from "./pages/AddUsers";
 import WorkspacePage from "./pages/WorkspacePage";
 import GroupPage from "./pages/GroupPage";
+import SignInLayout from "./pages/signIn/signInLayout";
 
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<SignInLayout />} />
 
       <Route element={<Layout />}>
         <Route path="user-profile" element={<ProfilePage />} />

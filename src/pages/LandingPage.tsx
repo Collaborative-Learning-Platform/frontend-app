@@ -96,23 +96,7 @@ const LandingPage = () => {
     },
   ];
 
-  const testimonials = [
-    {
-      quote: "Learni transformed how I study. The collaborative features make learning so much more engaging!",
-      author: "Sarah Chen",
-      role: "Computer Science Student",
-    },
-    {
-      quote: "The AI tutor is incredibly helpful for getting instant explanations when I'm stuck.",
-      author: "Michael Rodriguez",
-      role: "Mathematics Major",
-    },
-    {
-      quote: "As a tutor, I love how easy it is to create study materials and track student progress.",
-      author: "Dr. Emily Watson",
-      role: "Physics Professor",
-    },
-  ];
+
 
   return (
     <Box>
@@ -428,7 +412,7 @@ const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography
           variant="h2"
@@ -475,7 +459,7 @@ const LandingPage = () => {
             </Paper>
           ))}
         </Box>
-      </Container>
+      </Container> */}
 
       {/* Final CTA Section */}
       <Box
