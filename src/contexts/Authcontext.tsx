@@ -21,10 +21,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setRole(storedRole);
       setUser_id(storedUserId);
     }
+    console.log("Auth context initialized with role:", storedRole, "and user_id:", storedUserId);
   }, [])
 
 
   const setAuth = (newRole: string, newUserId: string) => {
+    localStorage.setItem("role", newRole);
+    localStorage.setItem("user_id", newUserId);
     setRole(newRole);
     setUser_id(newUserId);
   };

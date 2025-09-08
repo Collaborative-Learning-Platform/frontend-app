@@ -18,11 +18,13 @@ import {
   Description as FileTextIcon,
   BarChart as BarChart3Icon,
 } from "@mui/icons-material";
+import CreateWorkspaceModal from "../workpsaces/CreateWorkspaceModal";
+
 
 export function WorkspaceManagement() {
   const [searchTerm, setSearchTerm] = useState("");
-
-  const workspaces = [
+  const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
+  const [workspaces, setWorkspaces] = useState([
     {
       id: 1,
       name: "Advanced Mathematics",
@@ -56,7 +58,23 @@ export function WorkspaceManagement() {
       created: "2023-12-20",
       lastActivity: "1 hour ago",
     },
-  ];
+  ]);
+
+  function handleCreated(newWs: any) {
+    // Best-effort shape mapping
+    const mapped = {
+      id: newWs?.id ?? Date.now(),
+      name: newWs?.name ?? newWs?.title ?? "New Workspace",
+      description: newWs?.description ?? "",
+      students: newWs?.studentsCount ?? 0,
+      tutors: newWs?.tutorsCount ?? 0,
+      groups: newWs?.groupsCount ?? 0,
+      status: newWs?.status ?? "Active",
+      created: new Date().toISOString().slice(0, 10),
+      lastActivity: "just now",
+    };
+    setWorkspaces((prev) => [mapped, ...prev]);
+  }
 
   return (
     <Box sx={{ py: 3 }}>
@@ -78,7 +96,7 @@ export function WorkspaceManagement() {
             Create and manage learning workspaces
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<PlusIcon />}>
+        <Button variant="contained" startIcon={<PlusIcon />} onClick={() => setIsWorkspaceModalOpen(true)}>
           Create Workspace
         </Button>
       </Box>
@@ -327,6 +345,13 @@ export function WorkspaceManagement() {
           </Card>
         </Box>
       </Box>
+
+      <CreateWorkspaceModal
+        open={isWorkspaceModalOpen}
+        onClose={() => setIsWorkspaceModalOpen(false)}
+        onCreated={handleCreated}
+        endpoint="/workspace/create" // adjust to your backend route
+      />
     </Box>
   );
 }
