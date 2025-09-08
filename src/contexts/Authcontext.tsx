@@ -30,6 +30,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("user_id", newUserId);
     setRole(newRole);
     setUser_id(newUserId);
+    localStorage.setItem("role", newRole);
+    localStorage.setItem("user_id", newUserId);
   };
 
   const clearAuth = () => {
