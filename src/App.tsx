@@ -29,6 +29,7 @@ import AddUsers from "./pages/AddUsers";
 import WorkspacePage from "./pages/WorkspacePage";
 import GroupPage from "./pages/GroupPage";
 
+
 function App() {
   return (
     <Routes>
@@ -71,6 +72,8 @@ function App() {
           <Route path="admin-analytics" element={<AnalyticsDashboard />} />
           <Route path="admin-settings" element={<SystemSettings />} />
         </Route>
+
+        
       </Route>
 
       <Route path="/whiteboard" element={<Whiteboard />} />
