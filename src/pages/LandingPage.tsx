@@ -7,7 +7,6 @@ import {
   Container,
   Typography,
   Toolbar,
-  Paper,
   Avatar,
   IconButton,
   useTheme,

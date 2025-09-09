@@ -1,5 +1,5 @@
 import { Box, Paper, Typography } from "@mui/material";
-import SignInPage from "./signInPage";
+import SignInPage from "./SignInPage";
 import LoginIllustration from "../../assets/login_illustration.png";
 
 export default function SignInLayout() {

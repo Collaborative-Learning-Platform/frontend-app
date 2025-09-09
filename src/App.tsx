@@ -2,7 +2,6 @@ import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import { ThemeDemo } from "./theme";
-import SignInPage from "./pages/signIn/signInPage";
 import NotFound from "./pages/404";
 import About from "./pages/About";
 import Layout from "./components/Layout";
