@@ -15,6 +15,7 @@ import {
   PlayArrow,
   TrendingUp 
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 interface QuizItem {
   id: string;
@@ -34,6 +35,7 @@ interface QuizSectionProps {
 
 const QuizSection = ({ groupId }: QuizSectionProps) => {
   console.log(groupId)
+  const navigate = useNavigate();
   const quizzes: QuizItem[] = [
     {
       id: '1',
@@ -248,6 +250,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                       variant={quiz.completed ? "outlined" : "contained"}
                       startIcon={quiz.completed ? <CheckCircle /> : <PlayArrow />}
                       size={window.innerWidth < 600 ? "medium" : "small"}
+                      onClick={()=>{navigate(`/quiz/attempt/${quiz.id}`)}}
                       sx={{ 
                         minWidth: { xs: '100%', sm: 100 },
                         bgcolor: (theme) => quiz.completed ? 'transparent' : theme.palette.accent.quiz,
