@@ -28,7 +28,8 @@ import { FlashCardLayout } from "./components/UserDashboard/FlashCardLayout";
 import AddUsers from "./pages/AddUsers";
 import WorkspacePage from "./pages/WorkspacePage";
 import GroupPage from "./pages/GroupPage";
-import SignInLayout from "./pages/signIn/signInLayout";
+import SignInLayout from "./pages/signIn/SignInLayout";
+import ForgotPasswordPage from "./pages/signIn/ForgotPassword";
 
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<SignInLayout />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
       <Route element={<Layout />}>
         <Route path="user-profile" element={<ProfilePage />} />

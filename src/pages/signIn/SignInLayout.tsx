@@ -1,4 +1,3 @@
-// SignInLayout.tsx
 import { Box, Paper, Typography } from "@mui/material";
 import SignInPage from "./signInPage";
 import LoginIllustration from "../../assets/login_illustration.png";
@@ -12,11 +11,11 @@ export default function SignInLayout() {
         flexDirection: { xs: "column", md: "row" },
       }}
     >
-      {/* Left Illustration */}
+      {/* Left Image */}
       <Box
         sx={{
           flex: 1,
-          display: { xs: "none", md: "flex" },
+          display: { xs: "flex", md: "flex" },
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
@@ -43,7 +42,7 @@ export default function SignInLayout() {
           alignItems: "center",
           justifyContent: "center",
           p: { xs: 3, md: 6 },
-          backgroundColor: "#f9fafc",
+          backgroundColor: "#ffffffff",
         }}
       >
         <Paper
