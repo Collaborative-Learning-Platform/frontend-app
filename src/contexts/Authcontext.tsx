@@ -1,10 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import axiosInstance from "../api/axiosInstance";
 
 type AuthContextType = {
   role: string | null;
   user_id: string | null;
-  setAuth: (role: string, user_id: string) => void;
+  name: string | null;
+  email: string | null;
+  setAuth: (user_id: string, role: string) => void;
   clearAuth: () => void;
 };
 
@@ -13,34 +16,64 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
   const [user_id, setUser_id] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+
+
+  const fetchUserData = async (userId: string) => {
+    try {
+      const response = await axiosInstance.get(`/auth/get-user/${userId}`);
+      console.log("Fetched user data:", response.data);
+
+      if (response.data.success) {
+        const user = response.data.user;
+        // setRole(user.role);
+        setName(user.name);
+        setEmail(user.email);
+      } else {
+        console.error('Failed to fetch user data');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
 
   useEffect(()=>{
-    const storedRole = localStorage.getItem("role");
     const storedUserId = localStorage.getItem("user_id");
-    if (storedRole && storedUserId) {
-      setRole(storedRole);
-      setUser_id(storedUserId);
+    const storedRole = localStorage.getItem("role");
+    if (!storedUserId) {
+      clearAuth();
+      return;
     }
-    console.log("Auth context initialized with role:", storedRole, "and user_id:", storedUserId);
-  }, [])
+    setUser_id(storedUserId);
+    setRole(storedRole);
+    fetchUserData(storedUserId);
+    // console.log("Auth context initialized with role:", storedRole, "and user_id:", storedUserId);
+  }, []);
 
 
-  const setAuth = (newRole: string, newUserId: string) => {
-    localStorage.setItem("role", newRole);
+
+
+  const setAuth = (newUserId: string , newRole: string) => {
     localStorage.setItem("user_id", newUserId);
-    setRole(newRole);
+    localStorage.setItem("role", newRole);
     setUser_id(newUserId);
+    setRole(newRole);
+    fetchUserData(newUserId);
   };
 
   const clearAuth = () => {
     setRole(null);
     setUser_id(null);
-    localStorage.removeItem("role");
+    setName(null);
+    setEmail(null);
     localStorage.removeItem("user_id");
+    localStorage.removeItem("role");
   };
 
   return (
-    <AuthContext.Provider value={{ role, user_id, setAuth, clearAuth }}>
+    <AuthContext.Provider value={{ role, user_id, name, email, setAuth, clearAuth }}>
       {children}
     </AuthContext.Provider>
   );

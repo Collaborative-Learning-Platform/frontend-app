@@ -34,8 +34,6 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(error.config)
       } catch (refreshError) {
         console.error('Refresh failed, redirecting to login')
-        // Clear user data and redirect
-        localStorage.removeItem('role')
         localStorage.removeItem('user_id')
         window.location.href = '/login'
       }
