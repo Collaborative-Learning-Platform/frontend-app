@@ -27,6 +27,7 @@ import FileCopyIcon from "@mui/icons-material/FileCopy";
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/Authcontext";
 
 const drawerWidth = 280;
 
@@ -36,6 +37,7 @@ const navigationItems = [
     icon: <Dashboard />,
     path: "/user-dashboard",
     active: true,
+    roles: ["user", "tutor"],
   },
   {
     text: "Workspaces",
@@ -43,21 +45,31 @@ const navigationItems = [
     path: "/user-workspaces",
     badge: 2,
     urgent: true,
+    roles: ["user", "tutor"],
   },
   {
     text: "Study Plans",
     icon: <Assignment />,
     path: "/study-plans",
+    roles: "user",
   },
   {
     text: "Flashcards",
     icon: <Quiz />,
     path: "/flashcard-generator",
+    roles: "user",
   },
   {
     text: "Documents",
     icon: <FileCopyIcon />,
     path: "/user-documents",
+    roles: "user",
+  },
+  {
+    text: "Create Quiz",
+    icon: <Quiz />,
+    path: "/quiz",
+    roles: "tutor",
   },
 ];
 
@@ -68,11 +80,13 @@ const bottomItems = [
 
 export default function UserSidebar() {
   const theme = useTheme();
+  const { role } = useAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isMobileOpen, setMobileOpen] = useState(false);
+
   const handleDrawerToggle = () => {
     setMobileOpen((prev) => !prev);
   };
@@ -80,6 +94,10 @@ export default function UserSidebar() {
   const handleItemClick = (item: any) => {
     navigate(item.path);
   };
+
+  const filteredNavigationItems = navigationItems.filter(
+    (item) => !item.roles || (role && item.roles.includes(role))
+  );
 
   const sidebarContent = (
     <Box
@@ -117,7 +135,7 @@ export default function UserSidebar() {
 
       <Box sx={{ flex: 1, overflow: "auto", py: 1 }}>
         <List sx={{ px: 2 }}>
-          {navigationItems.map((item) => {
+          {filteredNavigationItems.map((item) => {
             const isActive =
               !!item.path && location.pathname.startsWith(item.path);
             return (
