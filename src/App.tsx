@@ -29,6 +29,7 @@ import WorkspacePage from "./pages/WorkspacePage";
 import GroupPage from "./pages/GroupPage";
 import SignInLayout from "./pages/signIn/SignInLayout";
 import ForgotPasswordPage from "./pages/signIn/ForgotPassword";
+import FirstTimeLoginPage from "./pages/signIn/FirstTimeLoginPage";
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<SignInLayout />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/first-time-login" element={<FirstTimeLoginPage />} />
 
       <Route element={<Layout />}>
         <Route path="user-profile" element={<ProfilePage />} />
