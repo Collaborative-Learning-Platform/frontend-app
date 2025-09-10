@@ -1,7 +1,6 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
-import { ThemeDemo } from "./theme";
 import NotFound from "./pages/404";
 import About from "./pages/About";
 import Layout from "./components/Layout";
@@ -44,7 +43,6 @@ function App() {
         <Route path="user-profile" element={<ProfilePage />} />
         <Route path="about" element={<About />} />
         <Route path="/quiz/*" element={<QuizRoutes />} />
-        <Route path="theme-demo" element={<ThemeDemo />} />
         <Route path="add-users" element={<AddUsers />} />
         <Route path="workspace/:workspaceId" element={<WorkspacePage />} />
         <Route

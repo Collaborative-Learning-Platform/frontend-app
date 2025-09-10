@@ -1,24 +1,20 @@
-import ChatIcon from "@mui/icons-material/Chat";
 import React from "react";
-import { IconButton, Tooltip, Badge } from "@mui/material";
-import { useTheme } from "../theme";
+import { IconButton, Tooltip } from "@mui/material";
+import { DarkMode, LightMode } from "@mui/icons-material";
+import { useTheme } from "../../theme";
 
-interface ChatsProps {
+interface ThemeToggleProps {
   size?: "small" | "medium" | "large";
   showTooltip?: boolean;
   variant?: "default" | "contained" | "outlined";
-  badgeContent?: number;
-  onClick?: () => void;
 }
 
-export const Chats: React.FC<ChatsProps> = ({
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   size = "medium",
   showTooltip = true,
   variant = "default",
-  badgeContent = 0,
-  onClick,
 }) => {
-  const { mode } = useTheme();
+  const { mode, toggleTheme } = useTheme();
 
   const getBackgroundSx = () => {
     if (variant === "contained") {
@@ -51,11 +47,11 @@ export const Chats: React.FC<ChatsProps> = ({
     };
   };
 
-  const chatsButton = (
+  const toggleButton = (
     <IconButton
-      onClick={onClick}
+      onClick={toggleTheme}
       size={size}
-      aria-label="SeeChats"
+      aria-label={`Switch to ${mode === "light" ? "dark" : "light"} mode`}
       sx={{
         transition: "all 0.3s ease-in-out",
         ...getBackgroundSx(),
@@ -73,14 +69,17 @@ export const Chats: React.FC<ChatsProps> = ({
         },
       }}
     >
-      <Badge badgeContent={badgeContent} color="error" variant="dot">
-        <ChatIcon />
-      </Badge>
+      {mode === "light" ? <DarkMode /> : <LightMode />}
     </IconButton>
   );
 
   if (showTooltip) {
-    return <Tooltip title="Chats">{chatsButton}</Tooltip>;
+    return (
+      <Tooltip title={`Switch to ${mode === "light" ? "dark" : "light"} mode`}>
+        {toggleButton}
+      </Tooltip>
+    );
   }
-  return chatsButton;
+
+  return toggleButton;
 };
