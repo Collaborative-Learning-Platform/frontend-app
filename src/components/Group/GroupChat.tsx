@@ -85,7 +85,7 @@ const GroupChat = ({ groupId }: GroupChatProps) => {
               sx={{ 
                 ml: 1,
                 '& .MuiBadge-badge': {
-                  bgcolor: (theme) => theme.palette.accent.chat,
+                  bgcolor: (theme) => theme.palette.primary.main,
                   color: 'white'
                 }
               }} 

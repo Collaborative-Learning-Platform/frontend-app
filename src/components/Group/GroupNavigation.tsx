@@ -93,7 +93,7 @@ const GroupNavigation = ({ onNavigateToWhiteboard, onNavigateToEditor }: GroupNa
                 <Box sx={{ 
                   p: { xs: 0.75, sm: 1 }, 
                   borderRadius: 2.5, 
-                  bgcolor: (theme) => theme.palette.accent[item.colorKey],
+                  bgcolor: (theme) => theme.palette.primary.main,
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',

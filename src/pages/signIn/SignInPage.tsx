@@ -96,7 +96,6 @@ export default function SignInPage() {
     try {
       const response = await axiosInstance.post("/auth/login", formData);
       if (response.data.success) {
-        // setAuth(response.data.role, response.data.user_id);
         setAuth( response.data.user_id, response.data.role);
         setSuccess(true);
 

@@ -15,10 +15,11 @@ const mockUser = {
 
 export default function WelcomeHeader() {
   const { name, role } = useAuth();
+  const userRole = role === "user" ? "Student" : role;
   const user = {
     ...mockUser,
     name: name || mockUser.name,
-    role: role || mockUser.role,
+    role: userRole || mockUser.role,
   };
 
   return (

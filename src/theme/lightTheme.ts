@@ -1,28 +1,7 @@
 import { createTheme } from "@mui/material/styles";
 
-declare module '@mui/material/styles' {
-  interface Palette {
-    accent: {
-      chat: string;
-      whiteboard: string;
-      editor: string;
-      quiz: string;
-      resources: string;
-    };
-  }
 
-  interface PaletteOptions {
-    accent?: {
-      chat?: string;
-      whiteboard?: string;
-      editor?: string;
-      quiz?: string;
-      resources?: string;
-    };
-  }
-}
 
-// Light theme configuration
 export const lightTheme = createTheme({
   palette: {
     mode: "light",
@@ -44,13 +23,6 @@ export const lightTheme = createTheme({
       main: '#10b981',
       dark: '#059669',
       light: '#34d399',
-    },
-    accent: {
-      chat: '#10b981',
-      whiteboard: '#3b82f6',
-      editor: '#f59e0b',
-      quiz: '#8b5cf6',
-      resources: '#ef4444',
     },
     background: {
       default: "#fafafa",

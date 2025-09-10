@@ -27,10 +27,10 @@ import {
   MoreVert as MoreVertIcon,
   InsertDriveFile as DocumentIcon,
 } from "@mui/icons-material";
-import { Chats } from "../Chats";
-import { ThemeToggle } from "../ThemeToggle";
-import { BackButton } from "../BackButton";
-import { NotificationsButton } from "../NotificationsButton";
+import { Chats } from "../Buttons/Chats";
+import { ThemeToggle } from "../Buttons/ThemeToggle";
+import { BackButton } from "../Buttons/BackButton";
+import { NotificationsButton } from "../Buttons/NotificationsButton";
 import { docEditorToolbar } from "../../styles/components/DocumentEditor/common";
 import {
   actionsAndCollaborators,

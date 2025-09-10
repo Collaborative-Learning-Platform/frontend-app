@@ -1,26 +1,5 @@
 import { createTheme } from "@mui/material/styles";
 
-declare module '@mui/material/styles' {
-  interface Palette {
-    accent: {
-      chat: string;
-      whiteboard: string;
-      editor: string;
-      quiz: string;
-      resources: string;
-    };
-  }
-
-  interface PaletteOptions {
-    accent?: {
-      chat?: string;
-      whiteboard?: string;
-      editor?: string;
-      quiz?: string;
-      resources?: string;
-    };
-  }
-}
 
 export const darkTheme = createTheme({
   palette: {
@@ -44,13 +23,7 @@ export const darkTheme = createTheme({
       dark: '#10b981',
       light: '#6ee7b7',
     },
-    accent: {
-      chat: '#34d399',
-      whiteboard: '#60a5fa',
-      editor: '#fbbf24',
-      quiz: '#a78bfa',
-      resources: '#f87171',
-    },
+    
     background: {
       default: "#0f0f0f", // Deeper black for contrast
       paper: "#1a1a1a", // Slightly lighter for cards/surfaces
