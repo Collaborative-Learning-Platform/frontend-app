@@ -1,12 +1,7 @@
-import {
-  Box,
-
-} from "@mui/material";
+import { Box } from "@mui/material";
 
 import { Outlet } from "react-router-dom";
 import WelcomeHeader from "../components/WelcomeHeader";
-
-
 
 export default function UserDashboard() {
   return (
