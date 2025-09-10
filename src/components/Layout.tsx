@@ -15,8 +15,8 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { Menu, Close } from "@mui/icons-material";
 import AdminSidebar from "./Sidebar/AdminSidebar";
 import UserSidebar from "./Sidebar/UserSidebar";
-import { ThemeToggle } from "./ThemeToggle";
-import { NotificationsButton } from "./NotificationsButton";
+import { ThemeToggle } from "./Buttons/ThemeToggle";
+import { NotificationsButton } from "./Buttons/NotificationsButton";
 import { useAuth } from "../contexts/Authcontext";
 
 const DRAWER_WIDTH = 280;
@@ -87,7 +87,7 @@ const Layout = () => {
 
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Modern header actions */}
+          {/*  header actions */}
           <Stack direction="row" spacing={1} alignItems="center">
             <IconButton color="inherit" onClick={handleLogout}>
               <LogoutIcon fontSize="small" />

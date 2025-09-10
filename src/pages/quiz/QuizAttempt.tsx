@@ -99,7 +99,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
   // Initialize quiz and timer
   useEffect(() => {
     if (!propQuiz && quizId) {
-      // Load quiz from API or local storage
+      // Load quiz from API 
       loadQuiz(quizId);
     } else if (propQuiz) {
       setQuiz(propQuiz);

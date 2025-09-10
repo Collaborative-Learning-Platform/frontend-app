@@ -15,6 +15,7 @@ import {
   PlayArrow,
   TrendingUp 
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 interface QuizItem {
   id: string;
@@ -34,6 +35,7 @@ interface QuizSectionProps {
 
 const QuizSection = ({ groupId }: QuizSectionProps) => {
   console.log(groupId)
+  const navigate = useNavigate();
   const quizzes: QuizItem[] = [
     {
       id: '1',
@@ -82,7 +84,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
           <Avatar sx={{ 
-            bgcolor: (theme) => theme.palette.accent.quiz, 
+            bgcolor: (theme) => theme.palette.primary.main, 
             mr: 2,
             width: { xs: 40, sm: 48 },
             height: { xs: 40, sm: 48 }
@@ -132,7 +134,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
               borderRadius: 4, 
               bgcolor: 'grey.100',
               '& .MuiLinearProgress-bar': {
-                bgcolor: (theme) => theme.palette.accent.quiz,
+                bgcolor: (theme) => theme.palette.primary.main,
                 borderRadius: 4
               }
             }}
@@ -159,7 +161,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                 '&:hover': { 
                   boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transform: 'translateY(-2px)',
-                  borderColor: (theme) => `${theme.palette.accent.quiz}4D`
+                  borderColor: (theme) => `${theme.palette.primary.main}4D`
                 },
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 borderRadius: 3,
@@ -187,7 +189,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                       >
                         {quiz.title}
                       </Typography>
-                      {quiz.completed && <CheckCircle sx={{ fontSize: 20, color: (theme) => theme.palette.accent.chat }} />}
+                      {quiz.completed && <CheckCircle sx={{ fontSize: 20, color: (theme) => theme.palette.primary.main }} />}
                     </Box>
                     <Typography 
                       variant="body2" 
@@ -248,14 +250,15 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                       variant={quiz.completed ? "outlined" : "contained"}
                       startIcon={quiz.completed ? <CheckCircle /> : <PlayArrow />}
                       size={window.innerWidth < 600 ? "medium" : "small"}
+                      onClick={()=>{navigate(`/quiz/attempt/${quiz.id}`)}}
                       sx={{ 
                         minWidth: { xs: '100%', sm: 100 },
-                        bgcolor: (theme) => quiz.completed ? 'transparent' : theme.palette.accent.quiz,
-                        borderColor: (theme) => quiz.completed ? theme.palette.accent.quiz : 'transparent',
-                        color: (theme) => quiz.completed ? theme.palette.accent.quiz : 'white',
+                        bgcolor: (theme) => quiz.completed ? 'transparent' : theme.palette.primary.main,
+                        borderColor: (theme) => quiz.completed ? theme.palette.primary.main : 'transparent',
+                        color: (theme) => quiz.completed ? theme.palette.primary.main : 'white',
                         '&:hover': {
-                          bgcolor: (theme) => quiz.completed ? `${theme.palette.accent.quiz}0A` : theme.palette.secondary.dark,
-                          borderColor: (theme) => theme.palette.accent.quiz
+                          bgcolor: (theme) => quiz.completed ? `${theme.palette.primary.main}0A` : theme.palette.secondary.dark,
+                          borderColor: (theme) => theme.palette.primary.main
                         }
                       }}
                     >

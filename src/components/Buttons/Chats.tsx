@@ -1,9 +1,9 @@
+import ChatIcon from "@mui/icons-material/Chat";
 import React from "react";
 import { IconButton, Tooltip, Badge } from "@mui/material";
-import { Notifications } from "@mui/icons-material";
-import { useTheme } from "../theme";
+import { useTheme } from "../../theme";
 
-interface NotificationsButtonProps {
+interface ChatsProps {
   size?: "small" | "medium" | "large";
   showTooltip?: boolean;
   variant?: "default" | "contained" | "outlined";
@@ -11,7 +11,7 @@ interface NotificationsButtonProps {
   onClick?: () => void;
 }
 
-export const NotificationsButton: React.FC<NotificationsButtonProps> = ({
+export const Chats: React.FC<ChatsProps> = ({
   size = "medium",
   showTooltip = true,
   variant = "default",
@@ -51,11 +51,11 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({
     };
   };
 
-  const notificationsButton = (
+  const chatsButton = (
     <IconButton
       onClick={onClick}
       size={size}
-      aria-label="Notifications"
+      aria-label="SeeChats"
       sx={{
         transition: "all 0.3s ease-in-out",
         ...getBackgroundSx(),
@@ -74,13 +74,13 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({
       }}
     >
       <Badge badgeContent={badgeContent} color="error" variant="dot">
-        <Notifications />
+        <ChatIcon />
       </Badge>
     </IconButton>
   );
 
   if (showTooltip) {
-    return <Tooltip title="Notifications">{notificationsButton}</Tooltip>;
+    return <Tooltip title="Chats">{chatsButton}</Tooltip>;
   }
-  return notificationsButton;
+  return chatsButton;
 };

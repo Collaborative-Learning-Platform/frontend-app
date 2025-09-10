@@ -1,33 +1,63 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import {
 
-
-
+  Container,
+  Typography,
+  Button,
+  Divider,
+  Stack,
+  Paper,
+} from "@mui/material";
 
 function About() {
-  
-  const [loading, setLoading] = useState(false);
-
-  const handleTestLogin = async () => {
-    setLoading(true);
-
-
-    setLoading(false);
-  };
-
   return (
-    <div>
-      <h1>About Page</h1>
-      <p>This is the about page.</p>
-      <nav>
-        <Link to="/">Home</Link> | <Link to="/about">About</Link> | <Link to="/create-quiz">Create Quiz</Link> | <Link to="/theme-demo">Theme Demo</Link>
-      </nav>
-      <hr />
-      <button onClick={handleTestLogin} disabled={loading} style={{marginTop: 16}}>
-        {loading ? "Testing /auth/login..." : "Test /auth/login"}
-      </button>
-     
-    </div>
+    <Container maxWidth="md" sx={{ py: 6 }}>
+      <Paper
+        elevation={2}
+        sx={{
+          p: { xs: 3, sm: 5 },
+          borderRadius: 3,
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          About <span style={{ color: "#1976d2" }}>Learni</span>
+        </Typography>
+
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ mb: 3, lineHeight: 1.7 }}
+        >
+          Learni is a collaborative learning platform designed to bring{" "}
+          <strong>Admins, Tutors, and Students</strong> together in an engaging
+          and productive way.  
+          <br />
+          Our goal is to make online education more interactive with{" "}
+          group-based quizzes, real-time collaboration, and resource sharing —
+          all in one place.
+        </Typography>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          justifyContent="center"
+          sx={{ mb: 4 }}
+        >
+          <Button component={Link} to="/" variant="contained">
+            Back to Home
+          </Button>
+
+        </Stack>
+
+        <Typography variant="caption" color="text.secondary">
+          🚀 Built with React, NestJS, and PostgreSQL — empowering modern
+          education.
+        </Typography>
+      </Paper>
+    </Container>
   );
 }
 

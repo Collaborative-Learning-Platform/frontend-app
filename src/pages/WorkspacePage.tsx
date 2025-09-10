@@ -7,14 +7,16 @@ import { gridTemplateColumnsStyles } from '../styles/pages/workspace';
 const mockWorkspace = {
     name:'CS3040 - Software Engineering',
     mainGroups: [
-        { id: 1, name: 'CSE 3040 - CSE group' },
-        { id: 2, name: 'CSE 3040 - ENTC group' },
+        { id: 1, name: 'CSE 3040 - CSE group' ,footerSlot: <Typography variant="caption" color="text.secondary">5 members</Typography>},
+        { id: 2, name: 'CSE 3040 - ENTC group' ,footerSlot: <Typography variant="caption" color="text.secondary">3 members</Typography>},
     ],
     otherGroups: [
-        { id: 3, name: 'Study Group - mid exam' },
-        { id: 4, name: 'Study Group - Viva' },
+        { id: 3, name: 'Study Group - mid exam' ,footerSlot: <Typography variant="caption" color="text.secondary">4 members</Typography>},
+        { id: 4, name: 'Study Group - Viva' ,footerSlot: <Typography variant="caption" color="text.secondary">2 members</Typography>},
     ]
 }
+
+
 
 const WorkspacePage = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -42,7 +44,7 @@ const WorkspacePage = () => {
                                     sx={gridTemplateColumnsStyles}
                                 >
                                     {mockWorkspace.mainGroups.map(group => (
-                                        <GroupCard key={group.id} id={group.id} name={group.name} type="main" onClick={handleClick} />
+                                        <GroupCard key={group.id} id={group.id} name={group.name} type="main" onClick={handleClick} footerSlot={group.footerSlot} />
                                     ))}
                                 </Box>
                     </Box>
@@ -55,7 +57,7 @@ const WorkspacePage = () => {
                                     sx={gridTemplateColumnsStyles}
                                 >
                                     {mockWorkspace.otherGroups.map(group => (
-                                        <GroupCard key={group.id} id={group.id} name={group.name} type="other" onClick={handleClick} />
+                                        <GroupCard key={group.id} id={group.id} name={group.name} type="other" onClick={handleClick} footerSlot={group.footerSlot} />
                                     ))}
                                 </Box>
                     </Box>
