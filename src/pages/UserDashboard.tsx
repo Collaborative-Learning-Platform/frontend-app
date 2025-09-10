@@ -1,12 +1,6 @@
-import {
-  Box,
-  Container,
-  Typography,
-  Avatar,
-  Paper,
-} from "@mui/material";
-// import { Add as PlusIcon } from "@mui/icons-material";
+import { Box, Container, Typography, Avatar, Paper } from "@mui/material";
 import { Outlet } from "react-router-dom";
+import { useAuth } from "../contexts/Authcontext";
 
 const mockUser = {
   name: "Vinuka Buddhima",
@@ -19,6 +13,8 @@ const mockUser = {
 };
 
 export default function UserDashboard() {
+  const { name } = useAuth();
+  console.log(name);
   return (
     <Box sx={{ minHeight: "100%", bgcolor: "background.default" }}>
       <Paper elevation={0} sx={{ borderColor: "divider" }}>
@@ -44,7 +40,7 @@ export default function UserDashboard() {
               <Avatar
                 sx={{ width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 } }}
               >
-                {mockUser.name
+                {String(name)
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
@@ -55,7 +51,7 @@ export default function UserDashboard() {
                   fontWeight="bold"
                   sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }}
                 >
-                  Welcome back, {mockUser.name}
+                  Welcome back, {name}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -66,27 +62,6 @@ export default function UserDashboard() {
                 </Typography>
               </Box>
             </Box>
-
-            {/* <Box
-              sx={{
-                display: "flex",
-                width: { xs: "100%", sm: "auto" },
-                justifyContent: { xs: "center", sm: "flex-start" },
-              }}
-            >
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<PlusIcon />}
-                sx={{
-                  minWidth: { xs: "100%", sm: "auto" },
-                  py: { xs: 1, sm: 0.5 },
-                  mt: { xs: 1, sm: 0 },
-                }}
-              >
-                Join Group
-              </Button>
-            </Box> */}
           </Box>
         </Container>
       </Paper>
