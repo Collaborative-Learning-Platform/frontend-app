@@ -96,6 +96,8 @@ export default function SignInPage() {
     try {
       const response = await axiosInstance.post("/auth/login", formData);
       if (response.data.success) {
+
+
         setAuth( response.data.user_id, response.data.role);
         setSuccess(true);
 
@@ -107,10 +109,14 @@ export default function SignInPage() {
         }
 
         setTimeout(() => {
-          if (response.data.role === "user") navigate("/user-dashboard");
-          else if (response.data.role === "admin") navigate("/admin-dashboard");
-          else if (response.data.role === "tutor") navigate("/tutor-dashboard");
-        }, 1000);
+                if (response.data.firstTimeLogin) {
+                  navigate("/first-time-login", { state: { userId: response.data.user_id } });
+                } else {
+                  if (response.data.role === "user") navigate("/user-dashboard");
+                  else if (response.data.role === "admin") navigate("/admin-dashboard");
+                  else if (response.data.role === "tutor") navigate("/tutor-dashboard");
+                }
+              }, 1000);
       } else {
         setError(response.data.message || "Login failed. Please try again.");
       }
