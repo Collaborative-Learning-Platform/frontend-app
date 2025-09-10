@@ -122,30 +122,6 @@ const LandingPage = () => {
           </Typography>
           {!isMobile && (
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              {/* <Button color="inherit" sx={{ color: 'text.primary' }}>Features</Button> */}
-              {/* <Button color="inherit" sx={{ color: 'text.primary' }}>How It Works</Button> */}
-              {/* <Button 
-                color="inherit" 
-                sx={{ color: 'text.primary' }}
-                component={Link}
-                to="/about"
-              >
-                About
-              </Button> */}
-              {/* <Button 
-                color="inherit" 
-                sx={{ color: 'text.primary' }}
-                onClick={() => navigate('/theme-demo')}
-              >
-                Theme Demo
-              </Button> */}
-              {/* <Button 
-                color="inherit" 
-                sx={{ color: 'text.primary' }}
-                onClick={() => navigate('/quiz')}
-              >
-                Create Quiz
-              </Button> */}
               
               <Button variant="outlined" color="primary" sx={{ ml: 1 }} component={Link} to="/login">
                 Login
@@ -411,54 +387,7 @@ const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* Testimonials Section
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography
-          variant="h2"
-          textAlign="center"
-          sx={{ mb: 6, fontWeight: 300 }}
-        >
-          What Our Users Say
-        </Typography>
-
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: 'repeat(3, 1fr)'
-            },
-            gap: 4,
-          }}
-        >
-          {testimonials.map((testimonial, index) => (
-            <Paper
-              key={index}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: '100%',
-                borderLeft: '4px solid',
-                borderColor: 'primary.main',
-                backgroundColor: mode === 'light' ? 'grey.50' : 'grey.800',
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{ mb: 2, fontStyle: 'italic' }}
-              >
-                "{testimonial.quote}"
-              </Typography>
-              <Typography variant="subtitle2" color="primary.main">
-                {testimonial.author}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {testimonial.role}
-              </Typography>
-            </Paper>
-          ))}
-        </Box>
-      </Container> */}
+      
 
       {/* Final CTA Section */}
       <Box

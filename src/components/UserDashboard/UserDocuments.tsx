@@ -179,7 +179,7 @@ export const UserDocuments = () => {
               justifyContent: "space-between",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2}}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <FileTextIcon
                   sx={{ fontSize: 28, color: theme.palette.primary.main }}
