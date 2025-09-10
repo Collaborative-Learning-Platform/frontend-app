@@ -1,5 +1,4 @@
 
-/* Autofill background and text color fix for all browsers using theme variables */
 body[data-theme="light"] {
   --autofill-bg: #fff;
   --autofill-color: #212121;
@@ -39,3 +38,4 @@ select:-moz-autofill {
   -moz-text-fill-color: var(--autofill-color) !important;
   caret-color: var(--autofill-color) !important;
 }
+

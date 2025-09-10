@@ -107,7 +107,7 @@ const ResourceSection = ({ groupId }: ResourceSectionProps) => {
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar sx={{ 
-              bgcolor: (theme) => theme.palette.accent.resources, 
+              bgcolor: (theme) => theme.palette.primary.main, 
               mr: 2,
               width: { xs: 40, sm: 48 },
               height: { xs: 40, sm: 48 }
@@ -140,7 +140,7 @@ const ResourceSection = ({ groupId }: ResourceSectionProps) => {
             variant="contained"
             startIcon={<Add />}
             sx={{ 
-              bgcolor: (theme) => theme.palette.accent.resources,
+              bgcolor: (theme) => theme.palette.primary.main,
               px: { xs: 2, sm: 3 },
               py: { xs: 1, sm: 1.5 },
               fontSize: { xs: '0.875rem', sm: '1rem' },
@@ -149,7 +149,7 @@ const ResourceSection = ({ groupId }: ResourceSectionProps) => {
               '&:hover': { 
                 bgcolor: '#dc2626',
                 transform: 'translateY(-1px)',
-                boxShadow: (theme) => `0 8px 25px ${theme.palette.accent.resources}4D`
+                boxShadow: (theme) => `0 8px 25px ${theme.palette.primary.main}4D`
               },
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
@@ -250,9 +250,9 @@ const ResourceSection = ({ groupId }: ResourceSectionProps) => {
                   <IconButton 
                     size="small" 
                     sx={{ 
-                      color: (theme) => theme.palette.accent.whiteboard,
+                      color: (theme) => theme.palette.primary.main,
                       '&:hover': {
-                        bgcolor: (theme) => `${theme.palette.accent.whiteboard}14`,
+                        bgcolor: (theme) => `${theme.palette.primary.main}14`,
                         transform: 'scale(1.1)'
                       },
                       transition: 'all 0.2s ease-in-out'
@@ -284,13 +284,13 @@ const ResourceSection = ({ groupId }: ResourceSectionProps) => {
             sx={{ 
               px: { xs: 3, sm: 4 },
               py: { xs: 1, sm: 1.5 },
-              borderColor: (theme) => theme.palette.accent.resources,
-              color: (theme) => theme.palette.accent.resources,
+              borderColor: (theme) => theme.palette.primary.main,
+              color: (theme) => theme.palette.primary.main,
               fontSize: { xs: '0.875rem', sm: '1rem' },
               fontWeight: 600,
               '&:hover': {
                 borderColor: '#dc2626',
-                bgcolor: (theme) => `${theme.palette.accent.resources}0A`,
+                bgcolor: (theme) => `${theme.palette.primary.main}0A`,
                 transform: 'translateY(-1px)'
               },
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'

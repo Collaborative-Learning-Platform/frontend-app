@@ -1,28 +1,7 @@
 import { createTheme } from "@mui/material/styles";
 
-declare module '@mui/material/styles' {
-  interface Palette {
-    accent: {
-      chat: string;
-      whiteboard: string;
-      editor: string;
-      quiz: string;
-      resources: string;
-    };
-  }
 
-  interface PaletteOptions {
-    accent?: {
-      chat?: string;
-      whiteboard?: string;
-      editor?: string;
-      quiz?: string;
-      resources?: string;
-    };
-  }
-}
 
-// Light theme configuration
 export const lightTheme = createTheme({
   palette: {
     mode: "light",
@@ -45,13 +24,6 @@ export const lightTheme = createTheme({
       dark: '#059669',
       light: '#34d399',
     },
-    accent: {
-      chat: '#10b981',
-      whiteboard: '#3b82f6',
-      editor: '#f59e0b',
-      quiz: '#8b5cf6',
-      resources: '#ef4444',
-    },
     background: {
       default: "#fafafa",
       paper: "#ffffff",
@@ -72,28 +44,34 @@ export const lightTheme = createTheme({
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 700,
-      fontSize: "2.5rem",
+  fontSize: "2.5rem",
+  lineHeight: 1.2,
     },
     h2: {
       fontWeight: 600,
-      fontSize: "2rem",
+  fontSize: "2rem",
+  lineHeight: 1.25,
     },
     h3: {
       fontWeight: 600,
-      fontSize: "1.75rem",
+  fontSize: "1.75rem",
+  lineHeight: 1.3,
     },
     h4: {
 
       fontWeight: 700,
-      fontSize: '1.5rem',
+  fontSize: '1.5rem',
+  lineHeight: 1.35,
     },
     h5: {
       fontWeight: 700,
-      fontSize: '1.25rem',
+  fontSize: '1.25rem',
+  lineHeight: 1.4,
     },
     h6: {
       fontWeight: 700,
-      fontSize: '1rem',
+  fontSize: '1rem',
+  lineHeight: 1.45,
 
     },
     body1: {

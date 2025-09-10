@@ -55,7 +55,7 @@ export function UserWorkspaces() {
 
     const handleEnterWorkspace = (id: number | string) => {
     // console.log("Entering workspace:", id);
-    navigate(`/workspace/${id}`); // Adjust the route as necessary
+    navigate(`/workspace/${id}`); 
     };
 
     return (
