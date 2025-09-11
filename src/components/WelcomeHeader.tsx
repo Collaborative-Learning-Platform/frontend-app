@@ -83,6 +83,7 @@ export default function WelcomeHeader() {
         </Box>
 
         {/* Right: Streak Badge */}
+        {role === "user" &&
         <Chip
           label={`${user.studyStreak} day study streak 🔥`}
           sx={{
@@ -92,7 +93,7 @@ export default function WelcomeHeader() {
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
             px: 1,
           }}
-        />
+        /> }
       </Box>
     </Paper>
   );
