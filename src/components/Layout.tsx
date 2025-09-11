@@ -119,9 +119,9 @@ const Layout = () => {
         <Box
           sx={{
             p: { xs: 2, sm: 3, md: 4 },
-            maxWidth: { xs: "100%", md: "1400px" }, // Full width on mobile, max width on desktop
-            mx: { xs: 0, md: "auto" }, // No centering on mobile, auto-center on desktop
-            width: "100%", // Ensure full width utilization
+            // maxWidth: { xs: "100%", md: "1400px" }, // Full width on mobile, max width on desktop
+            // mx: { xs: 0, md: "auto" }, // No centering on mobile, auto-center on desktop
+            // width: "100%", // Ensure full width utilization
             flexGrow: 1, // Allow content to grow and fill available space
             display: "flex",
             flexDirection: "column",
