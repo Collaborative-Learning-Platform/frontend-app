@@ -177,30 +177,57 @@ export const UserDocuments = () => {
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <CardContent sx={{ py: 3, px: 3 }}>
+        <CardContent sx={{ py: 3, px: { xs: 2, sm: 3 } }}>
           <Box
             sx={{
               display: "flex",
-              alignItems: "center",
+              alignItems: { xs: "flex-start", sm: "center" },
               justifyContent: "space-between",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 2, sm: 0 },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 1, sm: 2 },
+              }}
+            >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <FileTextIcon
-                  sx={{ fontSize: 28, color: theme.palette.primary.main }}
+                  sx={{
+                    fontSize: { xs: 24, sm: 28 },
+                    color: theme.palette.primary.main,
+                  }}
                 />
-                <Typography variant="h4" fontWeight="bold">
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{ fontSize: { xs: "1.5rem", sm: "2.125rem" } }}
+                >
                   My Documents
                 </Typography>
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
               <Button
                 variant="contained"
                 startIcon={<PlusIcon />}
                 onClick={handleNewDocument}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  py: { xs: 1, sm: 1.5 },
+                }}
               >
                 New Document
               </Button>
@@ -217,21 +244,23 @@ export const UserDocuments = () => {
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <CardContent sx={{ py: 2, px: 3 }}>
+        <CardContent sx={{ py: 2, px: { xs: 2, sm: 3 } }}>
           <Box
             sx={{
               display: "flex",
-              alignItems: "center",
+              alignItems: { xs: "stretch", sm: "center" },
               justifyContent: "space-between",
               gap: 2,
+              flexDirection: { xs: "column", sm: "row" },
             }}
           >
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
-                gap: 2,
+                alignItems: { xs: "stretch", sm: "center" },
+                gap: { xs: 1, sm: 2 },
                 flex: 1,
+                flexDirection: { xs: "column", sm: "row" },
               }}
             >
               <TextField
@@ -240,7 +269,11 @@ export const UserDocuments = () => {
                 size="small"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{ maxWidth: 400, flex: 1 }}
+                sx={{
+                  maxWidth: { xs: "100%", sm: 400 },
+                  flex: 1,
+                  width: { xs: "100%", sm: "auto" },
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -255,6 +288,7 @@ export const UserDocuments = () => {
                 variant="outlined"
                 size="small"
                 startIcon={<FilterIcon />}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
               >
                 Filter
               </Button>
@@ -265,11 +299,12 @@ export const UserDocuments = () => {
               exclusive
               onChange={handleViewModeChange}
               size="small"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
             >
-              <ToggleButton value="grid">
+              <ToggleButton value="grid" sx={{ flex: { xs: 1, sm: "none" } }}>
                 <Grid3X3Icon />
               </ToggleButton>
-              <ToggleButton value="list">
+              <ToggleButton value="list" sx={{ flex: { xs: 1, sm: "none" } }}>
                 <ListIcon />
               </ToggleButton>
             </ToggleButtonGroup>
@@ -278,7 +313,7 @@ export const UserDocuments = () => {
       </Card>
 
       {/* Main Content */}
-      <Box sx={{ flex: 1, overflow: "auto", p: 3 }}>
+      <Box sx={{ flex: 1, overflow: "auto", p: { xs: 2, sm: 3 } }}>
         <Box sx={{ maxWidth: "lg", mx: "auto", width: "100%" }}>
           {/* Quick Access Folders */}
           <Box sx={{ mb: 4 }}>
@@ -338,9 +373,11 @@ export const UserDocuments = () => {
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: { xs: "flex-start", sm: "center" },
                 justifyContent: "space-between",
                 mb: 2,
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 1, sm: 0 },
               }}
             >
               <Typography variant="h6" fontWeight="600">
@@ -348,7 +385,12 @@ export const UserDocuments = () => {
                   ? `Search Results (${filteredDocuments.length})`
                   : "Recent Documents"}
               </Typography>
-              <Button variant="text" size="small" startIcon={<ClockIcon />}>
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<ClockIcon />}
+                sx={{ alignSelf: { xs: "flex-start", sm: "center" } }}
+              >
                 Sort by Modified
               </Button>
             </Box>
@@ -361,7 +403,7 @@ export const UserDocuments = () => {
                       sx={{
                         cursor: "pointer",
                         transition: "all 0.2s ease-in-out",
-                        height: 280, // Fixed height for uniform cards
+                        height: { xs: 260, sm: 280 }, // Responsive height for uniform cards
                         display: "flex",
                         flexDirection: "column",
                         "&:hover": {
@@ -495,20 +537,23 @@ export const UserDocuments = () => {
                         },
                       }}
                     >
-                      <CardContent sx={{ p: 2 }}>
+                      <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                         <Box
                           sx={{
                             display: "flex",
-                            alignItems: "center",
+                            alignItems: { xs: "flex-start", sm: "center" },
                             justifyContent: "space-between",
+                            flexDirection: { xs: "column", sm: "row" },
+                            gap: { xs: 1, sm: 0 },
                           }}
                         >
                           <Box
                             sx={{
                               display: "flex",
-                              alignItems: "center",
+                              alignItems: { xs: "flex-start", sm: "center" },
                               gap: 2,
                               flex: 1,
+                              flexDirection: { xs: "column", sm: "row" },
                             }}
                           >
                             <Box
@@ -547,11 +592,17 @@ export const UserDocuments = () => {
                           <Box
                             sx={{
                               display: "flex",
-                              alignItems: "center",
-                              gap: 3,
+                              alignItems: { xs: "flex-start", sm: "center" },
+                              gap: { xs: 2, sm: 3 },
+                              flexDirection: { xs: "column", sm: "row" },
+                              width: { xs: "100%", sm: "auto" },
                             }}
                           >
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ order: { xs: 1, sm: 0 } }}
+                            >
                               {doc.lastModified}
                             </Typography>
                             <Box
@@ -559,6 +610,7 @@ export const UserDocuments = () => {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 0.5,
+                                order: { xs: 0, sm: 1 },
                               }}
                             >
                               <UsersIcon sx={{ fontSize: 14 }} />

@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
-import StyleIcon from "@mui/icons-material/Style";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import DescriptionIcon from "@mui/icons-material/Description";
 import SettingsSuggestIcon from "@mui/icons-material/SettingsSuggest";
@@ -23,11 +22,9 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export const FlashCardGenerator = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
   const numberOfCardsOptions = ["Five", "Ten", "Twenty"];
   const [numberOfCards, SetNumberOfCards] = useState("Ten");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -131,41 +128,15 @@ export const FlashCardGenerator = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const handleViewLibrary = () => {
-    navigate("/flashcard-library");
-  };
-
   return (
     <Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          mb: theme.spacing(3),
-        }}
-      >
-        <Box>
-          <Typography variant="h5" fontWeight="bold">
-            Generate FlashCards
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Transform your study materials into flashcards!
-          </Typography>
-        </Box>
-
-        <Button
-          variant="contained"
-          startIcon={<StyleIcon />}
-          onClick={handleViewLibrary}
-          sx={{
-            minWidth: "140px",
-            height: "40px",
-            px: 2,
-          }}
-        >
-          View Library
-        </Button>
+      <Box sx={{ mb: theme.spacing(3) }}>
+        <Typography variant="h5" fontWeight="bold">
+          Generate FlashCards
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Transform your study materials into flashcards!
+        </Typography>
       </Box>
       <Card>
         <CardHeader

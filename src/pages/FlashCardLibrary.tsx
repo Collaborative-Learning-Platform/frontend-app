@@ -2,7 +2,6 @@ import {
   Box,
   useTheme,
   Typography,
-  Button,
   Card,
   CardHeader,
   CardContent,
@@ -15,14 +14,12 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from "@mui/icons-material/Share";
 import BookIcon from "@mui/icons-material/Book";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PeopleIcon from "@mui/icons-material/People";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface FlashcardSet {
   id: string;
@@ -38,7 +35,6 @@ export const FlashCardLibrary = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   // Mock data for flashcard library
   const flashcardSets: FlashcardSet[] = [
@@ -134,42 +130,15 @@ export const FlashCardLibrary = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const handleNewSet = () => {
-    navigate("/flashcard-generator");
-  };
-
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          mb: theme.spacing(3),
-          width: "100%",
-        }}
-      >
-        <Box>
-          <Typography variant="h5" fontWeight="bold">
-            Flashcard Library
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage and study your flashcard collections
-          </Typography>
-        </Box>
-
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          sx={{
-            minWidth: "140px",
-            height: "40px",
-            px: 2,
-          }}
-          onClick={handleNewSet}
-        >
-          New Set
-        </Button>
+      <Box sx={{ mb: theme.spacing(3), width: "100%" }}>
+        <Typography variant="h5" fontWeight="bold">
+          Flashcard Library
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Manage and study your flashcard collections
+        </Typography>
       </Box>
 
       <Card sx={{ mb: theme.spacing(3) }}>
