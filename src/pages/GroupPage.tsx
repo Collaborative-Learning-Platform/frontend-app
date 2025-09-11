@@ -368,7 +368,10 @@ const GroupPage = () => {
       sx={{
         py: { xs: 1, sm: 2, md: 3 },
         px: { xs: 1, sm: 2, md: 3 },
-        maxWidth: '1400px',
+        width: "100%",
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
         mx: 'auto',
       }}
     >
@@ -432,6 +435,7 @@ const GroupPage = () => {
               <GroupNavigation
                 onNavigateToWhiteboard={handleNavigateToWhiteboard}
                 onNavigateToEditor={handleNavigateToEditor}
+                setTabIndex={setTabIndex}
               />
             </Stack>
           )}

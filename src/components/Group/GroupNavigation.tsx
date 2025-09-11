@@ -1,12 +1,5 @@
-// import { Card, CardContent, Typography, Box, Button } from '@mui/material';
-// import { 
-//   Chat, 
-//   Dashboard, 
-//   Description, 
-//   Quiz, 
-//   Folder,
-//   ArrowForward 
-// } from '@mui/icons-material';
+// import { Card, CardContent, Typography, Box, Button, useTheme } from '@mui/material';
+// import { Chat, Dashboard, Description, Quiz, Folder, ArrowForward } from '@mui/icons-material';
 
 // interface GroupNavigationProps {
 //   onNavigateToWhiteboard: () => void;
@@ -14,58 +7,48 @@
 // }
 
 // const GroupNavigation = ({ onNavigateToWhiteboard, onNavigateToEditor }: GroupNavigationProps) => {
+//   const theme = useTheme();
+
 //   const navigationItems = [
 //     {
 //       title: 'Group Chat',
 //       description: 'Real-time messaging',
-//       icon: <Chat sx={{ fontSize: { xs: 20, sm: 24 } }} />,
-//       colorKey: 'chat' as const,
+//       icon: <Chat />,
 //       action: () => document.getElementById('group-chat')?.scrollIntoView({ behavior: 'smooth' })
 //     },
 //     {
 //       title: 'Whiteboard',
 //       description: 'Collaborative drawing',
-//       icon: <Dashboard sx={{ fontSize: { xs: 20, sm: 24 } }} />,
-//       colorKey: 'whiteboard' as const,
+//       icon: <Dashboard />,
 //       action: onNavigateToWhiteboard
 //     },
 //     {
 //       title: 'Document Editor',
 //       description: 'Shared documents',
-//       icon: <Description sx={{ fontSize: { xs: 20, sm: 24 } }} />,
-//       colorKey: 'editor' as const,
+//       icon: <Description />,
 //       action: onNavigateToEditor
 //     },
 //     {
 //       title: 'Quiz Section',
 //       description: 'Practice & assessments',
-//       icon: <Quiz sx={{ fontSize: { xs: 20, sm: 24 } }} />,
-//       colorKey: 'quiz' as const,
+//       icon: <Quiz />,
 //       action: () => document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' })
 //     },
 //     {
 //       title: 'Resources',
 //       description: 'Files & materials',
-//       icon: <Folder sx={{ fontSize: { xs: 20, sm: 24 } }} />,
-//       colorKey: 'resources' as const,
+//       icon: <Folder />,
 //       action: () => document.getElementById('resource-section')?.scrollIntoView({ behavior: 'smooth' })
 //     }
 //   ];
 
 //   return (
-//     <Card sx={{ overflow: 'visible' }}>
+//     <Card sx={{ overflow: 'visible', bgcolor: theme.palette.background.paper }}>
 //       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-//         <Typography 
-//           variant="h6" 
-//           sx={{ 
-//             mb: { xs: 2, sm: 3 }, 
-//             fontWeight: 700,
-//             color: 'text.primary',
-//             fontSize: { xs: '1.125rem', sm: '1.25rem' }
-//           }}
-//         >
+//         <Typography variant="h6" sx={{ mb: { xs: 2, sm: 3 }, fontWeight: 700, color: 'text.primary' }}>
 //           Quick Actions
 //         </Typography>
+
 //         <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 1.5 } }}>
 //           {navigationItems.map((item, index) => (
 //             <Button
@@ -78,22 +61,22 @@
 //                 justifyContent: 'space-between',
 //                 textAlign: 'left',
 //                 borderRadius: 3,
-//                 bgcolor: 'grey.50',
+//                 bgcolor: theme.palette.background.paper,
 //                 border: '1px solid transparent',
 //                 '&:hover': {
-//                   bgcolor: 'white',
+//                   bgcolor: theme.palette.action.hover, // subtle gray
 //                   transform: 'translateY(-1px)',
-//                   boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-//                   border: '1px solid rgba(0,0,0,0.05)'
+//                   boxShadow: theme.shadows[2],
+//                   border: `1px solid ${theme.palette.divider}`
 //                 },
-//                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+//                 transition: 'all 0.3s ease-in-out'
 //               }}
 //             >
 //               <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
 //                 <Box sx={{ 
 //                   p: { xs: 0.75, sm: 1 }, 
 //                   borderRadius: 2.5, 
-//                   bgcolor: (theme) => theme.palette.primary.main,
+//                   bgcolor: theme.palette.primary.main,
 //                   color: 'white',
 //                   display: 'flex',
 //                   alignItems: 'center',
@@ -104,33 +87,15 @@
 //                   {item.icon}
 //                 </Box>
 //                 <Box sx={{ minWidth: 0, flex: 1 }}>
-//                   <Typography 
-//                     variant="subtitle2" 
-//                     sx={{ 
-//                       fontWeight: 600, 
-//                       color: 'text.primary',
-//                       fontSize: { xs: '0.875rem', sm: '1rem' },
-//                       lineHeight: 1.3
-//                     }}
-//                   >
+//                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
 //                     {item.title}
 //                   </Typography>
-//                   <Typography 
-//                     variant="caption" 
-//                     sx={{ 
-//                       color: 'text.secondary',
-//                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
-//                       display: { xs: 'none', sm: 'block' }
-//                     }}
-//                   >
+//                   <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
 //                     {item.description}
 //                   </Typography>
 //                 </Box>
 //               </Box>
-//               <ArrowForward sx={{ 
-//                 color: 'text.secondary',
-//                 fontSize: { xs: 18, sm: 20 }
-//               }} />
+//               <ArrowForward sx={{ color: 'text.secondary', fontSize: { xs: 18, sm: 20 } }} />
 //             </Button>
 //           ))}
 //         </Box>
@@ -140,55 +105,55 @@
 // };
 
 // export default GroupNavigation;
-import { Card, CardContent, Typography, Box, Button } from '@mui/material';
+import { Card, CardContent, Typography, Box, Button, useTheme } from '@mui/material';
 import { Chat, Dashboard, Description, Quiz, Folder, ArrowForward } from '@mui/icons-material';
 
 interface GroupNavigationProps {
   onNavigateToWhiteboard: () => void;
   onNavigateToEditor: () => void;
+  setTabIndex: (index: number) => void;
 }
 
-const GroupNavigation = ({ onNavigateToWhiteboard, onNavigateToEditor }: GroupNavigationProps) => {
+const GroupNavigation = ({ onNavigateToWhiteboard, onNavigateToEditor, setTabIndex }: GroupNavigationProps) => {
+  const theme = useTheme();
+
   const navigationItems = [
     {
       title: 'Group Chat',
       description: 'Real-time messaging',
       icon: <Chat />,
-      action: () => document.getElementById('group-chat')?.scrollIntoView({ behavior: 'smooth' })
+      action: () => setTabIndex(3), // Switch to Chat tab
     },
     {
       title: 'Whiteboard',
       description: 'Collaborative drawing',
       icon: <Dashboard />,
-      action: onNavigateToWhiteboard
+      action: onNavigateToWhiteboard,
     },
     {
       title: 'Document Editor',
       description: 'Shared documents',
       icon: <Description />,
-      action: onNavigateToEditor
+      action: onNavigateToEditor,
     },
     {
       title: 'Quiz Section',
       description: 'Practice & assessments',
       icon: <Quiz />,
-      action: () => document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' })
+      action: () => setTabIndex(1), // Switch to Quiz tab
     },
     {
       title: 'Resources',
       description: 'Files & materials',
       icon: <Folder />,
-      action: () => document.getElementById('resource-section')?.scrollIntoView({ behavior: 'smooth' })
-    }
+      action: () => setTabIndex(2), // Switch to Resources tab
+    },
   ];
 
   return (
-    <Card sx={{ overflow: 'visible' }}>
+    <Card sx={{ overflow: 'visible', bgcolor: theme.palette.background.paper, boxShadow: theme.shadows[4], borderRadius: 3 }}>
       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-        <Typography 
-          variant="h6" 
-          sx={{ mb: { xs: 2, sm: 3 }, fontWeight: 700, color: 'text.primary' }}
-        >
+        <Typography variant="h6" sx={{ mb: { xs: 2, sm: 3 }, fontWeight: 700, color: 'text.primary' }}>
           Quick Actions
         </Typography>
 
@@ -204,39 +169,38 @@ const GroupNavigation = ({ onNavigateToWhiteboard, onNavigateToEditor }: GroupNa
                 justifyContent: 'space-between',
                 textAlign: 'left',
                 borderRadius: 3,
-                bgcolor: 'background.paper',
+                bgcolor: theme.palette.background.paper,
                 border: '1px solid transparent',
                 '&:hover': {
-                  bgcolor: 'primary.light',
+                  bgcolor: theme.palette.action.hover,
                   transform: 'translateY(-1px)',
-                  boxShadow: 2,
-                  border: '1px solid rgba(0,0,0,0.05)'
+                  boxShadow: theme.shadows[2],
+                  border: `1px solid ${theme.palette.divider}`,
                 },
-                transition: 'all 0.3s ease-in-out'
+                transition: 'all 0.3s ease-in-out',
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                <Box sx={{ 
-                  p: { xs: 0.75, sm: 1 }, 
-                  borderRadius: 2.5, 
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: { xs: 36, sm: 44 },
-                  minHeight: { xs: 36, sm: 44 }
-                }}>
+                <Box
+                  sx={{
+                    p: { xs: 0.75, sm: 1 },
+                    borderRadius: 2.5,
+                    bgcolor: theme.palette.primary.main,
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: { xs: 36, sm: 44 },
+                    minHeight: { xs: 36, sm: 44 },
+                  }}
+                >
                   {item.icon}
                 </Box>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                     {item.title}
                   </Typography>
-                  <Typography 
-                    variant="caption" 
-                    sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}
-                  >
+                  <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                     {item.description}
                   </Typography>
                 </Box>

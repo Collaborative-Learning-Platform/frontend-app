@@ -375,7 +375,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
             <Button
               variant="outlined"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/user-dashboard")}
               sx={{ mr: 2 }}
             >
               Back to Dashboard
@@ -453,7 +453,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Submit Confirmation Dialog */}
       <Dialog open={showSubmitDialog} onClose={() => setShowSubmitDialog(false)}>
         <DialogTitle>Submit Quiz?</DialogTitle>
