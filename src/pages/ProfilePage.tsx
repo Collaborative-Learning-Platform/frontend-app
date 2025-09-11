@@ -33,7 +33,7 @@ import {
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState({
     username: "john_student",
-    email: "john.doe@university.edu",
+    email: "john.doe@example.edu",
     gender: "male",
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
