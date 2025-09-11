@@ -74,11 +74,11 @@ function App() {
           <Route element={<UserDashboard />}>
             <Route path="/user-dashboard" element={<UserOverview />} />
             <Route path="/tutor-dashboard" element={<TutorOverview />} />
-            <Route path="/tutor-analytics" element={<TutorAnalytics />} />
-            <Route path="/user-workspaces" element={<UserWorkspaces />} />
             <Route path="/study-plans" element={<UserStudyPlan />} />
             <Route path="/analytics" element={<UserAnalytics />} />
           </Route>
+          <Route path="/user-workspaces" element={<UserWorkspaces />} />
+          <Route path="/tutor-analytics" element={<TutorAnalytics />} />
           <Route path="/quiz/attempt/:quizId" element={<QuizAttempt />} />
           <Route path="/user-documents" element={<UserDocuments />} />
           <Route element={<FlashCardLayout />}>
