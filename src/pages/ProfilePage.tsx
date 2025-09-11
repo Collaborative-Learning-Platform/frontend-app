@@ -27,6 +27,7 @@ import {
   VisibilityOff as EyeOff,
   CameraAlt as Camera,
   AccountCircle as CircleUser,
+  Settings as SettingsIcon,
 } from "@mui/icons-material";
 
 export default function ProfilePage() {
@@ -55,10 +56,25 @@ export default function ProfilePage() {
     <Box>
       <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
         <Container>
-          <Box sx={{ textAlign: "center", mb: 4 }}>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
-              Profile Settings
-            </Typography>
+          <Box sx={{ mb: 4 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                mb: 2,
+              }}
+            >
+              <SettingsIcon
+                sx={{
+                  color: "primary.main",
+                  fontSize: 32,
+                }}
+              />
+              <Typography variant="h4" fontWeight={700}>
+                Profile Settings
+              </Typography>
+            </Box>
             <Typography variant="subtitle1" color="text.secondary">
               Manage your account information and security settings
             </Typography>

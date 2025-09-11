@@ -21,7 +21,6 @@ import {
   Palette,
   Notifications as Bell,
   Person as User,
-  Edit as PenTool,
   Description as FileText,
   DarkMode as Moon,
   LightMode as Sun,
@@ -34,6 +33,7 @@ import {
   Save,
   RestartAlt as RotateCcw,
 } from "@mui/icons-material";
+import GestureIcon from "@mui/icons-material/Gesture";
 import { useNavigate } from "react-router-dom";
 import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
 
@@ -130,24 +130,28 @@ export default function SettingsPage() {
       <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
         <Container maxWidth="lg">
           {/* Header */}
-          <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Box sx={{ mb: 4 }}>
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
                 gap: 2,
                 mb: 2,
               }}
             >
-              <SettingsIcon sx={{ color: "primary.main", fontSize: 32 }} />
+              <SettingsIcon
+                sx={{
+                  color: "primary.main",
+                  fontSize: 32,
+                }}
+              />
               <Typography variant="h4" fontWeight={700}>
                 Settings
               </Typography>
             </Box>
             <Typography variant="subtitle1" color="text.secondary">
               Customize your collaborative learning experience with personalized
-              preferences for whiteboard, documents, and notifications.
+              preferences for Learni.
             </Typography>
           </Box>
 
@@ -155,7 +159,7 @@ export default function SettingsPage() {
             {/* Whiteboard Settings */}
             <Card sx={{ boxShadow: 1 }}>
               <CardHeader
-                avatar={<PenTool sx={{ color: "#1976d2", fontSize: 20 }} />}
+                avatar={<GestureIcon sx={{ color: "#1976d2", fontSize: 20 }} />}
                 title={
                   <Typography variant="h6">Whiteboard Settings</Typography>
                 }
@@ -194,29 +198,6 @@ export default function SettingsPage() {
                           setWhiteboardSettings((prev) => ({
                             ...prev,
                             gridEnabled: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Snap to Grid
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={whiteboardSettings.snapToGrid}
-                        onChange={(_, checked) =>
-                          setWhiteboardSettings((prev) => ({
-                            ...prev,
-                            snapToGrid: checked,
                           }))
                         }
                       />
