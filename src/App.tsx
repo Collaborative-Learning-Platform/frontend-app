@@ -4,7 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/404";
 import About from "./pages/About";
 import Layout from "./components/Layout";
-import QuizRoutes from "./pages/quiz/QuizRoutes";
+// import QuizRoutes from "./pages/quiz/QuizRoutes";
 import AdminDashboard from "./pages/AdminDashboard";
 import { UserManagement } from "./components/AdminDashboard/UserManagement";
 import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceMAnagement";
@@ -29,58 +29,80 @@ import GroupPage from "./pages/GroupPage";
 import SignInLayout from "./pages/signIn/SignInLayout";
 import ForgotPasswordPage from "./pages/signIn/ForgotPassword";
 import FirstTimeLoginPage from "./pages/signIn/FirstTimeLoginPage";
-
+import ProtectedRoute from "./pages/ProtectedRoutes";
+import CreateQuizPage from "./pages/quiz/Createquiz";
+import QuizAttempt from "./pages/quiz/QuizAttempt";
+import Unauthorized from "./pages/Unauthorized";
 
 function App() {
   return (
     <Routes>
+      {/* Public */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<SignInLayout />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/first-time-login" element={<FirstTimeLoginPage />} />
+      <Route path="about" element={<About />} />
 
-      <Route element={<Layout />}>
-        <Route path="user-profile" element={<ProfilePage />} />
-        <Route path="about" element={<About />} />
-        <Route path="/quiz/*" element={<QuizRoutes />} />
-        <Route path="add-users" element={<AddUsers />} />
-        <Route path="workspace/:workspaceId" element={<WorkspacePage />} />
-        <Route
-          path="workspace/:workspaceId/group/:groupId"
-          element={<GroupPage />}
-        />
-
-        <Route element={<UserDashboard />}>
-          <Route path="/user-dashboard" element={<UserOverview />} />
-          <Route path="/user-workspaces" element={<UserWorkspaces />} />
-          <Route path="/study-plans" element={<UserStudyPlan />} />
-          <Route path="/analytics" element={<UserAnalytics />} />
-          <Route path="/user-documents" element={<UserDocuments />} />
-
-          {/* Flashcard pages with shared stats */}
-          <Route element={<FlashCardLayout />}>
-            <Route
-              path="/flashcard-generator"
-              element={<FlashCardGenerator />}
-            />
-            <Route path="/flashcard-library" element={<FlashCardLibrary />} />
-          </Route>
-        </Route>
-
-        <Route element={<AdminDashboard />}>
-          <Route path="admin-dashboard" element={<AdminOverview />} />
-          <Route path="admin-users" element={<UserManagement />} />
-          <Route path="admin-workspaces" element={<WorkspaceManagement />} />
-          <Route path="admin-analytics" element={<AnalyticsDashboard />} />
-          <Route path="admin-settings" element={<SystemSettings />} />
-        </Route>
-
-        
+      {/* All authenticated users */}
+      <Route element={<ProtectedRoute allowedRoles={['user', 'admin','tutor']} />} >
+          <Route path="/first-time-login" element={<FirstTimeLoginPage />} />
       </Route>
 
-      <Route path="/whiteboard" element={<Whiteboard />} />
-      <Route path="/document-editor" element={<DocumentEditor />} />
+      <Route element={<Layout />}>
+          <Route element={<ProtectedRoute allowedRoles={['tutor']} />} >
+              <Route path="/quiz" element={<CreateQuizPage />} />
+          </Route>
+          {/* All authenticated users */}
+          <Route element={<ProtectedRoute allowedRoles={['user', 'admin','tutor']} />} >
+                <Route path="user-profile" element={<ProfilePage />} />
+                <Route path="workspace/:workspaceId" element={<WorkspacePage />} />
+                <Route
+                  path="workspace/:workspaceId/group/:groupId"
+                  element={<GroupPage />}
+                />
+          </Route>
 
+          {/* Protected Routes for user and tutor */}
+          <Route element={<ProtectedRoute allowedRoles={['user','tutor']} />} >      
+            <Route element={<UserDashboard />}>
+              <Route path="/user-dashboard" element={<UserOverview />} />
+              <Route path="/user-workspaces" element={<UserWorkspaces />} />
+              <Route path="/study-plans" element={<UserStudyPlan />} />
+              <Route path="/analytics" element={<UserAnalytics />} />
+              <Route path="/user-documents" element={<UserDocuments />} />
+            </Route>
+            <Route path="/whiteboard" element={<Whiteboard />} />
+            <Route path="/document-editor" element={<DocumentEditor />} />
+            <Route path='/quiz/attempt/:quizId' element={<QuizAttempt />} />
+
+            <Route element={<FlashCardLayout />}>
+              <Route
+                path="/flashcard-generator"
+                element={<FlashCardGenerator />}
+              />
+              <Route path="/flashcard-library" element={<FlashCardLibrary />} />
+            </Route>
+
+
+          </Route>
+
+          {/* Admin only routes */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />} >
+            <Route path="add-users" element={<AddUsers />} />
+            <Route element={<AdminDashboard />}>
+              <Route path="admin-dashboard" element={<AdminOverview />} />
+              <Route path="admin-users" element={<UserManagement />} />
+              <Route path="admin-workspaces" element={<WorkspaceManagement />} />
+              <Route path="admin-analytics" element={<AnalyticsDashboard />} />
+              <Route path="admin-settings" element={<SystemSettings />} />
+            </Route>
+          </Route>  
+
+      </Route>
+
+
+      {/* Catch-all route for 404 Not Found */}
+      <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
