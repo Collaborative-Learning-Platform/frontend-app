@@ -158,7 +158,7 @@ export default function TutorAnalytics() {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "revert", gap: 1, mb: 3 }}>
         <BarChartIcon sx={{ fontSize: 30}} />
-        <Typography variant="h4" fontWeight="bold">
+        <Typography variant="h4"  fontWeight="bold">
           Quiz Analytics
         </Typography>
       </Box>

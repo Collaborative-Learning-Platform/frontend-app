@@ -19,15 +19,12 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  ListItemSecondaryAction,
 } from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
   Group,
   Assignment,
   Star,
-  Person,
-  Email,
   ExpandMore,
   Visibility,
   Edit,
@@ -170,20 +167,6 @@ const TutorOverview: React.FC = () => {
         return <CheckCircle sx={{ color: theme.palette.primary.main }} />;
       default:
         return <PlayArrow />;
-    }
-  };
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "submission":
-        return <Assignment sx={{ color: theme.palette.primary.main }} />;
-      case "question":
-        return <Email sx={{ color: theme.palette.primary.main }} />;
-      case "completion":
-        return <CheckCircle sx={{ color: theme.palette.primary.main }} />;
-      case "join":
-        return <Person sx={{ color: theme.palette.primary.main }} />;
-      default:
-        return <AccessTime />;
     }
   };
 
@@ -518,9 +501,6 @@ const TutorOverview: React.FC = () => {
                         </Box>
                       }
                     />
-                    <ListItemSecondaryAction>
-                      {getActivityIcon(activity.type)}
-                    </ListItemSecondaryAction>
                   </ListItem>
                   {index < recentActivity.length - 1 && (
                     <Divider sx={{ mx: 2, opacity: 0.5 }} />
