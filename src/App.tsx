@@ -4,7 +4,6 @@ import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/404";
 import About from "./pages/About";
 import Layout from "./components/Layout";
-// import QuizRoutes from "./pages/quiz/QuizRoutes";
 import AdminDashboard from "./pages/AdminDashboard";
 import { UserManagement } from "./components/AdminDashboard/UserManagement";
 import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceMAnagement";
@@ -71,10 +70,7 @@ function App() {
               <Route path="/analytics" element={<UserAnalytics />} />
               <Route path="/user-documents" element={<UserDocuments />} />
             </Route>
-            <Route path="/whiteboard" element={<Whiteboard />} />
-            <Route path="/document-editor" element={<DocumentEditor />} />
             <Route path='/quiz/attempt/:quizId' element={<QuizAttempt />} />
-
             <Route element={<FlashCardLayout />}>
               <Route
                 path="/flashcard-generator"
@@ -100,6 +96,11 @@ function App() {
 
       </Route>
 
+
+      <Route element={<ProtectedRoute allowedRoles={['user','tutor']} />} > 
+          <Route path="/whiteboard" element={<Whiteboard />} />
+          <Route path="/document-editor" element={<DocumentEditor />} />
+      </Route>
 
       {/* Catch-all route for 404 Not Found */}
       <Route path="/unauthorized" element={<Unauthorized />} />
