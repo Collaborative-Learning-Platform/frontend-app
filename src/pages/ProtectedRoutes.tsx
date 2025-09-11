@@ -7,9 +7,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
-  const { role } = useAuth();
+  const role = localStorage.getItem("role");
 
   if (!role) {
+    console.log("Role")
     return <Navigate to="/login" replace />;
   }
 
