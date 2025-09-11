@@ -14,22 +14,21 @@ import { UserOverview } from "./components/UserDashboard/UserOverview";
 import { UserWorkspaces } from "./components/UserDashboard/UserWorkspaces";
 import { UserStudyPlan } from "./components/UserDashboard/UserStudyPlan";
 import { UserAnalytics } from "./components/UserDashboard/UseAnalytics";
-import { UserDocuments } from "./components/UserDashboard/UserDocuments";
+import { UserDocuments } from "./pages/UserDocuments";
 import { AdminOverview } from "./components/AdminDashboard/AdminOverview";
 import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
 import { Whiteboard } from "./pages/Whiteboard";
 import { DocumentEditor } from "./pages/DocumentEditor";
-import { FlashCardGenerator } from "./components/UserDashboard/FlashCardGenerator";
-import { FlashCardLibrary } from "./components/UserDashboard/FlashCardLibrary";
-import { FlashCardLayout } from "./components/UserDashboard/FlashCardLayout";
+import { FlashCardGenerator } from "./pages/FlashCardGenerator";
+import { FlashCardLibrary } from "./pages/FlashCardLibrary";
+import { FlashCardLayout } from "./pages/FlashCardLayout";
 import AddUsers from "./pages/AddUsers";
 import WorkspacePage from "./pages/WorkspacePage";
 import GroupPage from "./pages/GroupPage";
 import SignInLayout from "./pages/signIn/SignInLayout";
 import ForgotPasswordPage from "./pages/signIn/ForgotPassword";
 import FirstTimeLoginPage from "./pages/signIn/FirstTimeLoginPage";
-
 
 function App() {
   return (
@@ -55,16 +54,14 @@ function App() {
           <Route path="/user-workspaces" element={<UserWorkspaces />} />
           <Route path="/study-plans" element={<UserStudyPlan />} />
           <Route path="/analytics" element={<UserAnalytics />} />
-          <Route path="/user-documents" element={<UserDocuments />} />
+        </Route>
 
-          {/* Flashcard pages with shared stats */}
-          <Route element={<FlashCardLayout />}>
-            <Route
-              path="/flashcard-generator"
-              element={<FlashCardGenerator />}
-            />
-            <Route path="/flashcard-library" element={<FlashCardLibrary />} />
-          </Route>
+        <Route path="/user-documents" element={<UserDocuments />} />
+
+        {/* Flashcard pages with shared stats */}
+        <Route element={<FlashCardLayout />}>
+          <Route path="/flashcard-generator" element={<FlashCardGenerator />} />
+          <Route path="/flashcard-library" element={<FlashCardLibrary />} />
         </Route>
 
         <Route element={<AdminDashboard />}>
@@ -74,8 +71,6 @@ function App() {
           <Route path="admin-analytics" element={<AnalyticsDashboard />} />
           <Route path="admin-settings" element={<SystemSettings />} />
         </Route>
-
-        
       </Route>
 
       <Route path="/whiteboard" element={<Whiteboard />} />
