@@ -217,7 +217,7 @@ export default function CreateQuizPage() {
     
     console.log("Saving quiz:", quiz);
     showAlert("success", "Quiz saved successfully!");
-    setTimeout(() => navigate("/user-dashboard"), 1500);
+    setTimeout(() => navigate("/tutor-dashboard"), 1500);
   };
 
   const handlePreviewQuiz = () => {
