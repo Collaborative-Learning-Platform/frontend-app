@@ -25,7 +25,7 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { role, clearAuth } = useAuth();
+  const {clearAuth } = useAuth();
   const navigate = useNavigate();
   // Memoized handlers to prevent unnecessary re-renders
   const handleDrawerToggle = useCallback(() => {
