@@ -22,6 +22,7 @@ import BookIcon from "@mui/icons-material/Book";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PeopleIcon from "@mui/icons-material/People";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface FlashcardSet {
   id: string;
@@ -37,6 +38,7 @@ export const FlashCardLibrary = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Mock data for flashcard library
   const flashcardSets: FlashcardSet[] = [
@@ -132,6 +134,10 @@ export const FlashCardLibrary = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handleNewSet = () => {
+    navigate("/flashcard-generator");
+  };
+
   return (
     <>
       <Box
@@ -152,7 +158,16 @@ export const FlashCardLibrary = () => {
           </Typography>
         </Box>
 
-        <Button variant="contained" startIcon={<AddIcon />}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          sx={{
+            minWidth: "140px",
+            height: "40px",
+            px: 2,
+          }}
+          onClick={handleNewSet}
+        >
           New Set
         </Button>
       </Box>

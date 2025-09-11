@@ -1,22 +1,52 @@
-import { Box, Typography } from '@mui/material'
-import GroupCard from '../components/workpsaces/GroupCard'
-import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect } from 'react';
-import { gridTemplateColumnsStyles } from '../styles/pages/workspace';
+import { Box, Typography } from "@mui/material";
+import GroupCard from "../components/workpsaces/GroupCard";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { gridTemplateColumnsStyles } from "../styles/pages/workspace";
 
 const mockWorkspace = {
-    name:'CS3040 - Software Engineering',
-    mainGroups: [
-        { id: 1, name: 'CSE 3040 - CSE group' ,footerSlot: <Typography variant="caption" color="text.secondary">5 members</Typography>},
-        { id: 2, name: 'CSE 3040 - ENTC group' ,footerSlot: <Typography variant="caption" color="text.secondary">3 members</Typography>},
-    ],
-    otherGroups: [
-        { id: 3, name: 'Study Group - mid exam' ,footerSlot: <Typography variant="caption" color="text.secondary">4 members</Typography>},
-        { id: 4, name: 'Study Group - Viva' ,footerSlot: <Typography variant="caption" color="text.secondary">2 members</Typography>},
-    ]
-}
-
-
+  name: "CS3040 - Software Engineering",
+  mainGroups: [
+    {
+      id: 1,
+      name: "CSE 3040 - CSE group",
+      footerSlot: (
+        <Typography variant="caption" color="text.secondary">
+          5 members
+        </Typography>
+      ),
+    },
+    {
+      id: 2,
+      name: "CSE 3040 - ENTC group",
+      footerSlot: (
+        <Typography variant="caption" color="text.secondary">
+          3 members
+        </Typography>
+      ),
+    },
+  ],
+  otherGroups: [
+    {
+      id: 3,
+      name: "Study Group - mid exam",
+      footerSlot: (
+        <Typography variant="caption" color="text.secondary">
+          4 members
+        </Typography>
+      ),
+    },
+    {
+      id: 4,
+      name: "Study Group - Viva",
+      footerSlot: (
+        <Typography variant="caption" color="text.secondary">
+          2 members
+        </Typography>
+      ),
+    },
+  ],
+};
 
 const WorkspacePage = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -26,43 +56,53 @@ const WorkspacePage = () => {
     // Fetch workspace data based on the ID
   }, [workspaceId]);
 
-
-    const handleClick = (groupId: number | string) => {
-        navigate(`/workspace/${workspaceId}/group/${groupId}`);
-    };
-
+  const handleClick = (groupId: number | string) => {
+    navigate(`/workspace/${workspaceId}/group/${groupId}`);
+  };
 
   return (
-        <Box>
-            <Typography variant="h4" mb={3}>{mockWorkspace.name}</Typography>
+    <Box>
+      <Typography variant="h4" mb={3}>
+        {mockWorkspace.name}
+      </Typography>
 
-                    <Box mb={4}>
-                        <Typography variant="h6" mb={1}>Main groups</Typography>
-                                <Box
-                                    display="grid"
-                                    gap={2}
-                                    sx={gridTemplateColumnsStyles}
-                                >
-                                    {mockWorkspace.mainGroups.map(group => (
-                                        <GroupCard key={group.id} id={group.id} name={group.name} type="main" onClick={handleClick} footerSlot={group.footerSlot} />
-                                    ))}
-                                </Box>
-                    </Box>
-
-                    <Box>
-                        <Typography variant="h6" mb={1}>Other groups</Typography>
-                                <Box
-                                    display="grid"
-                                    gap={2}
-                                    sx={gridTemplateColumnsStyles}
-                                >
-                                    {mockWorkspace.otherGroups.map(group => (
-                                        <GroupCard key={group.id} id={group.id} name={group.name} type="other" onClick={handleClick} footerSlot={group.footerSlot} />
-                                    ))}
-                                </Box>
-                    </Box>
+      <Box mb={4}>
+        <Typography variant="h6" mb={1}>
+          Main groups
+        </Typography>
+        <Box display="grid" gap={2} sx={gridTemplateColumnsStyles}>
+          {mockWorkspace.mainGroups.map((group) => (
+            <GroupCard
+              key={group.id}
+              id={group.id}
+              name={group.name}
+              type="main"
+              onClick={handleClick}
+              footerSlot={group.footerSlot}
+            />
+          ))}
         </Box>
-  )
-}
+      </Box>
 
-export default WorkspacePage
+      <Box>
+        <Typography variant="h6" mb={1}>
+          Other groups
+        </Typography>
+        <Box display="grid" gap={2} sx={gridTemplateColumnsStyles}>
+          {mockWorkspace.otherGroups.map((group) => (
+            <GroupCard
+              key={group.id}
+              id={group.id}
+              name={group.name}
+              type="other"
+              onClick={handleClick}
+              footerSlot={group.footerSlot}
+            />
+          ))}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default WorkspacePage;
