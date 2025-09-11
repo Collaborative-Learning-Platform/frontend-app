@@ -23,16 +23,15 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
-import Masonry from "@mui/lab/Masonry";
-import { FlashCardLibrary } from "./FlashCardLibrary";
+import { useNavigate } from "react-router-dom";
 
 export const FlashCardGenerator = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const numberOfCardsOptions = ["Five", "Ten", "Twenty"];
   const [numberOfCards, SetNumberOfCards] = useState("Ten");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [showLibrary, setShowLibrary] = useState(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -132,9 +131,9 @@ export const FlashCardGenerator = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  if (showLibrary) {
-    return <FlashCardLibrary />;
-  }
+  const handleViewLibrary = () => {
+    navigate("/flashcard-library");
+  };
 
   return (
     <Box>
@@ -158,9 +157,14 @@ export const FlashCardGenerator = () => {
         <Button
           variant="contained"
           startIcon={<StyleIcon />}
-          onClick={() => setShowLibrary(!showLibrary)}
+          onClick={handleViewLibrary}
+          sx={{
+            minWidth: "140px",
+            height: "40px",
+            px: 2,
+          }}
         >
-          {showLibrary ? "Generate Cards" : "View Library"}
+          View Library
         </Button>
       </Box>
       <Card>
@@ -185,7 +189,9 @@ export const FlashCardGenerator = () => {
                   ? theme.palette.primary.main
                   : theme.palette.grey[300],
                 borderRadius: theme.shape.borderRadius,
-                p: theme.spacing(4),
+                p: theme.spacing(6), // Increased from 4 to 6 for more height
+                py: theme.spacing(8), // Extra vertical padding for more height
+                minHeight: "200px", // Added minimum height for better proportions
                 textAlign: "center",
                 transition: theme.transitions.create(
                   ["border-color", "background-color"],
@@ -220,7 +226,9 @@ export const FlashCardGenerator = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: theme.spacing(2),
+                  justifyContent: "center", // Added to center content vertically
+                  gap: theme.spacing(3), // Increased from 2 to 3 for more spacing
+                  height: "100%", // Take full height of parent
                 }}
               >
                 {uploadedFile ? (
@@ -324,7 +332,7 @@ export const FlashCardGenerator = () => {
                       backgroundColor: theme.palette.primary.dark,
                     },
                     "&:disabled": {
-                      backgroundColor: theme.palette.grey[400],
+                      backgroundColor: theme.palette.action.disabledBackground,
                       color: theme.palette.text.disabled,
                     },
                   }}
@@ -336,44 +344,6 @@ export const FlashCardGenerator = () => {
           </CardContent>
         </Box>
       </Card>
-
-      <Box sx={{ mt: theme.spacing(4) }}>
-        <Masonry columns={3} spacing={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight="bold" color="primary.main">
-                24
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Sets
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight="bold" color="primary.main">
-                340
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Cards
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight="bold" color="info.main">
-                12
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                This Week
-              </Typography>
-            </CardContent>
-          </Card>
-        </Masonry>
-      </Box>
     </Box>
-
   );
 };

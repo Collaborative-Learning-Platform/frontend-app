@@ -1,28 +1,36 @@
 import { createTheme } from "@mui/material/styles";
 
-
-
 export const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-
-      main: '#6366f1',
-      light: '#818cf8',
-      dark: '#4f46e5',
-      contrastText: '#ffffff',
+      main: "#6366f1",
+      light: "#818cf8",
+      dark: "#4f46e5",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: '#8b5cf6',
-      light: '#a78bfa',
-      dark: '#7c3aed',
-      contrastText: '#ffffff',
-
+      main: "#8b5cf6",
+      light: "#a78bfa",
+      dark: "#7c3aed",
+      contrastText: "#ffffff",
     },
     success: {
-      main: '#10b981',
-      dark: '#059669',
-      light: '#34d399',
+      main: "#10b981",
+      dark: "#059669",
+      light: "#34d399",
+    },
+    grey: {
+      50: "#fafafa",
+      100: "#f5f5f5",
+      200: "#eeeeee",
+      300: "#e0e0e0",
+      400: "#bdbdbd", // Disabled background for light theme
+      500: "#9e9e9e",
+      600: "#757575",
+      700: "#616161",
+      800: "#424242",
+      900: "#212121",
     },
     background: {
       default: "#fafafa",
@@ -31,6 +39,7 @@ export const lightTheme = createTheme({
     text: {
       primary: "#212121",
       secondary: "#757575",
+      disabled: "rgba(0, 0, 0, 0.38)",
     },
     divider: "#e0e0e0",
     action: {
@@ -44,35 +53,33 @@ export const lightTheme = createTheme({
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 700,
-  fontSize: "2.5rem",
-  lineHeight: 1.2,
+      fontSize: "2.5rem",
+      lineHeight: 1.2,
     },
     h2: {
       fontWeight: 600,
-  fontSize: "2rem",
-  lineHeight: 1.25,
+      fontSize: "2rem",
+      lineHeight: 1.25,
     },
     h3: {
       fontWeight: 600,
-  fontSize: "1.75rem",
-  lineHeight: 1.3,
+      fontSize: "1.75rem",
+      lineHeight: 1.3,
     },
     h4: {
-
       fontWeight: 700,
-  fontSize: '1.5rem',
-  lineHeight: 1.35,
+      fontSize: "1.5rem",
+      lineHeight: 1.35,
     },
     h5: {
       fontWeight: 700,
-  fontSize: '1.25rem',
-  lineHeight: 1.4,
+      fontSize: "1.25rem",
+      lineHeight: 1.4,
     },
     h6: {
       fontWeight: 700,
-  fontSize: '1rem',
-  lineHeight: 1.45,
-
+      fontSize: "1rem",
+      lineHeight: 1.45,
     },
     body1: {
       fontSize: "1rem",
@@ -87,15 +94,13 @@ export const lightTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-
-          textTransform: 'none',
+          textTransform: "none",
           borderRadius: 12,
           fontWeight: 600,
-          padding: '8px 16px',
-          boxShadow: 'none',
-          '&:hover': {
-            boxShadow: '0 2px 4px rgba(0,0,0,0.12)',
-
+          padding: "8px 16px",
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "0 2px 4px rgba(0,0,0,0.12)",
           },
         },
       },
@@ -105,10 +110,9 @@ export const lightTheme = createTheme({
         root: {
           borderRadius: 12,
 
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-          '&:hover': {
-            boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          "&:hover": {
+            boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
           },
         },
       },
