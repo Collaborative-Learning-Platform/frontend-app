@@ -20,6 +20,9 @@ import {
   Settings,
   Assignment,
   Quiz,
+  Analytics,
+  Group,
+  Tune,
 } from "@mui/icons-material";
 import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -27,58 +30,147 @@ import FileCopyIcon from "@mui/icons-material/FileCopy";
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../contexts/Authcontext";
+import { useAuth } from "../contexts/Authcontext";
 
 const drawerWidth = 280;
 
-const navigationItems = [
+type Role = "user" | "tutor" | "admin";
+
+interface NavItem {
+  id?: string;
+  text: string;
+  icon: React.ReactNode;
+  path?: string;
+  pathByRole?: Partial<Record<Role, string>>;
+  roles?: Role[];
+  badgeKey?: string;
+  urgent?: boolean;
+  section?: "main" | "bottom";
+}
+
+const navConfig: NavItem[] = [
   {
     text: "Dashboard",
     icon: <Dashboard />,
-    path: "/user-dashboard",
-    active: true,
-    roles: ["user", "tutor"],
+    pathByRole: {
+      user: "/user-dashboard",
+      tutor: "/tutor-dashboard",
+      admin: "/admin-dashboard",
+    },
+    roles: ["user", "tutor", "admin"],
+    section: "main",
   },
   {
     text: "Workspaces",
     icon: <WorkspacesOutlineIcon />,
     path: "/user-workspaces",
-    badge: 2,
-    urgent: true,
     roles: ["user", "tutor"],
+    badgeKey: "workspaces",
+    urgent: true,
+    section: "main",
   },
   {
     text: "Study Plans",
     icon: <Assignment />,
     path: "/study-plans",
-    roles: "user",
+    roles: ["user"],
+    section: "main",
   },
   {
     text: "Flashcards",
     icon: <Quiz />,
     path: "/flashcard-generator",
-    roles: "user",
+    roles: ["user"],
+    section: "main",
   },
   {
     text: "Documents",
     icon: <FileCopyIcon />,
     path: "/user-documents",
-    roles: "user",
+    roles: ["user"],
+    section: "main",
   },
   {
     text: "Create Quiz",
     icon: <Quiz />,
     path: "/quiz",
-    roles: "tutor",
+    roles: ["tutor"],
+    section: "main",
+  },
+  {
+    text: "Quiz Analytics",
+    icon: <Analytics />,
+    path: "/tutor-analytics",
+    roles: ["tutor"],
+    section: "main",
+  },
+  {
+    text: "User Management",
+    icon: <Group />,
+    path: "/admin-users",
+    roles: ["admin"],
+    section: "main",
+  },
+  {
+    text: "Workspace Management",
+    icon: <WorkspacesOutlineIcon />,
+    path: "/admin-workspaces",
+    badgeKey: "adminWorkspaces",
+    urgent: true,
+    roles: ["admin"],
+    section: "main",
+  },
+  {
+    text: "Analytics",
+    icon: <Analytics />,
+    path: "/admin-analytics",
+    roles: ["admin"],
+    section: "main",
+  },
+
+  {
+    text: "Settings",
+    icon: <Settings />,
+    path: "/settings",
+    roles: ["user", "tutor"],
+    section: "bottom",
+  },
+  {
+    text: "System Settings",
+    icon: <Tune />,
+    path: "/admin-settings",
+    roles: ["admin"],
+    section: "bottom",
+  },
+  {
+    text: "User Profile",
+    icon: <AccountCircleIcon />,
+    path: "/user-profile",
+    roles: ["user", "tutor", "admin"],
+    section: "bottom",
   },
 ];
 
-const bottomItems = [
-  { text: "Settings", icon: <Settings />, path: "/settings" },
-  { text: "User Profile", icon: <AccountCircleIcon />, path: "/user-profile" },
-];
+function resolveNavItems(
+  config: NavItem[],
+  role?: string | null,
+  badgeCounts: Record<string, number> = {}
+) {
+  const roleTyped = (role as Role) || undefined;
+  return config
+    .filter(
+      (item) =>
+        !item.roles || (roleTyped ? item.roles.includes(roleTyped) : true)
+    )
+    .map((item) => ({
+      ...item,
+      path:
+        item.path ?? item.pathByRole?.[roleTyped as Role] ?? item.path ?? "/",
+      badge: item.badgeKey ? badgeCounts[item.badgeKey] ?? 0 : undefined,
+    }));
+}
 
-export default function UserSidebar() {
+export default function Sidebar() {
   const theme = useTheme();
   const { role } = useAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -92,12 +184,20 @@ export default function UserSidebar() {
   };
 
   const handleItemClick = (item: any) => {
-    navigate(item.path);
+    if (item.path) navigate(item.path);
   };
 
-  const filteredNavigationItems = navigationItems.filter(
-    (item) => !item.roles || (role && item.roles.includes(role))
+  // badgeCounts: ideally from context or API; falling back to current hard-coded values
+  const badgeCounts: Record<string, number> = {
+    workspaces: 2,
+    adminWorkspaces: 3,
+  };
+
+  const resolved = resolveNavItems(navConfig, role, badgeCounts);
+  const filteredNavigationItems = resolved.filter(
+    (i) => i.section !== "bottom"
   );
+  const filteredBottomItems = resolved.filter((i) => i.section === "bottom");
 
   const sidebarContent = (
     <Box
@@ -123,6 +223,7 @@ export default function UserSidebar() {
             fontSize: { xs: 40, sm: 48 },
             mb: 1,
             opacity: 0.9,
+            color: theme.palette.primary.main,
           }}
         />
         <Typography
@@ -193,11 +294,12 @@ export default function UserSidebar() {
           })}
         </List>
       </Box>
+
       <Box sx={{ mt: "auto" }}>
         <Divider sx={{ mx: 2, my: 2 }} />
 
         <List sx={{ px: 2 }}>
-          {bottomItems.map((item) => {
+          {filteredBottomItems.map((item) => {
             const isActive =
               !!item.path && location.pathname.startsWith(item.path);
             return (
@@ -224,8 +326,12 @@ export default function UserSidebar() {
                       "& .MuiSvgIcon-root": { fontSize: 22 },
                     }}
                   >
-                    {item.text === "Settings" ? (
-                      <Badge badgeContent={1} color="warning" variant="dot">
+                    {item.badge ? (
+                      <Badge
+                        badgeContent={item.badge}
+                        color={item.urgent ? "error" : "primary"}
+                        max={99}
+                      >
                         {item.icon}
                       </Badge>
                     ) : (
