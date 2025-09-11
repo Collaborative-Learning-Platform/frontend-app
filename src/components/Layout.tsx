@@ -111,14 +111,20 @@ const Layout = () => {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <Toolbar sx={{ minHeight: `${APPBAR_HEIGHT}px !important` }} />
         <Box
           sx={{
             p: { xs: 2, sm: 3, md: 4 },
-            maxWidth: "1400px",
-            mx: "auto",
+            maxWidth: { xs: "100%", md: "1400px" }, // Full width on mobile, max width on desktop
+            mx: { xs: 0, md: "auto" }, // No centering on mobile, auto-center on desktop
+            width: "100%", // Ensure full width utilization
+            flexGrow: 1, // Allow content to grow and fill available space
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Outlet />

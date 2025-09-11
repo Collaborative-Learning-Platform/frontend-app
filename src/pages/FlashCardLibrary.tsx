@@ -2,7 +2,6 @@ import {
   Box,
   useTheme,
   Typography,
-  Button,
   Card,
   CardHeader,
   CardContent,
@@ -15,7 +14,6 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from "@mui/icons-material/Share";
 import BookIcon from "@mui/icons-material/Book";
@@ -134,27 +132,13 @@ export const FlashCardLibrary = () => {
 
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          mb: theme.spacing(3),
-          width: "100%",
-        }}
-      >
-        <Box>
-          <Typography variant="h5" fontWeight="bold">
-            Flashcard Library
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage and study your flashcard collections
-          </Typography>
-        </Box>
-
-        <Button variant="contained" startIcon={<AddIcon />}>
-          New Set
-        </Button>
+      <Box sx={{ mb: theme.spacing(3), width: "100%" }}>
+        <Typography variant="h5" fontWeight="bold">
+          Flashcard Library
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Manage and study your flashcard collections
+        </Typography>
       </Box>
 
       <Card sx={{ mb: theme.spacing(3) }}>
