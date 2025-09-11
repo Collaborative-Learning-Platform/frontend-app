@@ -13,8 +13,7 @@ import {
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Menu, Close } from "@mui/icons-material";
-import AdminSidebar from "./Sidebar/AdminSidebar";
-import UserSidebar from "./Sidebar/UserSidebar";
+import Sidebar from "./Sidebar";
 import { ThemeToggle } from "./Buttons/ThemeToggle";
 import { NotificationsButton } from "./Buttons/NotificationsButton";
 import { useAuth } from "../contexts/Authcontext";
@@ -26,7 +25,7 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { role, clearAuth } = useAuth();
+  const {clearAuth } = useAuth();
   const navigate = useNavigate();
   // Memoized handlers to prevent unnecessary re-renders
   const handleDrawerToggle = useCallback(() => {
@@ -98,7 +97,7 @@ const Layout = () => {
         </Toolbar>
       </AppBar>
 
-      {role === "admin" ? <AdminSidebar /> : <UserSidebar />}
+      <Sidebar />
 
       {/* Enhanced Main Content */}
       <Box

@@ -28,6 +28,8 @@ import GroupPage from "./pages/GroupPage";
 import SignInLayout from "./pages/signIn/SignInLayout";
 import ForgotPasswordPage from "./pages/signIn/ForgotPassword";
 import FirstTimeLoginPage from "./pages/signIn/FirstTimeLoginPage";
+import TutorAnalytics from "./components/TutorDashboard/TutorAnalytics";
+import TutorOverview from "./components/TutorDashboard/TutorOverview";
 import ProtectedRoute from "./pages/ProtectedRoutes";
 import CreateQuizPage from "./pages/quiz/Createquiz";
 import QuizAttempt from "./pages/quiz/QuizAttempt";
@@ -69,6 +71,8 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={["user", "tutor"]} />}>
           <Route element={<UserDashboard />}>
             <Route path="/user-dashboard" element={<UserOverview />} />
+            <Route path="/tutor-dashboard" element={<TutorOverview />} />
+            <Route path="/tutor-analytics" element={<TutorAnalytics />} />
             <Route path="/user-workspaces" element={<UserWorkspaces />} />
             <Route path="/study-plans" element={<UserStudyPlan />} />
             <Route path="/analytics" element={<UserAnalytics />} />
