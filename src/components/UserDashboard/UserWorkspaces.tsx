@@ -113,7 +113,7 @@ export function UserWorkspaces() {
             <Box>
               <Typography
                 variant="h4"
-                fontWeight="600"
+                fontWeight="bold"
                 sx={{
                   fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
                   color: theme.palette.text.primary,

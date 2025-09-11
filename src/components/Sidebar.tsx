@@ -87,7 +87,7 @@ const navConfig: NavItem[] = [
     text: "Documents",
     icon: <FileCopyIcon />,
     path: "/user-documents",
-    roles: ["user"],
+    roles: ["user", "tutor"],
     section: "main",
   },
   {
