@@ -4,6 +4,8 @@ import {
   Avatar,
   Chip,
   Paper,
+  useTheme,
+  alpha,
 } from "@mui/material";
 import { useAuth } from "../contexts/Authcontext";
 
@@ -15,6 +17,7 @@ const mockUser = {
 
 export default function WelcomeHeader() {
   const { name, role } = useAuth();
+  const theme = useTheme();
   const userRole = role === "user" ? "Student" : role;
   const user = {
     ...mockUser,
@@ -26,12 +29,12 @@ export default function WelcomeHeader() {
     <Paper
       elevation={4}
       sx={{
-        flex: 1, 
+        flex: 1,
         px: { xs: 2, sm: 3 },
         py: { xs: 2, sm: 3 },
-        borderRadius: 2, 
-        background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
-        color: "white",
+        borderRadius: 2,
+        background: `linear-gradient(135deg, ${theme.palette.primary.main} 100%, ${theme.palette.primary.light} 0%)`,
+        color: theme.palette.common.white,
       }}
     >
       <Box
@@ -42,14 +45,13 @@ export default function WelcomeHeader() {
           gap: 2,
         }}
       >
-        {/* Left: Avatar + Greeting */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Avatar
             sx={{
               width: { xs: 48, sm: 56 },
               height: { xs: 48, sm: 56 },
-              bgcolor: "white",
-              color: "primary.main",
+              bgcolor: theme.palette.common.white,
+              color: theme.palette.primary.main,
               fontWeight: "bold",
               boxShadow: 2,
             }}
@@ -71,7 +73,7 @@ export default function WelcomeHeader() {
             <Typography
               variant="body2"
               sx={{
-                color: "rgba(255,255,255,0.9)",
+                color: alpha(theme.palette.common.white, 0.9),
                 fontSize: { xs: "0.85rem", sm: "0.9rem" },
               }}
             >
@@ -84,8 +86,8 @@ export default function WelcomeHeader() {
         <Chip
           label={`${user.studyStreak} day study streak 🔥`}
           sx={{
-            bgcolor: "rgba(255,255,255,0.15)",
-            color: "white",
+            bgcolor: alpha(theme.palette.common.white, 0.15),
+            color: theme.palette.common.white,
             fontWeight: "bold",
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
             px: 1,

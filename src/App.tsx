@@ -29,6 +29,8 @@ import GroupPage from "./pages/GroupPage";
 import SignInLayout from "./pages/signIn/SignInLayout";
 import ForgotPasswordPage from "./pages/signIn/ForgotPassword";
 import FirstTimeLoginPage from "./pages/signIn/FirstTimeLoginPage";
+import TutorAnalytics from "./components/TutorDashboard/TutorAnalytics";
+import TutorOverview from "./components/TutorDashboard/TutorOverview";
 
 
 function App() {
@@ -52,10 +54,12 @@ function App() {
 
         <Route element={<UserDashboard />}>
           <Route path="/user-dashboard" element={<UserOverview />} />
+          <Route path="/tutor-dashboard" element={<TutorOverview />} />
           <Route path="/user-workspaces" element={<UserWorkspaces />} />
           <Route path="/study-plans" element={<UserStudyPlan />} />
           <Route path="/analytics" element={<UserAnalytics />} />
           <Route path="/user-documents" element={<UserDocuments />} />
+          <Route path="/tutor-analytics" element={<TutorAnalytics />} />
 
           {/* Flashcard pages with shared stats */}
           <Route element={<FlashCardLayout />}>
