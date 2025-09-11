@@ -71,6 +71,8 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={["user", "tutor"]} />}>
           <Route element={<UserDashboard />}>
             <Route path="/user-dashboard" element={<UserOverview />} />
+            <Route path="/tutor-dashboard" element={<TutorOverview />} />
+            <Route path="/tutor-analytics" element={<TutorAnalytics />} />
             <Route path="/user-workspaces" element={<UserWorkspaces />} />
             <Route path="/study-plans" element={<UserStudyPlan />} />
             <Route path="/analytics" element={<UserAnalytics />} />
