@@ -151,10 +151,6 @@ const AddUsers = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: `linear-gradient(135deg, ${alpha(
-          theme.palette.primary.main,
-          0.05
-        )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
         py: 4,
       }}
     >
@@ -202,7 +198,6 @@ const AddUsers = () => {
                 title="Upload User Data"
                 subheader="Upload the CSV or Excel file containing user information"
                 sx={{
-                  backgroundColor: alpha(theme.palette.primary.main, 0.04),
                   "& .MuiCardHeader-title": {
                     fontWeight: "bold",
                   },
@@ -342,7 +337,6 @@ const AddUsers = () => {
                 title="Upload Settings"
                 subheader="Configure your bulk upload preferences"
                 sx={{
-                  backgroundColor: alpha(theme.palette.primary.main, 0.04),
                   "& .MuiCardHeader-title": {
                     fontWeight: "bold",
                   },
@@ -432,7 +426,6 @@ const AddUsers = () => {
               title="File Requirements"
               subheader="Follow these guidelines for successful upload"
               sx={{
-                backgroundColor: alpha(theme.palette.info.main, 0.04),
                 "& .MuiCardHeader-title": {
                   fontWeight: "bold",
                 },
