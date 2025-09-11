@@ -36,6 +36,9 @@ type WorkspaceCardProps = {
 
 const WorkspaceCard = React.memo(
   ({ workspace, onManage, onView }: WorkspaceCardProps) => {
+    if(onManage === undefined && onView === undefined) {
+      console.log('No action handlers provided'); // or some fallback UI
+    }
     return (
       <Card
         sx={{
