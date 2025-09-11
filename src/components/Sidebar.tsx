@@ -79,7 +79,7 @@ const navConfig: NavItem[] = [
   {
     text: "Flashcards",
     icon: <Quiz />,
-    path: "/flashcard-generator",
+    path: "/flashcard-library",
     roles: ["user"],
     section: "main",
   },

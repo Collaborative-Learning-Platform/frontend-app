@@ -34,6 +34,7 @@ import ProtectedRoute from "./pages/ProtectedRoutes";
 import CreateQuizPage from "./pages/quiz/Createquiz";
 import QuizAttempt from "./pages/quiz/QuizAttempt";
 import Unauthorized from "./pages/Unauthorized";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
           element={<ProtectedRoute allowedRoles={["user", "admin", "tutor"]} />}
         >
           <Route path="user-profile" element={<ProfilePage />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="workspace/:workspaceId" element={<WorkspacePage />} />
           <Route
             path="workspace/:workspaceId/group/:groupId"
@@ -76,9 +78,9 @@ function App() {
             <Route path="/user-workspaces" element={<UserWorkspaces />} />
             <Route path="/study-plans" element={<UserStudyPlan />} />
             <Route path="/analytics" element={<UserAnalytics />} />
-            <Route path="/user-documents" element={<UserDocuments />} />
           </Route>
           <Route path="/quiz/attempt/:quizId" element={<QuizAttempt />} />
+          <Route path="/user-documents" element={<UserDocuments />} />
           <Route element={<FlashCardLayout />}>
             <Route
               path="/flashcard-generator"
