@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   useTheme,
@@ -124,6 +125,7 @@ const folders: Folder[] = [
 
 export const UserDocuments = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -154,6 +156,10 @@ export const UserDocuments = () => {
     }
   };
 
+  const handleNewDocument = () => {
+    navigate("/document-editor");
+  };
+
   return (
     <Box
       sx={{
@@ -179,7 +185,7 @@ export const UserDocuments = () => {
               justifyContent: "space-between",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2}}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <FileTextIcon
                   sx={{ fontSize: 28, color: theme.palette.primary.main }}
@@ -191,7 +197,11 @@ export const UserDocuments = () => {
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Button variant="contained" startIcon={<PlusIcon />}>
+              <Button
+                variant="contained"
+                startIcon={<PlusIcon />}
+                onClick={handleNewDocument}
+              >
                 New Document
               </Button>
             </Box>

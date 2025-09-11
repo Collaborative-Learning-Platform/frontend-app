@@ -217,7 +217,7 @@ export const DocumentEditor = () => {
         <Box
           sx={{
             width: "100%",
-            maxWidth: { xs: "100%", md: "8.5in" },
+            maxWidth: { xs: "100%", md: "10in" },
             position: "relative",
           }}
         >
@@ -295,8 +295,8 @@ export const DocumentEditor = () => {
                   transform: { xs: "none", lg: `scale(${zoomLevel / 100})` },
                   transformOrigin: "top center",
                   transition: "transform 0.2s ease-in-out",
-                  height: "850px",
-                  width: "650px",
+                  height: "950px",
+                  width: "750px",
                   aspectRatio: "8.5 / 11",
                   margin: "0 auto",
                   "&::before": {

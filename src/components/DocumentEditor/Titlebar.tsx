@@ -223,7 +223,6 @@ export const Titlebar = () => {
                 spacing={{ sm: 0.5, md: 1 }}
                 sx={{ display: { xs: "none", sm: "none", md: "flex" } }}
               >
-                <Chats size="small" showTooltip={true} badgeContent={3} />
                 <NotificationsButton
                   size="small"
                   showTooltip={true}

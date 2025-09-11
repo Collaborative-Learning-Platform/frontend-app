@@ -54,7 +54,7 @@ export default function ProfilePage() {
   return (
     <Box>
       <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
-        <Container maxWidth="md">
+        <Container>
           <Box sx={{ textAlign: "center", mb: 4 }}>
             <Typography variant="h4" fontWeight={700} gutterBottom>
               Profile Settings
