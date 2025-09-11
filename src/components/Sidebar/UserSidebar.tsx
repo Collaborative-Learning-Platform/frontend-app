@@ -56,7 +56,7 @@ const navigationItems = [
   {
     text: "Flashcards",
     icon: <Quiz />,
-    path: "/flashcard-generator",
+    path: "/flashcard-library",
     roles: "user",
   },
   {
@@ -75,7 +75,7 @@ const navigationItems = [
 
 const bottomItems = [
   { text: "Settings", icon: <Settings />, path: "/settings" },
-  { text: "User Profile", icon: <AccountCircleIcon />, path: "/user-profile" },
+  { text: "UserProfile", icon: <AccountCircleIcon />, path: "/user-profile" },
 ];
 
 export default function UserSidebar() {
