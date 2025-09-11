@@ -114,7 +114,7 @@ export default function SignInPage() {
                 } else {
                   if (response.data.role === "user") navigate("/user-dashboard");
                   else if (response.data.role === "admin") navigate("/admin-dashboard");
-                  else if (response.data.role === "tutor") navigate("/tutor-dashboard");
+                  else if (response.data.role === "tutor") navigate("/user-dashboard");
                 }
               }, 1000);
       } else {
