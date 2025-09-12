@@ -16,7 +16,7 @@ import {
 } from "@mui/icons-material";
 
 export type Workspace = {
-  id: number;
+  id: string | number;
   name: string;
   description?: string;
   students: number;
@@ -30,8 +30,8 @@ export type Workspace = {
 
 type WorkspaceCardProps = {
   workspace: Workspace;
-  onManage?: (id: number) => void;
-  onView?: (id: number) => void;
+  onManage?: (id: string|number) => void;
+  onView?: (id: string |number) => void;
 };
 
 const WorkspaceCard = React.memo(
