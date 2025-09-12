@@ -101,7 +101,7 @@ function App() {
             <Route path="admin-settings" element={<SystemSettings />} />
           </Route>
         </Route>
-      </Route>
+       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["user", "tutor"]} />}>
         <Route path="/whiteboard" element={<Whiteboard />} />
