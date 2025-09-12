@@ -20,7 +20,8 @@ export const Whiteboard = () => {
   const [selectedTool, setSelectedTool] = useState<String | null>(null);
   const [loggedInUsers, setLoggedInUsers] = useState<String[]>([]);
   const [selectedColor, setSelectedColor] = useState("#000000");
-  const [brushSize, setBrushSize] = useState(3);
+  // const [brushSize, setBrushSize] = useState(3);
+  const brushSize = 3;
   const [isDrawing, setIsDrawing] = useState(false);
   const [showColorPalette, setShowColorPalette] = useState(false);
   const [colorAnchorEl, setColorAnchorEl] = useState<HTMLElement | null>(null);
@@ -78,7 +79,7 @@ export const Whiteboard = () => {
     // };
     setLoggedInUsers(["User2", "User3", "James", "Brandon"]);
     // fetchLoggedInUsers();
-  }, [selectedColor, brushSize]);
+  }, [selectedColor]); //,brushSize
 
   const handleBackClick = () => {
     window.history.back();

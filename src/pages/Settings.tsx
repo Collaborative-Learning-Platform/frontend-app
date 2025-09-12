@@ -25,8 +25,6 @@ import {
   Description as FileText,
   DarkMode as Moon,
   LightMode as Sun,
-  VolumeUp as Volume2,
-  Vibration as Vibrate,
   Email as Mail,
   Chat as MessageSquare,
   People as Users,
