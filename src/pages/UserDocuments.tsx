@@ -223,11 +223,6 @@ export const UserDocuments = () => {
                 variant="contained"
                 startIcon={<PlusIcon />}
                 onClick={handleNewDocument}
-                sx={{
-                  width: { xs: "100%", sm: "auto" },
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                  py: { xs: 1, sm: 1.5 },
-                }}
               >
                 New Document
               </Button>

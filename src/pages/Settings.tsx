@@ -15,6 +15,7 @@ import {
   Slider,
   Snackbar,
   Alert,
+  useTheme,
 } from "@mui/material";
 import {
   Settings as SettingsIcon,
@@ -24,8 +25,6 @@ import {
   Description as FileText,
   DarkMode as Moon,
   LightMode as Sun,
-  VolumeUp as Volume2,
-  Vibration as Vibrate,
   Email as Mail,
   Chat as MessageSquare,
   People as Users,
@@ -38,6 +37,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
 
 export default function SettingsPage() {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { toggleTheme, mode: currentTheme } = useCustomTheme();
 
@@ -61,7 +61,7 @@ export default function SettingsPage() {
 
   const [themeSettings, setThemeSettings] = useState({
     theme: currentTheme,
-    accentColor: "blue",
+    accentColor: "primary",
     reducedMotion: false,
     highContrast: false,
   });
@@ -75,6 +75,7 @@ export default function SettingsPage() {
     documentShared: true,
     mentionNotifications: true,
     weeklyDigest: false,
+    quizes: false,
   });
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
@@ -108,7 +109,7 @@ export default function SettingsPage() {
     });
     setThemeSettings({
       theme: "light",
-      accentColor: "blue",
+      accentColor: "primary",
       reducedMotion: false,
       highContrast: false,
     });
@@ -121,6 +122,7 @@ export default function SettingsPage() {
       documentShared: true,
       mentionNotifications: true,
       weeklyDigest: false,
+      quizes: false,
     });
     setSnackbar({ open: true, message: "Settings reset to defaults!" });
   };
@@ -159,7 +161,11 @@ export default function SettingsPage() {
             {/* Whiteboard Settings */}
             <Card sx={{ boxShadow: 1 }}>
               <CardHeader
-                avatar={<GestureIcon sx={{ color: "#1976d2", fontSize: 20 }} />}
+                avatar={
+                  <GestureIcon
+                    sx={{ color: theme.palette.primary.main, fontSize: 20 }}
+                  />
+                }
                 title={
                   <Typography variant="h6">Whiteboard Settings</Typography>
                 }
@@ -299,7 +305,11 @@ export default function SettingsPage() {
             {/* Document Editor Settings */}
             <Card sx={{ boxShadow: 1 }}>
               <CardHeader
-                avatar={<FileText sx={{ color: "#1976d2", fontSize: 20 }} />}
+                avatar={
+                  <FileText
+                    sx={{ color: theme.palette.primary.main, fontSize: 20 }}
+                  />
+                }
                 title={
                   <Typography variant="h6">
                     Document Editor Preferences
@@ -359,57 +369,11 @@ export default function SettingsPage() {
                         valueLabelDisplay="auto"
                       />
                     </Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Spell Check
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={documentSettings.spellCheck}
-                        onChange={(_, checked) =>
-                          setDocumentSettings((prev) => ({
-                            ...prev,
-                            spellCheck: checked,
-                          }))
-                        }
-                      />
-                    </Box>
                   </Box>
 
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 3 }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Auto Format
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={documentSettings.autoFormat}
-                        onChange={(_, checked) =>
-                          setDocumentSettings((prev) => ({
-                            ...prev,
-                            autoFormat: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
                     <Box
                       sx={{
                         display: "flex",
@@ -463,7 +427,11 @@ export default function SettingsPage() {
             {/* Theme Preferences */}
             <Card sx={{ boxShadow: 1 }}>
               <CardHeader
-                avatar={<Palette sx={{ color: "#1976d2", fontSize: 20 }} />}
+                avatar={
+                  <Palette
+                    sx={{ color: theme.palette.primary.main, fontSize: 20 }}
+                  />
+                }
                 title={<Typography variant="h6">Theme Preferences</Typography>}
                 subheader={
                   <Typography variant="body2">
@@ -536,7 +504,7 @@ export default function SettingsPage() {
                           }))
                         }
                       >
-                        <MenuItem value="blue">
+                        <MenuItem value="primary">
                           <Box
                             sx={{
                               display: "flex",
@@ -549,13 +517,13 @@ export default function SettingsPage() {
                                 width: 12,
                                 height: 12,
                                 borderRadius: "50%",
-                                bgcolor: "blue",
+                                bgcolor: theme.palette.primary.main,
                               }}
                             />
-                            Blue
+                            Primary Blue
                           </Box>
                         </MenuItem>
-                        <MenuItem value="green">
+                        <MenuItem value="secondary">
                           <Box
                             sx={{
                               display: "flex",
@@ -568,13 +536,13 @@ export default function SettingsPage() {
                                 width: 12,
                                 height: 12,
                                 borderRadius: "50%",
-                                bgcolor: "green",
+                                bgcolor: theme.palette.secondary.main,
                               }}
                             />
-                            Green
+                            Secondary
                           </Box>
                         </MenuItem>
-                        <MenuItem value="purple">
+                        <MenuItem value="success">
                           <Box
                             sx={{
                               display: "flex",
@@ -587,13 +555,13 @@ export default function SettingsPage() {
                                 width: 12,
                                 height: 12,
                                 borderRadius: "50%",
-                                bgcolor: "purple",
+                                bgcolor: theme.palette.success.main,
                               }}
                             />
-                            Purple
+                            Success Green
                           </Box>
                         </MenuItem>
-                        <MenuItem value="orange">
+                        <MenuItem value="warning">
                           <Box
                             sx={{
                               display: "flex",
@@ -606,10 +574,10 @@ export default function SettingsPage() {
                                 width: 12,
                                 height: 12,
                                 borderRadius: "50%",
-                                bgcolor: "orange",
+                                bgcolor: theme.palette.warning.main,
                               }}
                             />
-                            Orange
+                            Warning Orange
                           </Box>
                         </MenuItem>
                       </Select>
@@ -624,29 +592,6 @@ export default function SettingsPage() {
                       pt: 1,
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Reduced Motion
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={themeSettings.reducedMotion}
-                        onChange={(_, checked) =>
-                          setThemeSettings((prev) => ({
-                            ...prev,
-                            reducedMotion: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
                     <Box
                       sx={{
                         display: "flex",
@@ -677,7 +622,11 @@ export default function SettingsPage() {
             {/* Notification Settings */}
             <Card sx={{ boxShadow: 1 }}>
               <CardHeader
-                avatar={<Bell sx={{ color: "#1976d2", fontSize: 20 }} />}
+                avatar={
+                  <Bell
+                    sx={{ color: theme.palette.primary.main, fontSize: 20 }}
+                  />
+                }
                 title={
                   <Typography variant="h6">Notification Settings</Typography>
                 }
@@ -758,62 +707,6 @@ export default function SettingsPage() {
                           setNotificationSettings((prev) => ({
                             ...prev,
                             pushNotifications: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Volume2
-                          sx={{ fontSize: 16, color: "text.secondary" }}
-                        />
-                        <Typography variant="body2" fontWeight={500}>
-                          Sound Alerts
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={notificationSettings.soundEnabled}
-                        onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
-                            ...prev,
-                            soundEnabled: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Vibrate
-                          sx={{ fontSize: 16, color: "text.secondary" }}
-                        />
-                        <Typography variant="body2" fontWeight={500}>
-                          Vibration
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={notificationSettings.vibrationEnabled}
-                        onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
-                            ...prev,
-                            vibrationEnabled: checked,
                           }))
                         }
                       />
@@ -928,6 +821,31 @@ export default function SettingsPage() {
                         }
                       />
                     </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="body2" fontWeight={500}>
+                          Upcoming quizzes
+                        </Typography>
+                      </Box>
+                      <Switch
+                        checked={notificationSettings.quizes}
+                        onChange={(
+                          _event: React.ChangeEvent<HTMLInputElement>,
+                          checked: boolean
+                        ) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            quizes: checked,
+                          }))
+                        }
+                      />
+                    </Box>
                   </Box>
                 </Box>
               </CardContent>
@@ -936,7 +854,11 @@ export default function SettingsPage() {
             {/* User Profile Link */}
             <Card sx={{ boxShadow: 1 }}>
               <CardHeader
-                avatar={<User sx={{ color: "#1976d2", fontSize: 20 }} />}
+                avatar={
+                  <User
+                    sx={{ color: theme.palette.primary.main, fontSize: 20 }}
+                  />
+                }
                 title={<Typography variant="h6">User Profile</Typography>}
                 subheader={
                   <Typography variant="body2">

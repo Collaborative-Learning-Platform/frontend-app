@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogActions,
   MenuItem,
+  Skeleton,
 } from "@mui/material";
 import {
   Key,
@@ -29,12 +30,23 @@ import {
   AccountCircle as CircleUser,
   Settings as SettingsIcon,
 } from "@mui/icons-material";
+import axiosInstance from "../api/axiosInstance";
+import { useAuth } from "../contexts/Authcontext";
+
+interface ProfileData {
+  name: string;
+  email: string;
+  role: string;
+  profile_picture?: string;
+}
 
 export default function ProfilePage() {
-  const [profileData, setProfileData] = useState({
-    username: "john_student",
-    email: "john.doe@university.edu",
-    gender: "male",
+  const auth = useAuth();
+  const [profileData, setProfileData] = useState<ProfileData>({
+    name: "",
+    email: "",
+    role: "",
+    profile_picture: "",
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [privacySettings, setPrivacySettings] = useState({
@@ -48,9 +60,40 @@ export default function ProfilePage() {
   const [isTestingTwoFactor, setIsTestingTwoFactor] = useState(false);
   const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
   const [open2FADialog, setOpen2FADialog] = useState(false);
+  const [loadingProfileData, setLoadingProfileData] = useState(true);
 
   // Minimal toast (replace with your toast hook if needed)
   const toast = (msg: string) => alert(msg);
+
+  const fetchProfileData = async () => {
+    try {
+      setLoadingProfileData(true);
+      const res = await axiosInstance.get(`/auth/get-user/${auth.user_id}`);
+      if (res.data.success) {
+        console.log("Fetched profile info", res.data);
+        setProfileData({
+          name: res.data.user.name,
+          email: res.data.user.email,
+          role: res.data.user.role,
+          profile_picture: res.data.user.profile_picture,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+    } finally {
+      setLoadingProfileData(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Auth in ProfilePage:", auth);
+    if (auth?.user_id) {
+      fetchProfileData();
+    } else {
+      console.warn("No user_id available, skipping profile fetch");
+      setLoadingProfileData(false);
+    }
+  }, [auth?.user_id]);
 
   return (
     <Box>
@@ -92,77 +135,142 @@ export default function ProfilePage() {
               }
             />
             <CardContent>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 4, mb: 3 }}
-              >
-                <Avatar
-                  sx={{ width: 80, height: 80, fontSize: 32 }}
-                  src="/student-profile.png"
-                >
-                  JS
-                </Avatar>
-                <Box>
-                  <Typography variant="body2">Profile Picture</Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => toast("Profile picture updated!")}
-                    sx={{ mt: 1 }}
+              {loadingProfileData ? (
+                <>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      mb: 3,
+                    }}
                   >
-                    <Camera sx={{ mr: 0.75, fontSize: 16 }} />
-                    Change Picture
+                    <Skeleton
+                      variant="circular"
+                      width={80}
+                      height={80}
+                      animation="wave"
+                    />
+                    <Box>
+                      <Typography variant="body2">Profile Picture</Typography>
+                      <Skeleton
+                        variant="rectangular"
+                        width={120}
+                        height={32}
+                        sx={{ mt: 1, borderRadius: 1 }}
+                        animation="wave"
+                      />
+                    </Box>
+                  </Box>
+                  <Divider sx={{ mb: 2 }} />
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                      gap: 2,
+                    }}
+                  >
+                    <Skeleton
+                      variant="rectangular"
+                      height={56}
+                      sx={{ borderRadius: 1 }}
+                      animation="wave"
+                    />
+                    <Skeleton
+                      variant="rectangular"
+                      height={56}
+                      sx={{ borderRadius: 1 }}
+                      animation="wave"
+                    />
+                    <Skeleton
+                      variant="rectangular"
+                      height={56}
+                      sx={{ borderRadius: 1 }}
+                      animation="wave"
+                    />
+                  </Box>
+                  <Skeleton
+                    variant="rectangular"
+                    width={200}
+                    height={36}
+                    sx={{ mt: 3, borderRadius: 1 }}
+                    animation="wave"
+                  />
+                </>
+              ) : (
+                <>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      mb: 3,
+                    }}
+                  >
+                    <Avatar
+                      sx={{ width: 80, height: 80, fontSize: 32 }}
+                      src="/student-profile.png"
+                    >
+                      JS
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2">Profile Picture</Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => toast("Profile picture updated!")}
+                        sx={{ mt: 1 }}
+                      >
+                        <Camera sx={{ mr: 0.75, fontSize: 16 }} />
+                        Change Picture
+                      </Button>
+                    </Box>
+                  </Box>
+                  <Divider sx={{ mb: 2 }} />
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                      gap: 2,
+                    }}
+                  >
+                    <TextField
+                      label="Name"
+                      value={profileData.name || ""}
+                      onChange={(e) =>
+                        setProfileData({ ...profileData, name: e.target.value })
+                      }
+                      fullWidth
+                    />
+                    <TextField
+                      disabled
+                      label="Email Address"
+                      type="email"
+                      value={profileData.email || ""}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      fullWidth
+                    />
+                    <TextField
+                      disabled
+                      label="Role"
+                      value={profileData.role || ""}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      fullWidth
+                    />
+                  </Box>
+                  <Button
+                    onClick={() => toast("Profile updated!")}
+                    variant="contained"
+                    sx={{ mt: 3 }}
+                  >
+                    Save Profile Changes
                   </Button>
-                </Box>
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label="Username"
-                  value={profileData.username}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, username: e.target.value })
-                  }
-                  fullWidth
-                />
-                <TextField
-                  label="Email Address"
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, email: e.target.value })
-                  }
-                  fullWidth
-                />
-                <TextField
-                  label="Gender"
-                  value={profileData.gender}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, gender: e.target.value })
-                  }
-                  select
-                  fullWidth
-                >
-                  <MenuItem value="male">Male</MenuItem>
-                  <MenuItem value="female">Female</MenuItem>
-                  <MenuItem value="other">Other</MenuItem>
-                  <MenuItem value="prefer-not-to-say">
-                    Prefer not to say
-                  </MenuItem>
-                </TextField>
-              </Box>
-              <Button
-                onClick={() => toast("Profile updated!")}
-                variant="contained"
-                sx={{ mt: 3 }}
-              >
-                Save Profile Changes
-              </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 

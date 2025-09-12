@@ -87,14 +87,20 @@ const GROUP_OPTIONS = [
 // Main Component
 export default function CreateQuizPage() {
   const navigate = useNavigate();
-  
+
   // State
   const [quiz, setQuiz] = useState<Quiz>(INITIAL_QUIZ);
-  const [currentQuestion, setCurrentQuestion] = useState<Question>(INITIAL_QUESTION);
+  const [currentQuestion, setCurrentQuestion] =
+    useState<Question>(INITIAL_QUESTION);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
+    null
+  );
   const [showPreview, setShowPreview] = useState(false);
-  const [alert, setAlert] = useState<{ type: "error" | "success"; message: string } | null>(null);
+  const [alert, setAlert] = useState<{
+    type: "error" | "success";
+    message: string;
+  } | null>(null);
 
   // Utility Functions
   const showAlert = (type: "error" | "success", message: string) => {
@@ -126,7 +132,9 @@ export default function CreateQuizPage() {
     }
 
     if (question.type === "multiple-choice") {
-      const hasEmptyOptions = question.options?.some((option) => !option.trim());
+      const hasEmptyOptions = question.options?.some(
+        (option) => !option.trim()
+      );
       if (hasEmptyOptions) {
         return "Please fill in all answer options";
       }
@@ -165,13 +173,18 @@ export default function CreateQuizPage() {
 
     if (editingQuestionId) {
       // Update existing question
-      const oldQuestion = quiz.questions.find(q => q.id === editingQuestionId);
-      const pointsDifference = currentQuestion.points - (oldQuestion?.points || 0);
-      
+      const oldQuestion = quiz.questions.find(
+        (q) => q.id === editingQuestionId
+      );
+      const pointsDifference =
+        currentQuestion.points - (oldQuestion?.points || 0);
+
       setQuiz((prev) => ({
         ...prev,
         questions: prev.questions.map((q) =>
-          q.id === editingQuestionId ? { ...currentQuestion, id: editingQuestionId } : q
+          q.id === editingQuestionId
+            ? { ...currentQuestion, id: editingQuestionId }
+            : q
         ),
         totalPoints: prev.totalPoints + pointsDifference,
       }));
@@ -214,7 +227,6 @@ export default function CreateQuizPage() {
       return;
     }
 
-    
     console.log("Saving quiz:", quiz);
     showAlert("success", "Quiz saved successfully!");
     setTimeout(() => navigate("/tutor-dashboard"), 1500);
@@ -222,7 +234,10 @@ export default function CreateQuizPage() {
 
   const handlePreviewQuiz = () => {
     if (quiz.questions.length === 0) {
-      showAlert("error", "Please add at least one question to preview the quiz");
+      showAlert(
+        "error",
+        "Please add at least one question to preview the quiz"
+      );
       return;
     }
     setShowPreview(true);
@@ -239,20 +254,35 @@ export default function CreateQuizPage() {
 
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 2,
+          }}
+        >
           <Box>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: "bold", mb: 1 }}>
+            <Typography variant="h3" component="h1" sx={{ mb: 1 }}>
               Create Quiz
             </Typography>
-            <Typography variant="h6" color="text.secondary">
+            <Typography variant="body1" color="text.secondary">
               Design assessments for your students
             </Typography>
           </Box>
           <Stack direction="row" spacing={2}>
-            <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={handlePreviewQuiz}>
+            <Button
+              variant="outlined"
+              startIcon={<VisibilityIcon />}
+              onClick={handlePreviewQuiz}
+            >
               Preview
             </Button>
-            <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveQuiz}>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon />}
+              onClick={handleSaveQuiz}
+            >
               Save Quiz
             </Button>
           </Stack>
@@ -266,19 +296,24 @@ export default function CreateQuizPage() {
           subheader="Configure the basic settings for your quiz"
         />
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {/* Basic Information Section */}
             <Box>
-              <Typography variant="h6" sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}>
+              <Typography
+                variant="h6"
+                sx={{ mb: 3, color: "text.secondary", fontWeight: 500 }}
+              >
                 Basic Information
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <TextField
                   fullWidth
                   label="Quiz Title"
                   placeholder="Enter quiz title"
                   value={quiz.title}
-                  onChange={(e) => setQuiz((prev) => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setQuiz((prev) => ({ ...prev, title: e.target.value }))
+                  }
                 />
                 <TextField
                   fullWidth
@@ -287,23 +322,33 @@ export default function CreateQuizPage() {
                   label="Description"
                   placeholder="Describe what this quiz covers"
                   value={quiz.description}
-                  onChange={(e) => setQuiz((prev) => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setQuiz((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                 />
               </Box>
             </Box>
 
             {/* Assignment & Timing Section */}
             <Box>
-              <Typography variant="h6" sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}>
+              <Typography
+                variant="h6"
+                sx={{ mb: 3, color: "text.secondary", fontWeight: 500 }}
+              >
                 Assignment & Timing
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <FormControl fullWidth>
                   <InputLabel>Assign to Group</InputLabel>
                   <Select
                     value={quiz.group}
                     label="Assign to Group"
-                    onChange={(e) => setQuiz((prev) => ({ ...prev, group: e.target.value }))}
+                    onChange={(e) =>
+                      setQuiz((prev) => ({ ...prev, group: e.target.value }))
+                    }
                   >
                     {GROUP_OPTIONS.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -312,19 +357,23 @@ export default function CreateQuizPage() {
                     ))}
                   </Select>
                 </FormControl>
-                
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: { xs: 'column', md: 'row' }, 
-                  gap: 3 
-                }}>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: 3,
+                  }}
+                >
                   <TextField
                     fullWidth
                     type="datetime-local"
                     label="Due Date"
                     InputLabelProps={{ shrink: true }}
                     value={quiz.dueDate}
-                    onChange={(e) => setQuiz((prev) => ({ ...prev, dueDate: e.target.value }))}
+                    onChange={(e) =>
+                      setQuiz((prev) => ({ ...prev, dueDate: e.target.value }))
+                    }
                   />
                   <TextField
                     fullWidth
@@ -332,7 +381,12 @@ export default function CreateQuizPage() {
                     label="Duration (minutes)"
                     inputProps={{ min: 5, max: 180 }}
                     value={quiz.duration}
-                    onChange={(e) => setQuiz((prev) => ({ ...prev, duration: parseInt(e.target.value) }))}
+                    onChange={(e) =>
+                      setQuiz((prev) => ({
+                        ...prev,
+                        duration: parseInt(e.target.value),
+                      }))
+                    }
                     helperText="Set time limit for the quiz (5-180 minutes)"
                   />
                 </Box>
@@ -341,7 +395,10 @@ export default function CreateQuizPage() {
 
             {/* Quiz Statistics */}
             <Box>
-              <Typography variant="h6" sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}>
+              <Typography
+                variant="h6"
+                sx={{ mb: 3, color: "text.secondary", fontWeight: 500 }}
+              >
                 Quiz Overview
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
@@ -351,13 +408,13 @@ export default function CreateQuizPage() {
                   variant="outlined"
                   color="primary"
                 />
-                <Chip 
-                  label={`${quiz.questions.length} questions`} 
+                <Chip
+                  label={`${quiz.questions.length} questions`}
                   variant="outlined"
                   color="secondary"
                 />
-                <Chip 
-                  label={`${quiz.totalPoints} points`} 
+                <Chip
+                  label={`${quiz.totalPoints} points`}
                   variant="outlined"
                   color="success"
                 />
@@ -390,19 +447,32 @@ export default function CreateQuizPage() {
               {editingQuestionId === question.id ? (
                 // Edit Mode
                 <Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                    <Typography variant="h6">Edit Question {index + 1}</Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 3,
+                    }}
+                  >
+                    <Typography variant="h6">
+                      Edit Question {index + 1}
+                    </Typography>
                     <Button variant="text" onClick={cancelEditing}>
                       Cancel
                     </Button>
                   </Box>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: { xs: 'column', md: 'row' }, 
-                      gap: 3 
-                    }}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: { xs: "column", md: "row" },
+                        gap: 3,
+                      }}
+                    >
                       <FormControl fullWidth>
                         <InputLabel>Question Type</InputLabel>
                         <Select
@@ -415,12 +485,14 @@ export default function CreateQuizPage() {
                             }))
                           }
                         >
-                          <MenuItem value="multiple-choice">Multiple Choice</MenuItem>
+                          <MenuItem value="multiple-choice">
+                            Multiple Choice
+                          </MenuItem>
                           <MenuItem value="short-answer">Short Answer</MenuItem>
                           <MenuItem value="true-false">True/False</MenuItem>
                         </Select>
                       </FormControl>
-                      
+
                       <TextField
                         fullWidth
                         type="number"
@@ -428,11 +500,14 @@ export default function CreateQuizPage() {
                         inputProps={{ min: 1, max: 10 }}
                         value={currentQuestion.points}
                         onChange={(e) =>
-                          setCurrentQuestion((prev) => ({ ...prev, points: parseInt(e.target.value) }))
+                          setCurrentQuestion((prev) => ({
+                            ...prev,
+                            points: parseInt(e.target.value),
+                          }))
                         }
                       />
                     </Box>
-                    
+
                     <TextField
                       fullWidth
                       multiline
@@ -440,44 +515,78 @@ export default function CreateQuizPage() {
                       label="Question"
                       placeholder="Enter your question"
                       value={currentQuestion.question}
-                      onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, question: e.target.value }))}
+                      onChange={(e) =>
+                        setCurrentQuestion((prev) => ({
+                          ...prev,
+                          question: e.target.value,
+                        }))
+                      }
                     />
 
                     {/* Multiple Choice Options */}
                     {currentQuestion.type === "multiple-choice" && (
                       <Box>
-                        <FormLabel component="legend" sx={{ mb: 2 }}>Answer Options</FormLabel>
+                        <FormLabel component="legend" sx={{ mb: 2 }}>
+                          Answer Options
+                        </FormLabel>
                         <RadioGroup
                           value={currentQuestion.correctAnswer.toString()}
                           onChange={(e) =>
-                            setCurrentQuestion((prev) => ({ ...prev, correctAnswer: parseInt(e.target.value) }))
+                            setCurrentQuestion((prev) => ({
+                              ...prev,
+                              correctAnswer: parseInt(e.target.value),
+                            }))
                           }
                         >
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            {currentQuestion.options?.map((option, optionIndex) => (
-                              <Box key={optionIndex} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                <FormControlLabel
-                                  value={optionIndex.toString()}
-                                  control={<Radio />}
-                                  label=""
-                                  sx={{ m: 0 }}
-                                />
-                                <TextField
-                                  fullWidth
-                                  size="small"
-                                  placeholder={`Option ${optionIndex + 1}`}
-                                  value={option}
-                                  onChange={(e) => {
-                                    const newOptions = [...(currentQuestion.options || [])];
-                                    newOptions[optionIndex] = e.target.value;
-                                    setCurrentQuestion((prev) => ({ ...prev, options: newOptions }));
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 2,
+                            }}
+                          >
+                            {currentQuestion.options?.map(
+                              (option, optionIndex) => (
+                                <Box
+                                  key={optionIndex}
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 2,
                                   }}
-                                />
-                              </Box>
-                            ))}
+                                >
+                                  <FormControlLabel
+                                    value={optionIndex.toString()}
+                                    control={<Radio />}
+                                    label=""
+                                    sx={{ m: 0 }}
+                                  />
+                                  <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder={`Option ${optionIndex + 1}`}
+                                    value={option}
+                                    onChange={(e) => {
+                                      const newOptions = [
+                                        ...(currentQuestion.options || []),
+                                      ];
+                                      newOptions[optionIndex] = e.target.value;
+                                      setCurrentQuestion((prev) => ({
+                                        ...prev,
+                                        options: newOptions,
+                                      }));
+                                    }}
+                                  />
+                                </Box>
+                              )
+                            )}
                           </Box>
                         </RadioGroup>
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ mt: 1, display: "block" }}
+                        >
                           Select the correct answer by clicking the radio button
                         </Typography>
                       </Box>
@@ -487,13 +596,28 @@ export default function CreateQuizPage() {
                     {currentQuestion.type === "true-false" && (
                       <Box>
                         <FormControl>
-                          <FormLabel component="legend">Correct Answer</FormLabel>
+                          <FormLabel component="legend">
+                            Correct Answer
+                          </FormLabel>
                           <RadioGroup
                             value={currentQuestion.correctAnswer.toString()}
-                            onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, correctAnswer: e.target.value }))}
+                            onChange={(e) =>
+                              setCurrentQuestion((prev) => ({
+                                ...prev,
+                                correctAnswer: e.target.value,
+                              }))
+                            }
                           >
-                            <FormControlLabel value="true" control={<Radio />} label="True" />
-                            <FormControlLabel value="false" control={<Radio />} label="False" />
+                            <FormControlLabel
+                              value="true"
+                              control={<Radio />}
+                              label="True"
+                            />
+                            <FormControlLabel
+                              value="false"
+                              control={<Radio />}
+                              label="False"
+                            />
                           </RadioGroup>
                         </FormControl>
                       </Box>
@@ -506,7 +630,12 @@ export default function CreateQuizPage() {
                         label="Sample Answer (for grading reference)"
                         placeholder="Enter a sample correct answer"
                         value={currentQuestion.correctAnswer}
-                        onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, correctAnswer: e.target.value }))}
+                        onChange={(e) =>
+                          setCurrentQuestion((prev) => ({
+                            ...prev,
+                            correctAnswer: e.target.value,
+                          }))
+                        }
                       />
                     )}
 
@@ -522,66 +651,108 @@ export default function CreateQuizPage() {
                 </Box>
               ) : (
                 // Display Mode
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                  }}
+                >
                   <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                       <Chip label={`Question ${index + 1}`} size="small" />
-                      <Chip label={question.type} color="secondary" size="small" />
-                      <Chip label={`${question.points} pts`} variant="outlined" size="small" />
+                      <Chip
+                        label={question.type}
+                        color="secondary"
+                        size="small"
+                      />
+                      <Chip
+                        label={`${question.points} pts`}
+                        variant="outlined"
+                        size="small"
+                      />
                     </Box>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                       {question.question}
                     </Typography>
-                    
+
                     {/* Multiple Choice Options */}
-                    {question.type === "multiple-choice" && question.options && (
-                      <Box sx={{ ml: 2 }}>
-                        {question.options.map((option, optionIndex) => (
-                          <Box key={optionIndex} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                    {question.type === "multiple-choice" &&
+                      question.options && (
+                        <Box sx={{ ml: 2 }}>
+                          {question.options.map((option, optionIndex) => (
                             <Box
+                              key={optionIndex}
                               sx={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: "50%",
-                                bgcolor: optionIndex === question.correctAnswer ? "success.main" : "grey.300",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                mb: 1,
                               }}
-                            />
-                            <Typography
-                              color={optionIndex === question.correctAnswer ? "success.main" : "text.primary"}
-                              fontWeight={optionIndex === question.correctAnswer ? "bold" : "normal"}
                             >
-                              {option}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-                    
+                              <Box
+                                sx={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: "50%",
+                                  bgcolor:
+                                    optionIndex === question.correctAnswer
+                                      ? "success.main"
+                                      : "grey.300",
+                                }}
+                              />
+                              <Typography
+                                color={
+                                  optionIndex === question.correctAnswer
+                                    ? "success.main"
+                                    : "text.primary"
+                                }
+                                fontWeight={
+                                  optionIndex === question.correctAnswer
+                                    ? "bold"
+                                    : "normal"
+                                }
+                              >
+                                {option}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+
                     {/* True/False Answer */}
                     {question.type === "true-false" && (
-                      <Typography color="success.main" fontWeight="bold" sx={{ ml: 2 }}>
+                      <Typography
+                        color="success.main"
+                        fontWeight="bold"
+                        sx={{ ml: 2 }}
+                      >
                         Correct Answer: {question.correctAnswer}
                       </Typography>
                     )}
-                    
+
                     {/* Short Answer */}
                     {question.type === "short-answer" && (
-                      <Typography color="success.main" fontWeight="bold" sx={{ ml: 2 }}>
+                      <Typography
+                        color="success.main"
+                        fontWeight="bold"
+                        sx={{ ml: 2 }}
+                      >
                         Sample Answer: {question.correctAnswer}
                       </Typography>
                     )}
                   </Box>
                   <Box sx={{ display: "flex", gap: 1 }}>
-                    <IconButton 
-                      color="primary" 
+                    <IconButton
+                      color="primary"
                       onClick={() => startEditingQuestion(question)}
                       size="small"
                       title="Edit question"
                     >
                       <EditIcon />
                     </IconButton>
-                    <IconButton 
-                      color="error" 
+                    <IconButton
+                      color="error"
                       onClick={() => handleRemoveQuestion(question.id)}
                       size="small"
                       title="Delete question"
@@ -596,20 +767,36 @@ export default function CreateQuizPage() {
 
           {/* Add Question Form */}
           {isAddingQuestion && !editingQuestionId && (
-            <Paper sx={{ p: 3, border: "2px dashed", borderColor: "grey.300", mb: 2 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+            <Paper
+              sx={{
+                p: 3,
+                border: "2px dashed",
+                borderColor: "grey.300",
+                mb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
                 <Typography variant="h6">Add New Question</Typography>
                 <Button variant="text" onClick={resetCurrentQuestion}>
                   Cancel
                 </Button>
               </Box>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: { xs: 'column', md: 'row' }, 
-                  gap: 3 
-                }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: 3,
+                  }}
+                >
                   <FormControl fullWidth>
                     <InputLabel>Question Type</InputLabel>
                     <Select
@@ -622,12 +809,14 @@ export default function CreateQuizPage() {
                         }))
                       }
                     >
-                      <MenuItem value="multiple-choice">Multiple Choice</MenuItem>
+                      <MenuItem value="multiple-choice">
+                        Multiple Choice
+                      </MenuItem>
                       <MenuItem value="short-answer">Short Answer</MenuItem>
                       <MenuItem value="true-false">True/False</MenuItem>
                     </Select>
                   </FormControl>
-                  
+
                   <TextField
                     fullWidth
                     type="number"
@@ -635,11 +824,14 @@ export default function CreateQuizPage() {
                     inputProps={{ min: 1, max: 10 }}
                     value={currentQuestion.points}
                     onChange={(e) =>
-                      setCurrentQuestion((prev) => ({ ...prev, points: parseInt(e.target.value) }))
+                      setCurrentQuestion((prev) => ({
+                        ...prev,
+                        points: parseInt(e.target.value),
+                      }))
                     }
                   />
                 </Box>
-                
+
                 <TextField
                   fullWidth
                   multiline
@@ -647,22 +839,45 @@ export default function CreateQuizPage() {
                   label="Question"
                   placeholder="Enter your question"
                   value={currentQuestion.question}
-                  onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, question: e.target.value }))}
+                  onChange={(e) =>
+                    setCurrentQuestion((prev) => ({
+                      ...prev,
+                      question: e.target.value,
+                    }))
+                  }
                 />
 
                 {/* Multiple Choice Options */}
                 {currentQuestion.type === "multiple-choice" && (
                   <Box>
-                    <FormLabel component="legend" sx={{ mb: 2 }}>Answer Options</FormLabel>
+                    <FormLabel component="legend" sx={{ mb: 2 }}>
+                      Answer Options
+                    </FormLabel>
                     <RadioGroup
                       value={currentQuestion.correctAnswer.toString()}
                       onChange={(e) =>
-                        setCurrentQuestion((prev) => ({ ...prev, correctAnswer: parseInt(e.target.value) }))
+                        setCurrentQuestion((prev) => ({
+                          ...prev,
+                          correctAnswer: parseInt(e.target.value),
+                        }))
                       }
                     >
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                        }}
+                      >
                         {currentQuestion.options?.map((option, index) => (
-                          <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Box
+                            key={index}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
                             <FormControlLabel
                               value={index.toString()}
                               control={<Radio />}
@@ -675,16 +890,25 @@ export default function CreateQuizPage() {
                               placeholder={`Option ${index + 1}`}
                               value={option}
                               onChange={(e) => {
-                                const newOptions = [...(currentQuestion.options || [])];
+                                const newOptions = [
+                                  ...(currentQuestion.options || []),
+                                ];
                                 newOptions[index] = e.target.value;
-                                setCurrentQuestion((prev) => ({ ...prev, options: newOptions }));
+                                setCurrentQuestion((prev) => ({
+                                  ...prev,
+                                  options: newOptions,
+                                }));
                               }}
                             />
                           </Box>
                         ))}
                       </Box>
                     </RadioGroup>
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mt: 1, display: "block" }}
+                    >
                       Select the correct answer by clicking the radio button
                     </Typography>
                   </Box>
@@ -697,10 +921,23 @@ export default function CreateQuizPage() {
                       <FormLabel component="legend">Correct Answer</FormLabel>
                       <RadioGroup
                         value={currentQuestion.correctAnswer.toString()}
-                        onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, correctAnswer: e.target.value }))}
+                        onChange={(e) =>
+                          setCurrentQuestion((prev) => ({
+                            ...prev,
+                            correctAnswer: e.target.value,
+                          }))
+                        }
                       >
-                        <FormControlLabel value="true" control={<Radio />} label="True" />
-                        <FormControlLabel value="false" control={<Radio />} label="False" />
+                        <FormControlLabel
+                          value="true"
+                          control={<Radio />}
+                          label="True"
+                        />
+                        <FormControlLabel
+                          value="false"
+                          control={<Radio />}
+                          label="False"
+                        />
                       </RadioGroup>
                     </FormControl>
                   </Box>
@@ -713,7 +950,12 @@ export default function CreateQuizPage() {
                     label="Sample Answer (for grading reference)"
                     placeholder="Enter a sample correct answer"
                     value={currentQuestion.correctAnswer}
-                    onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, correctAnswer: e.target.value }))}
+                    onChange={(e) =>
+                      setCurrentQuestion((prev) => ({
+                        ...prev,
+                        correctAnswer: e.target.value,
+                      }))
+                    }
                   />
                 )}
 
@@ -730,13 +972,15 @@ export default function CreateQuizPage() {
           )}
 
           {/* Empty State */}
-          {quiz.questions.length === 0 && !isAddingQuestion && !editingQuestionId && (
-            <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
-              <Typography variant="body1">
-                No questions added yet. Click "Add Question" to get started.
-              </Typography>
-            </Box>
-          )}
+          {quiz.questions.length === 0 &&
+            !isAddingQuestion &&
+            !editingQuestionId && (
+              <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
+                <Typography variant="body1">
+                  No questions added yet. Click "Add Question" to get started.
+                </Typography>
+              </Box>
+            )}
         </CardContent>
       </Card>
 
@@ -747,10 +991,16 @@ export default function CreateQuizPage() {
         maxWidth="lg"
         fullWidth
         PaperProps={{
-          sx: { height: '90vh' }
+          sx: { height: "90vh" },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Typography variant="h6">Quiz Preview</Typography>
           <MuiIconButton onClick={() => setShowPreview(false)}>
             <CloseIcon />
