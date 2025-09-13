@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -9,6 +9,7 @@ import {
   TextField,
   Chip,
   InputAdornment,
+  Skeleton,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -19,52 +20,65 @@ import {
   BarChart as BarChart3Icon,
 } from "@mui/icons-material";
 import CreateWorkspaceModal from "../workpsaces/CreateWorkspaceModal";
+import axiosInstance from "../../api/axiosInstance";
 
+interface Workspace {
+  workspaceId: string;
+  name: string;
+  description: string;
+  studentCount: number;
+  tutorCount: number;
+  createdAt: string;
+  groupsCount: number;
+  lastActivity: string;
+}
 
 export function WorkspaceManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
-  const [workspaces, setWorkspaces] = useState([
-    {
-      id: 1,
-      name: "Advanced Mathematics",
-      description: "Calculus, Linear Algebra, and Statistics",
-      students: 45,
-      tutors: 3,
-      groups: 8,
-      status: "Active",
-      created: "2024-01-10",
-      lastActivity: "2 hours ago",
-    },
-    {
-      id: 2,
-      name: "Physics Laboratory",
-      description: "Experimental Physics and Lab Work",
-      students: 32,
-      tutors: 2,
-      groups: 6,
-      status: "Active",
-      created: "2024-01-15",
-      lastActivity: "30 minutes ago",
-    },
-    {
-      id: 3,
-      name: "Computer Science Fundamentals",
-      description: "Programming, Algorithms, and Data Structures",
-      students: 67,
-      tutors: 4,
-      groups: 12,
-      status: "Active",
-      created: "2023-12-20",
-      lastActivity: "1 hour ago",
-    },
-  ]);
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchWorkspaces = async () => {
+    try {
+      setLoading(true);
+      const response = (await axiosInstance.get("/workspace/getAllWorkspaces"))
+        .data;
+
+      if (!response.success) {
+        console.error("Failed to fetch workspaces");
+      } else {
+        const mapped = response.data.map((ws: Workspace) => ({
+          id: ws.workspaceId,
+          name: ws.name,
+          description: ws.description,
+          students: ws.studentCount ?? 0,
+          tutors: ws.tutorCount ?? 0,
+          groups: ws.groupsCount ?? 0,
+          status: "Active",
+          created: ws.createdAt
+            ? new Date(ws.createdAt).toISOString().slice(0, 10)
+            : "N/A",
+          lastActivity: ws.lastActivity ?? "just now",
+        }));
+
+        setWorkspaces(mapped);
+      }
+    } catch (err) {
+      console.log(`error ${err}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWorkspaces();
+  }, []);
 
   function handleCreated(newWs: any) {
-    // Best-effort shape mapping
     const mapped = {
       id: newWs?.id ?? Date.now(),
-      name: newWs?.name ?? newWs?.title ?? "New Workspace",
+      name: newWs?.name ?? "New Workspace",
       description: newWs?.description ?? "",
       students: newWs?.studentsCount ?? 0,
       tutors: newWs?.tutorsCount ?? 0,
@@ -76,8 +90,101 @@ export function WorkspaceManagement() {
     setWorkspaces((prev) => [mapped, ...prev]);
   }
 
+  // filter workspaces by searchTerm
+  const filteredWorkspaces = workspaces.filter(
+    (ws) =>
+      ws.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ws.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Workspace Card Component
+  const WorkspaceCard = ({ ws }: { ws: any }) => (
+    <Card
+      sx={{
+        height: "100%",
+        transition: "box-shadow 0.2s",
+        "&:hover": {
+          boxShadow: 4,
+        },
+      }}
+    >
+      <CardHeader
+        title={
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h6">{ws.name}</Typography>
+            <Chip
+              label={ws.status}
+              color={ws.status === "Active" ? "primary" : "default"}
+              size="small"
+            />
+          </Box>
+        }
+        subheader={ws.description}
+        sx={{ pb: 2 }}
+      />
+      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          <Stat icon={<UsersIcon />} label={`${ws.students} Students`} />
+          <Stat icon={<MessageSquareIcon />} label={`${ws.groups} Groups`} />
+          <Stat icon={<FileTextIcon />} label={`${ws.tutors} Tutors`} />
+          <Stat icon={<BarChart3Icon />} label="Analytics" />
+        </Box>
+
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary">
+            Created: {ws.created}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Last activity: {ws.lastActivity}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button size="small" variant="contained" sx={{ flex: 1 }}>
+            Manage
+          </Button>
+          <Button size="small" variant="outlined" sx={{ flex: 1 }}>
+            View
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
+  // Small stat item with icon
+  const Stat = ({ icon, label }: { icon: any; label: string }) => (
+    <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: 120 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {icon}
+        <Typography variant="body2">{label}</Typography>
+      </Box>
+    </Box>
+  );
+
+  // Skeleton card placeholder
+  const WorkspaceSkeleton = () => (
+    <Card>
+      <CardHeader
+        title={<Skeleton width="60%" />}
+        subheader={<Skeleton width="40%" />}
+      />
+      <CardContent>
+        <Skeleton height={30} />
+        <Skeleton height={30} />
+        <Skeleton height={30} />
+      </CardContent>
+    </Card>
+  );
+
   return (
     <Box sx={{ py: 3 }}>
+      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -96,11 +203,16 @@ export function WorkspaceManagement() {
             Create and manage learning workspaces
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<PlusIcon />} onClick={() => setIsWorkspaceModalOpen(true)}>
+        <Button
+          variant="contained"
+          startIcon={<PlusIcon />}
+          onClick={() => setIsWorkspaceModalOpen(true)}
+        >
           Create Workspace
         </Button>
       </Box>
 
+      {/* Search + Actions */}
       <Box
         sx={{
           display: "flex",
@@ -115,10 +227,7 @@ export function WorkspaceManagement() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           size="small"
-          sx={{
-            flex: { xs: "1 1 100%", sm: "1 1 auto" },
-            maxWidth: { sm: 320 },
-          }}
+          sx={{ flex: { xs: "1 1 100%", sm: "1 1 auto" }, maxWidth: { sm: 320 } }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -131,226 +240,87 @@ export function WorkspaceManagement() {
         <Button variant="outlined">Export</Button>
       </Box>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 3,
-          mb: 4,
-        }}
-      >
-        {workspaces.map((workspace) => (
+      {/* Workspaces */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+        {loading
+          ? Array.from(new Array(3)).map((_, i) => (
+              <Box
+                key={i}
+                sx={{
+                  flex: {
+                    xs: "1 1 100%",
+                    md: "1 1 calc(50% - 12px)",
+                    lg: "1 1 calc(33.333% - 16px)",
+                  },
+                }}
+              >
+                <WorkspaceSkeleton />
+              </Box>
+            ))
+          : filteredWorkspaces.map((ws) => (
+              <Box
+                key={ws.id}
+                sx={{
+                  flex: {
+                    xs: "1 1 100%",
+                    md: "1 1 calc(50% - 12px)",
+                    lg: "1 1 calc(33.333% - 16px)",
+                  },
+                }}
+              >
+                <WorkspaceCard ws={ws} />
+              </Box>
+            ))}
+      </Box>
+
+      {/* Quick Stats */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+        {[156, 2847, 1234, "89%"].map((val, i) => (
           <Box
-            key={workspace.id}
+            key={i}
             sx={{
               flex: {
                 xs: "1 1 100%",
-                md: "1 1 calc(50% - 12px)",
-                lg: "1 1 calc(33.333% - 16px)",
+                sm: "1 1 calc(50% - 8px)",
+                md: "1 1 calc(25% - 12px)",
               },
             }}
           >
-            <Card
-              sx={{
-                height: "100%",
-                transition: "box-shadow 0.2s",
-                "&:hover": {
-                  boxShadow: 4,
-                },
-              }}
-            >
-              <CardHeader
-                title={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Typography variant="h6">{workspace.name}</Typography>
-                    <Chip
-                      label={workspace.status}
-                      color={
-                        workspace.status === "Active" ? "primary" : "default"
+            <Card>
+              <CardContent sx={{ p: 2 }}>
+                {loading ? (
+                  <>
+                    <Skeleton width="50%" height={30} />
+                    <Skeleton width="70%" />
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="h4" fontWeight="bold" gutterBottom>
+                      {val}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {
+                        [
+                          "Total Workspaces",
+                          "Total Participants",
+                          "Active Groups",
+                          "Engagement Rate",
+                        ][i]
                       }
-                      size="small"
-                    />
-                  </Box>
-                }
-                subheader={workspace.description}
-                sx={{ pb: 2 }}
-              />
-              <CardContent
-                sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 2,
-                  }}
-                >
-                  <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: 120 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <UsersIcon
-                        sx={{ fontSize: 16, color: "text.secondary" }}
-                      />
-                      <Typography variant="body2">
-                        {workspace.students} Students
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: 120 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <MessageSquareIcon
-                        sx={{ fontSize: 16, color: "text.secondary" }}
-                      />
-                      <Typography variant="body2">
-                        {workspace.groups} Groups
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: 120 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <FileTextIcon
-                        sx={{ fontSize: 16, color: "text.secondary" }}
-                      />
-                      <Typography variant="body2">
-                        {workspace.tutors} Tutors
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: 120 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <BarChart3Icon
-                        sx={{ fontSize: 16, color: "text.secondary" }}
-                      />
-                      <Typography variant="body2">Analytics</Typography>
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    Created: {workspace.created}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Last activity: {workspace.lastActivity}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <Button size="small" variant="contained" sx={{ flex: 1 }}>
-                    Manage
-                  </Button>
-                  <Button size="small" variant="outlined" sx={{ flex: 1 }}>
-                    View
-                  </Button>
-                </Box>
+                    </Typography>
+                  </>
+                )}
               </CardContent>
             </Card>
           </Box>
         ))}
       </Box>
 
-      {/* Quick Stats */}
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 8px)",
-              md: "1 1 calc(25% - 12px)",
-            },
-          }}
-        >
-          <Card>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                156
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Total Workspaces
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 8px)",
-              md: "1 1 calc(25% - 12px)",
-            },
-          }}
-        >
-          <Card>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                2,847
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Total Participants
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 8px)",
-              md: "1 1 calc(25% - 12px)",
-            },
-          }}
-        >
-          <Card>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                1,234
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Active Groups
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 8px)",
-              md: "1 1 calc(25% - 12px)",
-            },
-          }}
-        >
-          <Card>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                89%
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Engagement Rate
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>
-
       <CreateWorkspaceModal
         open={isWorkspaceModalOpen}
         onClose={() => setIsWorkspaceModalOpen(false)}
         onCreated={handleCreated}
-        endpoint="/workspace/create" // adjust to your backend route
+        endpoint="/workspace/create"
       />
     </Box>
   );
