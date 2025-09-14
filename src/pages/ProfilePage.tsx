@@ -32,6 +32,7 @@ import {
 } from "@mui/icons-material";
 import axiosInstance from "../api/axiosInstance";
 import { useAuth } from "../contexts/Authcontext";
+import { useSnackbar } from "../contexts/SnackbarContext";
 
 interface ProfileData {
   name: string;
@@ -42,6 +43,7 @@ interface ProfileData {
 
 export default function ProfilePage() {
   const auth = useAuth();
+  const { showSnackbar } = useSnackbar();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     email: "",
@@ -61,9 +63,7 @@ export default function ProfilePage() {
   const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
   const [open2FADialog, setOpen2FADialog] = useState(false);
   const [loadingProfileData, setLoadingProfileData] = useState(true);
-
-  // Minimal toast (replace with your toast hook if needed)
-  const toast = (msg: string) => alert(msg);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
 
   const fetchProfileData = async () => {
     try {
@@ -94,6 +94,54 @@ export default function ProfilePage() {
       setLoadingProfileData(false);
     }
   }, [auth?.user_id]);
+
+  const handleUpdateProfile = async () => {
+    if (!auth?.user_id) {
+      showSnackbar("User ID not available", "error");
+      return;
+    }
+
+    if (!profileData.name || profileData.name.trim() === "") {
+      showSnackbar("Name cannot be empty", "error");
+      return;
+    }
+
+    setUpdatingProfile(true);
+
+    try {
+      const response = await axiosInstance.put(
+        `/users/update-user/${auth.user_id}`,
+        {
+          name: profileData.name.trim(),
+        }
+      );
+
+      if (response.data.success) {
+        showSnackbar("Profile updated successfully!", "success");
+        // Optionally refresh the profile data
+        await fetchProfileData();
+      } else {
+        showSnackbar(
+          response.data.message || "Failed to update profile",
+          "error"
+        );
+      }
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+
+      if (error.response?.data?.message) {
+        showSnackbar(error.response.data.message, "error");
+      } else if (error.response?.status === 404) {
+        showSnackbar("User not found", "error");
+      } else if (error.response?.status === 500) {
+        showSnackbar("Server error. Please try again later", "error");
+      } else {
+        showSnackbar("Failed to update profile. Please try again", "error");
+      }
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
 
   return (
     <Box>
@@ -218,7 +266,9 @@ export default function ProfilePage() {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => toast("Profile picture updated!")}
+                        onClick={() =>
+                          showSnackbar("Profile picture updated!", "success")
+                        }
                         sx={{ mt: 1 }}
                       >
                         <Camera sx={{ mr: 0.75, fontSize: 16 }} />
@@ -236,7 +286,7 @@ export default function ProfilePage() {
                   >
                     <TextField
                       label="Name"
-                      value={profileData.name || ""}
+                      defaultValue={profileData.name || ""}
                       onChange={(e) =>
                         setProfileData({ ...profileData, name: e.target.value })
                       }
@@ -263,11 +313,12 @@ export default function ProfilePage() {
                     />
                   </Box>
                   <Button
-                    onClick={() => toast("Profile updated!")}
+                    onClick={handleUpdateProfile}
                     variant="contained"
+                    disabled={updatingProfile}
                     sx={{ mt: 3 }}
                   >
-                    Save Profile Changes
+                    {updatingProfile ? "Updating..." : "Save Profile Changes"}
                   </Button>
                 </>
               )}
@@ -358,7 +409,9 @@ export default function ProfilePage() {
                 </Box>
               </Box>
               <Button
-                onClick={() => toast("Privacy settings updated!")}
+                onClick={() =>
+                  showSnackbar("Privacy settings updated!", "success")
+                }
                 variant="contained"
                 sx={{ mt: 3 }}
               >
@@ -438,7 +491,7 @@ export default function ProfilePage() {
                         setIsTestingTwoFactor(true);
                         setTimeout(() => {
                           setIsTestingTwoFactor(false);
-                          toast("2FA test successful!");
+                          showSnackbar("2FA test successful!", "success");
                         }, 2000);
                       }}
                       disabled={isTestingTwoFactor}
@@ -558,7 +611,7 @@ export default function ProfilePage() {
               </Button>
               <Button
                 onClick={() => {
-                  toast("Password updated!");
+                  showSnackbar("Password updated!", "success");
                   setOpenPasswordDialog(false);
                 }}
                 variant="contained"
