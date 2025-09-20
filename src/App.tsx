@@ -62,7 +62,7 @@ function App() {
         >
           <Route path="user-profile" element={<ProfilePage />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="workspace/:workspaceId" element={<WorkspacePage />} />
+          <Route path="workspace/:workspaceId/:workspaceName" element={<WorkspacePage />} />
           <Route
             path="workspace/:workspaceId/group/:groupId"
             element={<GroupPage />}

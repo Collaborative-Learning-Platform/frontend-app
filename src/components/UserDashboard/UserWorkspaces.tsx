@@ -29,8 +29,8 @@ export function UserWorkspaces() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const handleEnterWorkspace = (id: string) => {
-    navigate(`/workspace/${id}`);
+  const handleEnterWorkspace = (id: string, name: string) => {
+    navigate(`/workspace/${id}/${name}`);
   };
 
   useEffect(() => {
@@ -165,8 +165,8 @@ export function UserWorkspaces() {
                       lastActivity: "N/A",
                       color: "#1976d2",
                     }}
-                    onView={() => handleEnterWorkspace(workspace.workspaceId)}
-                    onManage={() => handleEnterWorkspace(workspace.workspaceId)}
+                    onView={() => handleEnterWorkspace(workspace.workspaceId, workspace.name)}
+                    onManage={() => handleEnterWorkspace(workspace.workspaceId, workspace.name)}
                   />
                 </Box>
               </Grow>
