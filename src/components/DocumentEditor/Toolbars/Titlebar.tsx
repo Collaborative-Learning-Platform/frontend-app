@@ -27,11 +27,10 @@ import {
   MoreVert as MoreVertIcon,
   InsertDriveFile as DocumentIcon,
 } from "@mui/icons-material";
-import { Chats } from "../Buttons/Chats";
-import { ThemeToggle } from "../Buttons/ThemeToggle";
-import { BackButton } from "../Buttons/BackButton";
-import { NotificationsButton } from "../Buttons/NotificationsButton";
-import { docEditorToolbar } from "../../styles/components/DocumentEditor/common";
+import { Chats } from "../../Buttons/Chats";
+import { ThemeToggle } from "../../Buttons/ThemeToggle";
+import { BackButton } from "../../Buttons/BackButton";
+import { NotificationsButton } from "../../Buttons/NotificationsButton";
 import {
   actionsAndCollaborators,
   actionStyles,
@@ -54,7 +53,7 @@ import {
   syncIconStyles,
   textFieldWrapper,
   toolBarStyles,
-} from "../../styles/components/DocumentEditor/Titlebar";
+} from "../../../styles/components/DocumentEditor/Titlebar";
 
 export const Titlebar = () => {
   const theme = useTheme();
@@ -106,7 +105,7 @@ export const Titlebar = () => {
   }, []);
 
   return (
-    <Box sx={docEditorToolbar}>
+    <Box sx={{ width: "100%", flexGrow: 1, padding: 0, overflow: "visible" }}>
       <AppBar position="static" elevation={0} sx={appBarStyles}>
         <Toolbar sx={toolBarStyles}>
           <Box sx={responsiveLayoutWrapper}>

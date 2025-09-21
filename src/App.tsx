@@ -35,6 +35,7 @@ import CreateQuizPage from "./pages/quiz/Createquiz";
 import QuizAttempt from "./pages/quiz/QuizAttempt";
 import Unauthorized from "./pages/Unauthorized";
 import Settings from "./pages/Settings";
+import EditorApp from "./components/DocumentEditor/EditorApp/EditorApp";
 
 function App() {
   return (
@@ -101,11 +102,11 @@ function App() {
             <Route path="admin-settings" element={<SystemSettings />} />
           </Route>
         </Route>
-       </Route>
+      </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["user", "tutor"]} />}>
         <Route path="/whiteboard" element={<Whiteboard />} />
-        <Route path="/document-editor" element={<DocumentEditor />} />
+        <Route path="/document-editor" element={<EditorApp />} />
       </Route>
 
       {/* Catch-all route for 404 Not Found */}
