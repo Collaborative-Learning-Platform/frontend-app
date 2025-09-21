@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState, useRef } from "react"
 import {
   Card,
   Box,
@@ -8,63 +8,95 @@ import {
   IconButton,
   Divider,
   useTheme,
-} from "@mui/material";
-import { Send, MoreVert } from "@mui/icons-material";
+} from "@mui/material"
+import { Send, MoreVert } from "@mui/icons-material"
+import { io, Socket } from "socket.io-client"
 
 interface Message {
-  id: string;
-  sender: string;
-  content: string;
-  timestamp: string;
-  avatar: string;
-  self?: boolean;
+  id: string
+  sender: string
+  content: string
+  timestamp: string
+  avatar: string
+  self?: boolean
 }
 
 interface GroupChatProps {
-  groupId: string;
-  currentUser: string;
+  groupId: string
+  currentUserName: string
 }
 
-const GroupChat = ({ groupId, currentUser }: GroupChatProps) => {
-  const theme = useTheme();
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "1", sender: "Theekshana", content: "Hey team! Ready?", timestamp: "10:30 AM", avatar: "T" },
-    { id: "2", sender: "Vinuka", content: "Auth module is done.", timestamp: "10:32 AM", avatar: "V" },
-    { id: "3", sender: "Erandathe", content: "Database integration is ready.", timestamp: "10:35 AM", avatar: "ER" },
-  ]);
+let socket: Socket 
 
-  const [typing, setTyping] = useState(false);
+const GroupChat = ({ groupId, currentUserName }: GroupChatProps) => {
+  const theme = useTheme()
+  const [messages, setMessages] = useState<Message[]>([])
+  const [message, setMessage] = useState("")
+  const [typing, setTyping] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to latest message
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  
+  socket = io(import.meta.env.VITE_BASEURL)
+
+  socket.on('connect', () => {
+    console.log('Connected to server:', socket.id)
+    socket.emit('join_room', groupId)
+    socket.emit('get_messages', groupId)
+  })
+  
+
+  socket.on('messages', (msgs: any[]) => {
+    setMessages(msgs.map(m => ({
+      id: m.chatId,
+      sender: m.sender,
+      content: m.content,
+      timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      avatar: m.sender.split(' ').map((n: string) => n[0].toUpperCase()).join(''),
+      self: m.sender === currentUserName,
+    })))
+  })
+
+  socket.on('receive_message', (msg: any) => {
+    setMessages(prev => [...prev, {
+      id: msg.chatId,
+      sender: msg.sender,
+      content: msg.content,
+      timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      avatar: msg.sender.split(' ').map((n: string) => n[0].toUpperCase()).join(''),
+      self: msg.sender === currentUserName,
+    }])
+  })
+
+  return () => {
+    socket.disconnect()
+  }
+  }, []) 
+
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
   const handleTyping = (text: string) => {
-    setMessage(text);
-    setTyping(text.length > 0);
-  };
+    setMessage(text)
+    setTyping(text.length > 0)
+  }
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim()) return
 
-    const newMessage: Message = {
-      id: (messages.length + 1).toString(),
-      sender: currentUser,
+    const newMsg = {
+      sender: currentUserName,
+      roomId: groupId,
       content: message,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      avatar: currentUser.split(" ").map(n => n[0]).join(""),
-      self: true,
-    };
+    }
 
-    setMessages(prev => [...prev, newMessage]);
-    setMessage("");
-    setTyping(false);
-  };
+    socket?.emit("send_message", newMsg)
+    setMessage("")
+    setTyping(false)
+  }
 
   return (
     <Card
@@ -109,9 +141,8 @@ const GroupChat = ({ groupId, currentUser }: GroupChatProps) => {
           p: 2,
           bgcolor: theme.palette.mode === "dark" ? "grey.900" : "grey.100",
         }}
-        ref={messagesContainerRef}
       >
-        {messages.map(msg => (
+        {messages.map((msg) => (
           <Box
             key={msg.id}
             sx={{
@@ -152,7 +183,7 @@ const GroupChat = ({ groupId, currentUser }: GroupChatProps) => {
 
         {typing && (
           <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-            {currentUser} is typing...
+            {currentUserName} is typing...
           </Typography>
         )}
 
@@ -168,8 +199,8 @@ const GroupChat = ({ groupId, currentUser }: GroupChatProps) => {
           placeholder="Type a message..."
           size="small"
           value={message}
-          onChange={e => handleTyping(e.target.value)}
-          onKeyPress={e => e.key === "Enter" && handleSendMessage()}
+          onChange={(e) => handleTyping(e.target.value)}
+          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 3,
@@ -190,7 +221,7 @@ const GroupChat = ({ groupId, currentUser }: GroupChatProps) => {
         </IconButton>
       </Box>
     </Card>
-  );
-};
+  )
+}
 
-export default GroupChat;
+export default GroupChat

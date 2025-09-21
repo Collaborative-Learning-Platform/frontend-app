@@ -1,102 +1,107 @@
 import { Box, Typography } from "@mui/material";
 import GroupCard from "../components/workpsaces/GroupCard";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { gridTemplateColumnsStyles } from "../styles/pages/workspace";
+import axiosInstance from "../api/axiosInstance";
+import { useAuth } from "../contexts/Authcontext";
 
-const mockWorkspace = {
-  name: "CS3040 - Software Engineering",
-  mainGroups: [
-    {
-      id: 1,
-      name: "CSE 3040 - CSE group",
-      footerSlot: (
-        <Typography variant="caption" color="text.secondary">
-          5 members
-        </Typography>
-      ),
-    },
-    {
-      id: 2,
-      name: "CSE 3040 - ENTC group",
-      footerSlot: (
-        <Typography variant="caption" color="text.secondary">
-          3 members
-        </Typography>
-      ),
-    },
-  ],
-  otherGroups: [
-    {
-      id: 3,
-      name: "Study Group - mid exam",
-      footerSlot: (
-        <Typography variant="caption" color="text.secondary">
-          4 members
-        </Typography>
-      ),
-    },
-    {
-      id: 4,
-      name: "Study Group - Viva",
-      footerSlot: (
-        <Typography variant="caption" color="text.secondary">
-          2 members
-        </Typography>
-      ),
-    },
-  ],
-};
+interface Group {
+  groupId: string;
+  name: string;
+  description: string;
+  type: "Main" | "Custom";
+  createdAt: string;
+}
 
 const WorkspacePage = () => {
-  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const { workspaceId, workspaceName } = useParams<{ workspaceId: string, workspaceName: string }>();
   const navigate = useNavigate();
+  const { user_id } = useAuth();
+
+  const [mainGroups, setMainGroups] = useState<Group[]>([]);
+  const [otherGroups, setOtherGroups] = useState<Group[]>([]);
+  
 
   useEffect(() => {
-    // Fetch workspace data based on the ID
-  }, [workspaceId]);
+    const fetchWorkspace = async (userId: string, workspaceId: string) => {
+      try {
+        const response = await axiosInstance.post(`/workspace/fetchGroupsByUserInWorkspace`, {
+          userId,
+          workspaceId,
+        });
 
-  const handleClick = (groupId: number | string) => {
+        console.log("Fetched workspace data:", response.data);
+
+        if (response.data.success && Array.isArray(response.data.data)) {
+          const groups: Group[] = response.data.data;
+
+          // Split groups by type
+          setMainGroups(groups.filter((g) => g.type === "Main"));
+          setOtherGroups(groups.filter((g) => g.type === "Custom"));
+
+          
+          // setWorkspaceName("Workspace " + workspaceId);
+        }
+      } catch (error) {
+        console.error("Error fetching workspace data:", error);
+      }
+    };
+
+    if (workspaceId && user_id) fetchWorkspace(user_id, workspaceId);
+  }, [workspaceId, user_id]);
+
+  const handleClick = (groupId: string | number) => {
     navigate(`/workspace/${workspaceId}/group/${groupId}`);
   };
 
   return (
     <Box>
       <Typography variant="h4" mb={3}>
-        {mockWorkspace.name}
+        {workspaceName}
       </Typography>
 
+      {/* Main groups */}
       <Box mb={4}>
         <Typography variant="h6" mb={1}>
           Main groups
         </Typography>
         <Box display="grid" gap={2} sx={gridTemplateColumnsStyles}>
-          {mockWorkspace.mainGroups.map((group) => (
+          {mainGroups.map((group) => (
             <GroupCard
-              key={group.id}
-              id={group.id}
+              key={group.groupId}
+              id={group.groupId}
               name={group.name}
               type="main"
               onClick={handleClick}
-              footerSlot={group.footerSlot}
+              footerSlot={
+                <Typography variant="caption" color="text.secondary">
+                  {group.description || "No description"}
+                </Typography>
+              }
             />
           ))}
         </Box>
       </Box>
 
+      {/* Other groups */}
       <Box>
         <Typography variant="h6" mb={1}>
           Other groups
         </Typography>
         <Box display="grid" gap={2} sx={gridTemplateColumnsStyles}>
-          {mockWorkspace.otherGroups.map((group) => (
+          {otherGroups.map((group) => (
             <GroupCard
-              key={group.id}
-              id={group.id}
+              key={group.groupId}
+              id={group.groupId}
               name={group.name}
               type="other"
               onClick={handleClick}
-              footerSlot={group.footerSlot}
+              footerSlot={
+                <Typography variant="caption" color="text.secondary">
+                  {group.description || "No description"}
+                </Typography>
+              }
             />
           ))}
         </Box>
