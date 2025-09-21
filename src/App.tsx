@@ -18,7 +18,7 @@ import { AdminOverview } from "./components/AdminDashboard/AdminOverview";
 import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
 import { Whiteboard } from "./pages/Whiteboard";
-import { DocumentEditor } from "./pages/DocumentEditor";
+// import { DocumentEditor } from "./pages/DocumentEditor";
 import { FlashCardGenerator } from "./pages/FlashCardGenerator";
 import { FlashCardLibrary } from "./pages/FlashCardLibrary";
 import { FlashCardLayout } from "./pages/FlashCardLayout";
