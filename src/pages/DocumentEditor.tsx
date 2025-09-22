@@ -20,8 +20,8 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { Formatbar } from "../components/DocumentEditor/Formatbar";
-import { Titlebar } from "../components/DocumentEditor/Titlebar";
+// import { Formatbar } from "../components/DocumentEditor/Toolbars/Formatbar";
+import { Titlebar } from "../components/DocumentEditor/Toolbars/Titlebar";
 
 interface Page {
   id: string;
@@ -199,7 +199,7 @@ export const DocumentEditor = () => {
       {/* Enhanced Header */}
       <Box sx={{ position: "sticky", top: 0, zIndex: 100 }}>
         <Titlebar />
-        <Formatbar />
+        {/* <Formatbar /> */}
       </Box>
 
       {/* Document Container */}

@@ -1,0 +1,186 @@
+.tiptap {
+  :first-child {
+    margin-top: 0;
+  }
+  width: 100%; /* Fill the container */
+  max-width: 100%;
+  height: 90vh;
+  overflow: auto;
+  margin: 0; /* Remove margins since container handles spacing */
+  padding: 20px;
+  background: var(--editor-bg, #fff) !important;
+  border-radius: 5px;
+  min-height: 70vh !important;
+  outline: none;
+  border: none;
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--editor-text, #333) !important;
+  white-space: pre-wrap; /* Required by ProseMirror */
+  box-sizing: border-box; /* Include padding in width calculation */
+
+  /*List styles*/
+  ul,
+  ol {
+    padding: 0 1rem;
+    margin: 1.25rem 1rem 1.25rem 0.4rem;
+
+    li p {
+      margin-top: 0.25em;
+      margin-bottom: 0.25em;
+    }
+  }
+
+  /* Task list specific styles */
+  ul[data-type="taskList"] {
+    list-style: none;
+    margin-left: 0;
+    padding: 0;
+
+    li {
+      align-items: flex-start;
+      display: flex;
+
+      > label {
+        flex: 0 0 auto;
+        margin-right: 0.5rem;
+        user-select: none;
+      }
+
+      > div {
+        flex: 1 1 auto;
+      }
+    }
+
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    ul[data-type="taskList"] {
+      margin: 0;
+    }
+  }
+
+  p {
+    word-break: break-all;
+  }
+
+  /* Render the username above the caret */
+  .collaboration-carets__label {
+    border-radius: 3px 3px 3px 0;
+    color: #0d0d0d;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    left: -1px;
+    line-height: normal;
+    padding: 0.1rem 0.3rem;
+    position: absolute;
+    top: -1.4em;
+    user-select: none;
+    white-space: nowrap;
+  }
+  /* Give a remote user a caret */
+  .collaboration-carets__caret {
+    border-left: 1px solid #0d0d0d;
+    border-right: 1px solid #0d0d0d;
+    margin-left: -1px;
+    margin-right: -1px;
+    pointer-events: none;
+    position: relative;
+    word-break: normal;
+  }
+}
+
+/* Focus styling for the editor content */
+.tiptap:focus {
+  outline: none !important;
+}
+
+/* Blue text selection */
+.tiptap ::selection {
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3)) !important;
+}
+
+.tiptap ::-moz-selection {
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3)) !important;
+}
+
+/* Debug: Remove unwanted white divs */
+
+/* Ensure MUI components don't cause overflow */
+.MuiBox-root {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Override for toolbar-related boxes to prevent button clipping */
+.MuiAppBar-root .MuiBox-root,
+.MuiToolbar-root .MuiBox-root {
+  overflow: visible !important;
+}
+
+/* CRITICAL: Allow overflow for inputs and popovers */
+.MuiPopover-root,
+.MuiPopover-root *,
+.MuiPaper-root,
+.MuiAutocomplete-root,
+.MuiAutocomplete-root *,
+.MuiTextField-root,
+.MuiTextField-root *,
+.MuiInputBase-root,
+.MuiInputBase-root *,
+.MuiFormControl-root,
+.MuiFormControl-root *,
+.MuiColorInput-root,
+.MuiColorInput-root * {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+/*Page break styles*/
+.page-break {
+  height: 20px;
+  width: 100%;
+  border-top: 1px dashed #ccc;
+  margin: 10px 0;
+}
+
+/* Focus styling - blue highlight */
+.tiptap:focus {
+  outline: none;
+  border: none;
+}
+
+.ProseMirror-editor:focus-within {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+/* Selection styling - blue selection */
+.tiptap ::selection {
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3));
+}
+
+.tiptap ::-moz-selection {
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3));
+}
+
+/* Specific toolbar overflow fix - make visible to prevent button clipping */
+.MuiToolbar-root {
+  overflow: visible !important;
+}
+
+.MuiAppBar-root {
+  overflow: visible !important;
+}
+
+/* Ensure button hover states are not clipped */
+.MuiToggleButton-root:hover,
+.MuiButton-root:hover,
+.MuiIconButton-root:hover {
+  overflow: visible !important;
+  z-index: 1 !important;
+}
