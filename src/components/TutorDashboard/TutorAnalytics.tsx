@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -27,6 +27,8 @@ import {
 import { Bar } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import { useAuth } from "../../contexts/Authcontext";
+import axiosInstance from "../../api/axiosInstance";
 
 ChartJS.register(
   CategoryScale,
@@ -39,9 +41,11 @@ ChartJS.register(
 
 export default function TutorAnalytics() {
   const theme = useTheme();
+  const { user_id } = useAuth();
   const [expandedQuizDetails, setExpandedQuizDetails] = useState<number | null>(
     null
   );
+  const [tutorQuizzes, setTutorQuizzes] = useState<Quiz[]>([]);
 
   interface Quiz {
     id: number;
@@ -56,6 +60,33 @@ export default function TutorAnalytics() {
     scoreRange: string;
     studentCount: number;
   };
+
+  const fetchQuizData = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get(`/quiz/user/${user_id}`);
+
+      const mappedQuizzes = response.data.data.map((q: any, index: number) => ({
+        id: index + 1,
+        quizId: q.quizId,
+        title: q.title,
+        description: q.description,
+        workspace: q.workspaceName,
+        attempts: 0,
+        avgScore: 0,
+        dueDate: q.deadline.split("T")[0],
+      }));
+
+      setTutorQuizzes(mappedQuizzes);
+    } catch (err) {
+      console.error("Error fetching quizzes:", err);
+    }
+  }, [user_id]);
+
+  useEffect(() => {
+    fetchQuizData();
+  }, [fetchQuizData]);
+  
+  
 
   const chartOptions: ChartOptions<"bar"> = {
     responsive: true,
@@ -77,33 +108,6 @@ export default function TutorAnalytics() {
       },
     },
   };
-
-  const recentQuizzes: Quiz[] = [
-    {
-      id: 1,
-      title: "Math Quiz 1",
-      workspace: "Mathematics 101",
-      attempts: 15,
-      avgScore: 85,
-      dueDate: "2024-01-15",
-    },
-    {
-      id: 2,
-      title: "Physics Test",
-      workspace: "Physics Advanced",
-      attempts: 12,
-      avgScore: 78,
-      dueDate: "2024-01-18",
-    },
-    {
-      id: 3,
-      title: "Convolution Test",
-      workspace: "Image Processing",
-      attempts: 120,
-      avgScore: 78,
-      dueDate: "2024-01-18",
-    },
-  ];
 
   const performanceData: Record<number, PerformanceData[]> = {
     1: [
@@ -157,8 +161,8 @@ export default function TutorAnalytics() {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "revert", gap: 1, mb: 3 }}>
-        <BarChartIcon sx={{ fontSize: 30}} />
-        <Typography variant="h4"  fontWeight="bold">
+        <BarChartIcon sx={{ fontSize: 30 }} />
+        <Typography variant="h4" fontWeight="bold">
           Quiz Analytics
         </Typography>
       </Box>
@@ -371,7 +375,7 @@ export default function TutorAnalytics() {
         />
         <CardContent>
           <Stack spacing={3}>
-            {recentQuizzes.map((quiz) => (
+            {tutorQuizzes.map((quiz) => (
               <Box key={quiz.id}>
                 {/* Main Quiz Row */}
                 <Box

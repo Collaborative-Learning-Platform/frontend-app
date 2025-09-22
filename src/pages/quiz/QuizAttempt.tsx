@@ -37,7 +37,7 @@ import {
 // Types
 interface Question {
   id: string;
-  type: "multiple-choice" | "short-answer" | "true-false";
+  type: "MCQ" | "short_answer" | "true_false";
   question: string;
   options?: string[];
   correctAnswer: string | number;
@@ -137,7 +137,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
       questions: [
         {
           id: "1",
-          type: "multiple-choice",
+          type: "MCQ",
           question: "What is 2 + 2?",
           options: ["3", "4", "5", "6"],
           correctAnswer: 1,
@@ -145,14 +145,14 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
         },
         {
           id: "2",
-          type: "true-false",
+          type: "true_false",
           question: "The Earth is flat.",
           correctAnswer: "false",
           points: 1,
         },
         {
           id: "3",
-          type: "short-answer",
+          type: "short_answer",
           question: "What is the capital of France?",
           correctAnswer: "Paris",
           points: 3,
@@ -260,11 +260,11 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
   const checkAnswer = (question: Question, userAnswer: string | number): boolean => {
     if (!userAnswer && userAnswer !== 0) return false;
     
-    if (question.type === "multiple-choice") {
+    if (question.type === "MCQ") {
       return Number(userAnswer) === question.correctAnswer;
-    } else if (question.type === "true-false") {
+    } else if (question.type === "true_false") {
       return userAnswer.toString().toLowerCase() === question.correctAnswer.toString().toLowerCase();
-    } else if (question.type === "short-answer") {
+    } else if (question.type === "short_answer") {
       // Simple string comparison - Not sufficient (Check later)
       return userAnswer.toString().toLowerCase().trim() === 
              question.correctAnswer.toString().toLowerCase().trim();
@@ -425,7 +425,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
                       Your Answer:
                     </Typography>
                     <Typography variant="body1" color={result.isCorrect ? "success.main" : "error.main"}>
-                      {result.question.type === "multiple-choice" && result.question.options
+                      {result.question.type === "MCQ" && result.question.options
                         ? result.question.options[Number(result.userAnswer)] || "No answer"
                         : result.userAnswer || "No answer"}
                     </Typography>
@@ -438,7 +438,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
                       Correct Answer:
                     </Typography>
                     <Typography variant="body1" color="success.main">
-                      {result.question.type === "multiple-choice" && result.question.options
+                      {result.question.type === "MCQ" && result.question.options
                         ? result.question.options[Number(result.correctAnswer)]
                         : result.correctAnswer}
                     </Typography>
@@ -579,7 +579,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
               </Typography>
 
               {/* Multiple Choice */}
-              {question.type === "multiple-choice" && question.options && (
+              {question.type === "MCQ" && question.options && (
                 <FormControl component="fieldset" fullWidth>
                   <RadioGroup
                     value={getAnswer(question.id).toString()}
@@ -608,7 +608,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
               )}
 
               {/* True/False */}
-              {question.type === "true-false" && (
+              {question.type === "true_false" && (
                 <FormControl component="fieldset" fullWidth>
                   <RadioGroup
                     value={getAnswer(question.id).toString()}
@@ -648,7 +648,7 @@ export default function QuizAttempt({ quiz: propQuiz, isPreview = false }: QuizA
               )}
 
               {/* Short Answer */}
-              {question.type === "short-answer" && (
+              {question.type === "short_answer" && (
                 <TextField
                   fullWidth
                   multiline
