@@ -8,7 +8,7 @@
   overflow: auto;
   margin: 0; /* Remove margins since container handles spacing */
   padding: 20px;
-  background: #fff;
+  background: var(--editor-bg, #fff) !important;
   border-radius: 5px;
   min-height: 70vh !important;
   outline: none;
@@ -16,7 +16,7 @@
   font-family: "Georgia", "Times New Roman", serif;
   font-size: 16px;
   line-height: 1.6;
-  color: #333;
+  color: var(--editor-text, #333) !important;
   white-space: pre-wrap; /* Required by ProseMirror */
   box-sizing: border-box; /* Include padding in width calculation */
 
@@ -100,23 +100,14 @@
 
 /* Blue text selection */
 .tiptap ::selection {
-  background: rgba(25, 118, 210, 0.3) !important;
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3)) !important;
 }
 
 .tiptap ::-moz-selection {
-  background: rgba(25, 118, 210, 0.3) !important;
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3)) !important;
 }
 
 /* Debug: Remove unwanted white divs */
-
-html,
-body {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
-  max-width: 100vw !important;
-  background: #f5f5f5 !important; /* Light gray background like Google Docs */
-}
 
 /* Ensure MUI components don't cause overflow */
 .MuiBox-root {
@@ -170,11 +161,11 @@ body {
 
 /* Selection styling - blue selection */
 .tiptap ::selection {
-  background: rgba(25, 118, 210, 0.3);
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3));
 }
 
 .tiptap ::-moz-selection {
-  background: rgba(25, 118, 210, 0.3);
+  background: var(--selection-bg, rgba(25, 118, 210, 0.3));
 }
 
 /* Specific toolbar overflow fix - make visible to prevent button clipping */

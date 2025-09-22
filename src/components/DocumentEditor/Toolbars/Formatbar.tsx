@@ -30,7 +30,7 @@ import FormatUnderlinedIcon from "@mui/icons-material/FormatUnderlined";
 import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import TableChartIcon from "@mui/icons-material/TableChart";
+import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import { getButtonGroupStyles } from "../../../styles/components/DocumentEditor/Formatbar";
@@ -61,8 +61,13 @@ type FormatbarProps = {
     paste: () => Promise<boolean>;
   };
   editor: Editor;
+  fontSize: string;
 };
-export const Formatbar: React.FC<FormatbarProps> = ({ commands, editor }) => {
+export const Formatbar: React.FC<FormatbarProps> = ({
+  commands,
+  editor,
+  fontSize,
+}) => {
   const theme = useTheme();
   const buttonGroupStyles = getButtonGroupStyles(theme);
 
@@ -76,8 +81,8 @@ export const Formatbar: React.FC<FormatbarProps> = ({ commands, editor }) => {
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
 
   // Get current color from editor state instead of React state
-  const [color, setColor] = useState<string>("#000000");
-  const [size, setSize] = useState<string>("14px");
+  const [color, setColor] = useState<string>(theme.palette.text.primary);
+  const [size, setSize] = useState<string>(fontSize);
 
   // Update UI state when editor state changes
   useEffect(() => {
@@ -106,19 +111,23 @@ export const Formatbar: React.FC<FormatbarProps> = ({ commands, editor }) => {
       const list = editor.isActive("bulletList")
         ? "Bullets"
         : editor.isActive("orderedList")
-        ? "Numbers"
+        ? "Numbering"
         : null;
       setSelectedList(list);
 
       // Update color and size state
-      const currentColor = editor.getAttributes("textStyle").color || "#000000";
-      const currentSize = editor.getAttributes("textStyle").fontSize || "14px";
+      const currentColor =
+        editor.getAttributes("textStyle").color || theme.palette.text.primary;
+      const currentSize =
+        editor.getAttributes("textStyle").fontSize || fontSize;
       setColor(currentColor);
       setSize(currentSize);
 
       // Update font size input to match current size (only if not actively typing)
-      if (!sizeAnchorEl) {
-        const sizeNumber = parseInt(currentSize.replace("px", "")) || 14;
+      if (!sizeAnchorEl && fontSize) {
+        const sizeNumber =
+          parseInt(currentSize.replace("px", "")) ||
+          parseInt(fontSize.replace("px", ""));
         setFontSizeInput(sizeNumber.toString());
       }
     };
@@ -203,11 +212,16 @@ export const Formatbar: React.FC<FormatbarProps> = ({ commands, editor }) => {
     _event: React.MouseEvent<HTMLElement>,
     updatedSelectedList: string
   ) => {
-    if (updatedSelectedList == "Bullets") {
-      commands.toggleBulletList();
-    } else {
-      commands.toggleOrderedList();
-    }
+    console.log(updatedSelectedList);
+    setSelectedList(updatedSelectedList);
+  };
+
+  const handleBulletsClick = () => {
+    commands.toggleBulletList();
+  };
+
+  const handleNumberingClick = () => {
+    commands.toggleOrderedList();
   };
 
   const handleSelectedInsert = (
@@ -363,6 +377,9 @@ export const Formatbar: React.FC<FormatbarProps> = ({ commands, editor }) => {
   ];
 
   const fontSizeOptionsList = [
+    "2",
+    "4",
+    "6",
     "8",
     "9",
     "10",
@@ -740,10 +757,18 @@ export const Formatbar: React.FC<FormatbarProps> = ({ commands, editor }) => {
                   ...buttonGroupStyles,
                 }}
               >
-                <ToggleButton value="Bullets" aria-label="bullets">
+                <ToggleButton
+                  value="Bullets"
+                  aria-label="bullets"
+                  onClick={handleBulletsClick}
+                >
                   <FormatListBulletedIcon />
                 </ToggleButton>
-                <ToggleButton value="Numbering" aria-label="numbering">
+                <ToggleButton
+                  value="Numbering"
+                  aria-label="numbering"
+                  onClick={handleNumberingClick}
+                >
                   <FormatListNumberedIcon />
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -774,7 +799,7 @@ export const Formatbar: React.FC<FormatbarProps> = ({ commands, editor }) => {
                   <AddLinkIcon />
                 </ToggleButton>
                 <ToggleButton value="Table" aria-label="insert-table">
-                  <TableChartIcon />
+                  <TableChartOutlinedIcon />
                 </ToggleButton>
               </ToggleButtonGroup>
             </Tooltip>

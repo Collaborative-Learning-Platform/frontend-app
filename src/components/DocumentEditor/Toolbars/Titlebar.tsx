@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   AppBar,
@@ -6,18 +6,13 @@ import {
   Button,
   TextField,
   Typography,
-  Avatar,
-  AvatarGroup,
+  // Avatar, AvatarGroup removed
   IconButton,
   Tooltip,
   Fade,
   Stack,
   useTheme,
-  useMediaQuery,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
+  Popover,
 } from "@mui/material";
 import {
   Share as ShareIcon,
@@ -27,7 +22,6 @@ import {
   MoreVert as MoreVertIcon,
   InsertDriveFile as DocumentIcon,
 } from "@mui/icons-material";
-import { Chats } from "../../Buttons/Chats";
 import { ThemeToggle } from "../../Buttons/ThemeToggle";
 import { BackButton } from "../../Buttons/BackButton";
 import { NotificationsButton } from "../../Buttons/NotificationsButton";
@@ -38,11 +32,8 @@ import {
   docNameInputProps,
   documentInfoWrapper,
   getAppBarStyling,
-  getAvatarGroupStyles,
-  getAvatarStyles,
-  getCollaboratorsBoxStyles,
+  // getAvatarGroupStyles, getAvatarStyles, getCollaboratorsBoxStyles removed
   getDocNameWrapper,
-  getMobileMenuTheme,
   getMoreOptionsButtonStyles,
   getMoreVertIconStyle,
   getSaveButtonStyles,
@@ -57,9 +48,9 @@ import {
 
 export const Titlebar = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [loggedInUsers, setLoggedInUsers] = useState<string[]>([]);
+  // const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  // const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  // Removed loggedInUsers state and related logic
   const [documentName, setDocumentName] = useState<string>("Untitled Document");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
@@ -68,8 +59,8 @@ export const Titlebar = () => {
   const docNameWrapper = getDocNameWrapper(theme);
   const shareButtonStyles = getShareButtonStyles(theme);
   const saveButtonStyles = getSaveButtonStyles(theme);
-  const collaboratorsBoxStyles = getCollaboratorsBoxStyles(theme);
-  const avatarGroupStyles = getAvatarGroupStyles(theme);
+  // const collaboratorsBoxStyles = getCollaboratorsBoxStyles(theme);
+  // const avatarGroupStyles = getAvatarGroupStyles(theme);
 
   // Remove static saveStatusWrapper - will be calculated inline
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -94,15 +85,6 @@ export const Titlebar = () => {
     setDocumentName(event.target.value);
     simulateAutoSave();
   };
-
-  useEffect(() => {
-    // Fetch logged in users from backend
-    const fetchLoggedInUsers = async () => {
-      // Mock data for demo
-      setLoggedInUsers(["Sarah", "Mike", "Alex", "Emma"]);
-    };
-    fetchLoggedInUsers();
-  }, []);
 
   return (
     <Box sx={{ width: "100%", flexGrow: 1, padding: 0, overflow: "visible" }}>
@@ -175,32 +157,7 @@ export const Titlebar = () => {
                 </Button>
               </Box>
 
-              {/* Collaborators - Responsive */}
-              <Box sx={collaboratorsBoxStyles}>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    fontWeight: 600,
-                    display: { xs: "none", md: "block" },
-                    fontSize: { xs: "0.6rem", md: "0.75rem" },
-                  }}
-                >
-                  {loggedInUsers.length} online
-                </Typography>
-                <AvatarGroup
-                  max={isSmallMobile ? 2 : isMobile ? 3 : 4}
-                  sx={avatarGroupStyles}
-                >
-                  {loggedInUsers.map((user, index) => (
-                    <Tooltip key={index} title={`${user} (online)`}>
-                      <Avatar sx={getAvatarStyles(index, theme)}>
-                        {user.charAt(0)}
-                      </Avatar>
-                    </Tooltip>
-                  ))}
-                </AvatarGroup>
-              </Box>
+              {/* Collaborators removed as requested */}
 
               {/* More Options - Visible on small screens */}
               <Tooltip title="More options">
@@ -235,36 +192,48 @@ export const Titlebar = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Mobile Menu */}
-      <Menu
-        anchorEl={anchorEl}
+      {/* Mobile Popover for More Options */}
+      <Popover
         open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
         onClose={handleMenuClose}
-        sx={getMobileMenuTheme(theme)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        PaperProps={{
+          sx: {
+            p: 2,
+            display: "flex",
+            flexDirection: "row",
+            gap: 2,
+            alignItems: "center",
+            borderRadius: 3, // 24px for more rounded edges
+          },
+        }}
       >
-        <MenuItem onClick={handleMenuClose}>
-          <ListItemIcon>
-            <Chats size="small" showTooltip={false} badgeContent={3} />
-          </ListItemIcon>
-          <ListItemText primary="Messages" />
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          <ListItemIcon>
+        <Tooltip title="Notifications">
+          <Box>
             <NotificationsButton
               size="small"
               showTooltip={false}
               badgeContent={3}
             />
-          </ListItemIcon>
-          <ListItemText primary="Notifications" />
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          <ListItemIcon>
+          </Box>
+        </Tooltip>
+        <Tooltip title="Toggle Theme">
+          <Box>
             <ThemeToggle size="small" showTooltip={false} />
-          </ListItemIcon>
-          <ListItemText primary="Toggle Theme" />
-        </MenuItem>
-      </Menu>
+          </Box>
+        </Tooltip>
+        <Tooltip title="Go Back">
+          <Box>
+            <BackButton
+              size="small"
+              showTooltip={false}
+              // onClick={handleMenuClose}
+            />
+          </Box>
+        </Tooltip>
+      </Popover>
 
       {/* Custom Animations and Responsive Styles */}
       <style>{customAnimations}</style>

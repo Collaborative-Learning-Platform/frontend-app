@@ -19,11 +19,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user_id, setUser_id] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true); 
+  const [loading, setLoading] = useState<boolean>(true);
 
   const fetchUserData = async (userId: string) => {
     try {
-      setLoading(true); 
+      setLoading(true);
       const response = await axiosInstance.get(`/auth/get-user/${userId}`);
       console.log("Fetched user data:", response.data);
 
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedRole = localStorage.getItem("role");
     if (!storedUserId) {
       clearAuth();
-      setLoading(false); 
+      setLoading(false);
       return;
     }
     setUser_id(storedUserId);
