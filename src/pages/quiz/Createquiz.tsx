@@ -37,11 +37,12 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import QuizAttempt from "./QuizAttempt";
+import axiosInstance from "../../api/axiosInstance";
+import { useAuth } from "../../contexts/Authcontext";
 
-// Types
 interface Question {
   id: string;
-  type: "multiple-choice" | "short-answer" | "true-false";
+  type: "MCQ" | "short_answer" | "true_false";
   question: string;
   options?: string[];
   correctAnswer: string | number;
@@ -58,10 +59,9 @@ interface Quiz {
   totalPoints: number;
 }
 
-// Constants
 const INITIAL_QUESTION: Question = {
   id: "",
-  type: "multiple-choice",
+  type: "MCQ",
   question: "",
   options: ["", "", "", ""],
   correctAnswer: 0,
@@ -87,6 +87,7 @@ const GROUP_OPTIONS = [
 // Main Component
 export default function CreateQuizPage() {
   const navigate = useNavigate();
+  const { user_id } = useAuth();
 
   // State
   const [quiz, setQuiz] = useState<Quiz>(INITIAL_QUIZ);
@@ -131,7 +132,7 @@ export default function CreateQuizPage() {
       return "Please enter a question";
     }
 
-    if (question.type === "multiple-choice") {
+    if (question.type === "MCQ") {
       const hasEmptyOptions = question.options?.some(
         (option) => !option.trim()
       );
@@ -140,7 +141,7 @@ export default function CreateQuizPage() {
       }
     }
 
-    if (question.type === "short-answer" && !question.correctAnswer) {
+    if (question.type === "short_answer" && !question.correctAnswer) {
       return "Please provide a sample answer";
     }
 
@@ -164,7 +165,7 @@ export default function CreateQuizPage() {
   };
 
   // Event Handlers
-  const handleAddQuestion = () => {
+  const handleAddQuestion = async () => {
     const validationError = validateQuestion(currentQuestion);
     if (validationError) {
       showAlert("error", validationError);
@@ -191,7 +192,6 @@ export default function CreateQuizPage() {
 
       showAlert("success", "Question updated successfully!");
     } else {
-      // Add new question
       const newQuestion: Question = {
         ...currentQuestion,
         id: Date.now().toString(),
@@ -203,13 +203,30 @@ export default function CreateQuizPage() {
         totalPoints: prev.totalPoints + newQuestion.points,
       }));
 
+      const payload = {
+        quizId: "7e086d26-ac69-4887-b0af-eea1d807be6b",
+        question_no: quiz.questions.length + 1,
+        question: {
+          text: currentQuestion.question,
+          options: currentQuestion.options,
+        },
+        question_type: currentQuestion.type,
+        correct_answer: currentQuestion.correctAnswer.toString(),
+      };
+
+      const response = await axiosInstance.post(
+        "/quiz/question/create",
+        payload
+      );
+      console.log("Response:", response.data);
+
       showAlert("success", "Question added successfully!");
     }
 
     resetCurrentQuestion();
   };
 
-  const handleRemoveQuestion = (questionId: string) => {
+  const handleRemoveQuestion = async (questionId: string) => {
     const questionToRemove = quiz.questions.find((q) => q.id === questionId);
     if (questionToRemove) {
       setQuiz((prev) => ({
@@ -220,16 +237,28 @@ export default function CreateQuizPage() {
     }
   };
 
-  const handleSaveQuiz = () => {
+  const handleSaveQuiz = async () => {
     const validationError = validateQuiz(quiz);
     if (validationError) {
       showAlert("error", validationError);
       return;
     }
 
-    console.log("Saving quiz:", quiz);
-    showAlert("success", "Quiz saved successfully!");
-    setTimeout(() => navigate("/tutor-dashboard"), 1500);
+    try {
+      const payload = {
+        title: quiz.title,
+        description: quiz.description,
+        groupId: "c662c945-2e9b-4739-bef5-f9a8e2e05bab",
+        createdById: user_id,
+        timeLimit: quiz.duration,
+        deadline: quiz.dueDate,
+      };
+      const response = await axiosInstance.post("/quiz/create", payload);
+      console.log("Response:", response.data);
+      setTimeout(() => navigate("/tutor-dashboard"), 1500);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handlePreviewQuiz = () => {
@@ -485,11 +514,9 @@ export default function CreateQuizPage() {
                             }))
                           }
                         >
-                          <MenuItem value="multiple-choice">
-                            Multiple Choice
-                          </MenuItem>
-                          <MenuItem value="short-answer">Short Answer</MenuItem>
-                          <MenuItem value="true-false">True/False</MenuItem>
+                          <MenuItem value="MCQ">Multiple Choice</MenuItem>
+                          <MenuItem value="short_answer">Short Answer</MenuItem>
+                          <MenuItem value="true_false">True/False</MenuItem>
                         </Select>
                       </FormControl>
 
@@ -524,7 +551,7 @@ export default function CreateQuizPage() {
                     />
 
                     {/* Multiple Choice Options */}
-                    {currentQuestion.type === "multiple-choice" && (
+                    {currentQuestion.type === "MCQ" && (
                       <Box>
                         <FormLabel component="legend" sx={{ mb: 2 }}>
                           Answer Options
@@ -593,7 +620,7 @@ export default function CreateQuizPage() {
                     )}
 
                     {/* True/False Options */}
-                    {currentQuestion.type === "true-false" && (
+                    {currentQuestion.type === "true_false" && (
                       <Box>
                         <FormControl>
                           <FormLabel component="legend">
@@ -624,7 +651,7 @@ export default function CreateQuizPage() {
                     )}
 
                     {/* Short Answer */}
-                    {currentQuestion.type === "short-answer" && (
+                    {currentQuestion.type === "short_answer" && (
                       <TextField
                         fullWidth
                         label="Sample Answer (for grading reference)"
@@ -677,51 +704,50 @@ export default function CreateQuizPage() {
                     </Typography>
 
                     {/* Multiple Choice Options */}
-                    {question.type === "multiple-choice" &&
-                      question.options && (
-                        <Box sx={{ ml: 2 }}>
-                          {question.options.map((option, optionIndex) => (
+                    {question.type === "MCQ" && question.options && (
+                      <Box sx={{ ml: 2 }}>
+                        {question.options.map((option, optionIndex) => (
+                          <Box
+                            key={optionIndex}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              mb: 1,
+                            }}
+                          >
                             <Box
-                              key={optionIndex}
                               sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                mb: 1,
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  width: 8,
-                                  height: 8,
-                                  borderRadius: "50%",
-                                  bgcolor:
-                                    optionIndex === question.correctAnswer
-                                      ? "success.main"
-                                      : "grey.300",
-                                }}
-                              />
-                              <Typography
-                                color={
+                                width: 8,
+                                height: 8,
+                                borderRadius: "50%",
+                                bgcolor:
                                   optionIndex === question.correctAnswer
                                     ? "success.main"
-                                    : "text.primary"
-                                }
-                                fontWeight={
-                                  optionIndex === question.correctAnswer
-                                    ? "bold"
-                                    : "normal"
-                                }
-                              >
-                                {option}
-                              </Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      )}
+                                    : "grey.300",
+                              }}
+                            />
+                            <Typography
+                              color={
+                                optionIndex === question.correctAnswer
+                                  ? "success.main"
+                                  : "text.primary"
+                              }
+                              fontWeight={
+                                optionIndex === question.correctAnswer
+                                  ? "bold"
+                                  : "normal"
+                              }
+                            >
+                              {option}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
 
                     {/* True/False Answer */}
-                    {question.type === "true-false" && (
+                    {question.type === "true_false" && (
                       <Typography
                         color="success.main"
                         fontWeight="bold"
@@ -732,7 +758,7 @@ export default function CreateQuizPage() {
                     )}
 
                     {/* Short Answer */}
-                    {question.type === "short-answer" && (
+                    {question.type === "short_answer" && (
                       <Typography
                         color="success.main"
                         fontWeight="bold"
@@ -809,11 +835,9 @@ export default function CreateQuizPage() {
                         }))
                       }
                     >
-                      <MenuItem value="multiple-choice">
-                        Multiple Choice
-                      </MenuItem>
-                      <MenuItem value="short-answer">Short Answer</MenuItem>
-                      <MenuItem value="true-false">True/False</MenuItem>
+                      <MenuItem value="MCQ">Multiple Choice</MenuItem>
+                      <MenuItem value="short_answer">Short Answer</MenuItem>
+                      <MenuItem value="true_false">True/False</MenuItem>
                     </Select>
                   </FormControl>
 
@@ -848,7 +872,7 @@ export default function CreateQuizPage() {
                 />
 
                 {/* Multiple Choice Options */}
-                {currentQuestion.type === "multiple-choice" && (
+                {currentQuestion.type === "MCQ" && (
                   <Box>
                     <FormLabel component="legend" sx={{ mb: 2 }}>
                       Answer Options
@@ -915,7 +939,7 @@ export default function CreateQuizPage() {
                 )}
 
                 {/* True/False Options */}
-                {currentQuestion.type === "true-false" && (
+                {currentQuestion.type === "true_false" && (
                   <Box>
                     <FormControl>
                       <FormLabel component="legend">Correct Answer</FormLabel>
@@ -944,7 +968,7 @@ export default function CreateQuizPage() {
                 )}
 
                 {/* Short Answer */}
-                {currentQuestion.type === "short-answer" && (
+                {currentQuestion.type === "short_answer" && (
                   <TextField
                     fullWidth
                     label="Sample Answer (for grading reference)"
