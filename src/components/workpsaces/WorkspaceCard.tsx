@@ -14,6 +14,7 @@ import {
   Description as FileTextIcon,
   BarChart as BarChart3Icon,
 } from "@mui/icons-material";
+import { useAuth } from "../../contexts/Authcontext";
 
 export type Workspace = {
   id: string | number;
@@ -25,7 +26,6 @@ export type Workspace = {
   status: string;
   created: string;
   lastActivity: string;
-  color?: string;
 };
 
 type WorkspaceCardProps = {
@@ -36,8 +36,10 @@ type WorkspaceCardProps = {
 
 const WorkspaceCard = React.memo(
   ({ workspace, onManage, onView }: WorkspaceCardProps) => {
+    const {role} = useAuth();
+
     if (onManage === undefined && onView === undefined) {
-      console.log("No action handlers provided"); // or some fallback UI
+      console.log("No action handlers provided"); 
     }
     return (
       <Card
@@ -138,14 +140,16 @@ const WorkspaceCard = React.memo(
           </Box>
 
           <Box sx={{ display: "flex", gap: 1, mt: "auto" }}>
-            {/* <Button 
-              size="small" 
-              variant="contained" 
-              sx={{ flex: 1 }}
-              onClick={() => onManage?.(workspace.id)}
-            >
-              Manage
-            </Button> */}
+            {role === "admin" && (
+              <Button
+                size="small"
+                variant="contained"
+                sx={{ flex: 1 }}
+                onClick={() => onManage?.(workspace.id)}
+              >
+                Manage
+              </Button>
+            )}
             <Button
               size="small"
               variant="contained"

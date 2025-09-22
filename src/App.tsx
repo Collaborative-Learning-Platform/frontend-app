@@ -6,7 +6,7 @@ import About from "./pages/About";
 import Layout from "./components/Layout";
 import AdminDashboard from "./pages/AdminDashboard";
 import { UserManagement } from "./components/AdminDashboard/UserManagement";
-import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceMAnagement";
+import { WorkspaceManagement } from "./components/AdminDashboard/AdminWorkspaces";
 import { AnalyticsDashboard } from "./components/AdminDashboard/AnalyticsDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import { UserOverview } from "./components/UserDashboard/UserOverview";
