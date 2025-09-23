@@ -376,6 +376,7 @@ const Tiptap = ({
           boxSizing: "border-box",
           transition: "border-color 0.2s ease, box-shadow 0.2s ease",
           position: "relative",
+          overflowX: "hidden",
           "&:focus-within": {
             borderColor: theme.palette.primary.main,
             boxShadow:

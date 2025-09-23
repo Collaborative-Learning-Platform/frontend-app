@@ -109,12 +109,6 @@
 
 /* Debug: Remove unwanted white divs */
 
-/* Ensure MUI components don't cause overflow */
-.MuiBox-root {
-  max-width: 100% !important;
-  overflow-x: hidden !important;
-}
-
 /* Override for toolbar-related boxes to prevent button clipping */
 .MuiAppBar-root .MuiBox-root,
 .MuiToolbar-root .MuiBox-root {
