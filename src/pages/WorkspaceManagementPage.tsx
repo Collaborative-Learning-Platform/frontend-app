@@ -27,6 +27,21 @@ interface User {
   name: string;
   email: string;
   role: string;
+  joinedAt: string;
+}
+
+interface responseUser{
+  userId: string;
+  name: string;
+  email: string;
+}
+
+interface UserWorkspace{
+    joinedAt: string;
+    role: string;
+    user: responseUser;
+    userId: string;
+    workspaceId: string;
 }
 
 export default function WorkspaceManagementPage() {
@@ -36,6 +51,7 @@ export default function WorkspaceManagementPage() {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+//   const [workspaceUsers, setWorkspaceUsers] = useState<UserWorkspace[]>([]);
   const [tabValue, setTabValue] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -51,7 +67,18 @@ export default function WorkspaceManagementPage() {
         const groupsRes = await axiosInstance.get(`/workspace/fetchGroups/${workspaceId}`);
         if (groupsRes.data.success) setGroups(groupsRes.data.data);
 
-        // TODO: fetch users
+        const usersRes = await axiosInstance.get(`/workspace/fetchWorkspaceUsers/${workspaceId}`);
+        if (usersRes.data.success) {
+        const extractedUsers: User[] = usersRes.data.data.map((wu: UserWorkspace) => ({
+            userId: wu.user.userId,
+            name: wu.user.name,
+            email: wu.user.email,
+            role: wu.role,
+            joinedAt: wu.joinedAt,
+        }));
+          setUsers(extractedUsers);
+          console.log(extractedUsers)
+        }
       } catch (err: any) {
         setError(err?.response?.data?.message || "Failed to load workspace");
       }
@@ -59,8 +86,9 @@ export default function WorkspaceManagementPage() {
     fetchWorkspace();
   }, [workspaceId]);
 
+
   return (
-    <Container sx={{ py: 4 }}>
+    <Container sx={{ py: 1 }}>
       {/* Header */}
       <WorkspaceHeader workspace={workspace} onBack={() => navigate("/admin-workspaces")} />
 

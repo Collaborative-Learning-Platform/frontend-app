@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Typography, Tooltip, Paper } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 interface Workspace {
@@ -14,13 +14,39 @@ interface Props {
 
 export default function WorkspaceHeader({ workspace, onBack }: Props) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-      <IconButton onClick={onBack}>
-        <ArrowBackIcon />
-      </IconButton>
-      <Typography variant="h4" fontWeight="bold" sx={{ ml: 1 }}>
-        Manage Workspace: {workspace?.name || "Loading..."}
-      </Typography>
-    </Box>
+    <Paper
+      elevation={3}
+      sx={{
+        p: 2,
+        mb: 3,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        bgcolor: "primary.main",
+        color: "primary.contrastText",
+        borderRadius: 2,
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Tooltip title="Back to Workspaces">
+          <IconButton
+            onClick={onBack}
+            edge="start"
+            sx={{ color: "inherit", mr: 2 }}
+          >
+            <ArrowBackIcon fontSize="large" />
+          </IconButton>
+        </Tooltip>
+
+        <Box>
+          <Typography variant="h4" fontWeight="bold">
+            {workspace?.name || "Loading..."}
+          </Typography>
+          <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
+            {workspace?.description || "Manage your workspace settings"}
+          </Typography>
+        </Box>
+      </Box>
+    </Paper>
   );
 }
