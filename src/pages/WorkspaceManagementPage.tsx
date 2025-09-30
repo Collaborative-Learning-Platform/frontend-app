@@ -3,7 +3,7 @@ import { Container, Tabs, Tab, Alert, Box } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 
-import WorkspaceHeader from "../components/workpsaces/Management/workspaceHeader";
+import WorkspaceHeader from "../components/workpsaces/Management/WorkspaceHeader";
 import GroupsPanel from "../components/workpsaces/Management/GroupPanel";
 import UsersPanel from "../components/workpsaces/Management/UserPanel";
 
@@ -28,12 +28,14 @@ interface User {
   email: string;
   role: string;
   joinedAt: string;
+  avatar?: string;
 }
 
 interface responseUser{
   userId: string;
   name: string;
   email: string;
+  avatar?: string;
 }
 
 interface UserWorkspace{
@@ -51,7 +53,6 @@ export default function WorkspaceManagementPage() {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-//   const [workspaceUsers, setWorkspaceUsers] = useState<UserWorkspace[]>([]);
   const [tabValue, setTabValue] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -64,10 +65,10 @@ export default function WorkspaceManagementPage() {
         const wsRes = await axiosInstance.get(`/workspace/getWorkspace/${workspaceId}`);
         if (wsRes.data.success) setWorkspace(wsRes.data.data);
 
-        const groupsRes = await axiosInstance.get(`/workspace/fetchGroups/${workspaceId}`);
+        const groupsRes = await axiosInstance.get(`/workspace/groups/fetchGroups/${workspaceId}`);
         if (groupsRes.data.success) setGroups(groupsRes.data.data);
 
-        const usersRes = await axiosInstance.get(`/workspace/fetchWorkspaceUsers/${workspaceId}`);
+        const usersRes = await axiosInstance.get(`/workspace/users/fetch/${workspaceId}`);
         if (usersRes.data.success) {
         const extractedUsers: User[] = usersRes.data.data.map((wu: UserWorkspace) => ({
             userId: wu.user.userId,
@@ -75,6 +76,7 @@ export default function WorkspaceManagementPage() {
             email: wu.user.email,
             role: wu.role,
             joinedAt: wu.joinedAt,
+            avatar: wu.user.avatar || "",
         }));
           setUsers(extractedUsers);
           console.log(extractedUsers)
@@ -127,8 +129,8 @@ export default function WorkspaceManagementPage() {
           workspaceId={workspaceId!}
           users={users}
           setUsers={setUsers}
-          setError={setError}
-          setSuccess={setSuccess}
+          
+          
         />
       )}
     </Container>

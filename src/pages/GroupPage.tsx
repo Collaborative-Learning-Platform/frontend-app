@@ -18,42 +18,78 @@ import QuizSection from '../components/Group/QuizSection';
 import ResourceSection from '../components/Group/ResourceSection';
 import GroupChat from '../components/Group/GroupChat';
 import { useAuth } from '../contexts/Authcontext';
+import axiosInstance from '../api/axiosInstance';
 
 interface GroupData {
   id: string;
   name: string;
   description: string;
   memberCount: number;
-  members: Array<{ id: string; name: string; avatar: string }>;
+  members: Array<{ userId: string; name: string; email: string; role: string; avatar: string }>;
   recentActivity: string;
 }
 
 const GroupPage = () => {
   const { workspaceId, groupId } = useParams<{ workspaceId: string; groupId: string }>();
   const { name } = useAuth();
+  const [workspaceName, setWorkspaceName] = useState<string>('');
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState<GroupData | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
 
-  // Fetch group data (simulate async call)
+  
+
+
   useEffect(() => {
-    setGroupData({
-      id: groupId || '',
-      name: 'CS3040 Software Engineering - Group 12',
+    if (!workspaceId) {
+      navigate(-1);
+      return;
+    }
+
+    const fetchWorkspaceData = async (workspaceId: string) => {
+    try {
+      const response = await axiosInstance.get(`/workspace/getWorkspace/${workspaceId}`);
+      if (response.data.success) {
+        setWorkspaceName(response.data.data.name);
+        
+      }
+    } catch (error) {
+      console.error("Error fetching workspace data:", error);
+    }
+   };
+   fetchWorkspaceData(workspaceId!);
+
+  }, [workspaceId]);
+
+
+
+
+  useEffect(() => {
+    if (!groupId){
+      navigate(-1);
+      return;
+    } ;
+
+      const fetchGroupData = async (groupId: string) => {
+    try{
+      const response = await axiosInstance.get(`/workspace/groups/${groupId}/fetchDetails`);
+      console.log("Fetched group data:", response.data);
+      setGroupData({
+      id: response.data.data.id || '',
+      name: `${workspaceName} - ${response.data.data.name}` || 'Group Name',
       description:
-        'Software Engineering project group focused on developing a collaborative learning platform',
-      memberCount: 6,
-      members: [
-        { id: '1', name: 'Theekshana', avatar: '' },
-        { id: '2', name: 'Vinuka', avatar: '' },
-        { id: '3', name: 'Erandathe', avatar: '' },
-        { id: '4', name: 'Sachini Fernando', avatar: '' },
-        { id: '5', name: 'Nimesh Rajapaksha', avatar: '' },
-        { id: '6', name: 'Dilani Wickramasinghe', avatar: '' },
-      ],
-      recentActivity: '15 minutes ago',
+        response.data.data.description || 'No description available',
+      memberCount: response.data.data.memberCount || 0,
+      members: response.data.data.members || [],
+      recentActivity: response.data.data.recentActivity || 'No recent activity',
     });
-  }, [workspaceId, groupId]);
+    } catch (error) {
+      console.error("Error fetching group data:", error);
+    }
+  }
+  fetchGroupData(groupId!);
+  }, [groupId,workspaceName]);
+
 
   const handleTabChange = (_: any, newValue: number) => {
     setTabIndex(newValue);
@@ -62,7 +98,7 @@ const GroupPage = () => {
   const handleNavigateToWhiteboard = () => navigate(`/whiteboard`);
   const handleNavigateToEditor = () => navigate(`/document-editor`);
 
-  // Loader while fetching data
+
   if (!groupData) {
     return (
       <Box sx={{ py: 4, px: 2 }}>

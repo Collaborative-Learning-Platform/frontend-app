@@ -6,11 +6,7 @@ interface GroupData {
   name: string;
   description: string;
   memberCount: number;
-  members: Array<{
-    id: string;
-    name: string;
-    avatar: string;
-  }>;
+  members: Array<{ userId: string; name: string; email: string; role: string; avatar: string }>;
   recentActivity: string;
 }
 
@@ -74,7 +70,7 @@ const GroupHeader = ({ groupData }: GroupHeaderProps) => {
           }}>
             <Chip 
               icon={<AccessTime sx={{ fontSize: 16 }} />} 
-              label={`Active ${groupData.recentActivity}`}
+              label={`Active : ${groupData.recentActivity}`}
               sx={{ 
                 bgcolor: 'rgba(255,255,255,0.15)', 
                 color: 'white',
@@ -95,15 +91,15 @@ const GroupHeader = ({ groupData }: GroupHeaderProps) => {
                 }}
               >
                 {groupData.members.map((member) => (
-                  <Avatar key={member.id} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
-                    {member.name.split(' ').map(n => n[0]).join('')}
+                  <Avatar src={member.avatar} key={member.userId} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                    {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                   </Avatar>
                 ))}
               </AvatarGroup>
               <Typography 
                 variant="body2" 
                 sx={{ 
-                  color: 'rgba(255,255,255,0.9)', 
+                  color: 'rgba(255,255,255,0.9)',
                   ml: 1,
                   fontSize: { xs: '0.75rem', sm: '0.875rem' }
                 }}

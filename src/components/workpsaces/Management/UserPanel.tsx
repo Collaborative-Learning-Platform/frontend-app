@@ -36,6 +36,7 @@ interface User {
   email: string;
   role: string;
   joinedAt: string;
+  avatar?: string;
 }
 
 interface Props {
@@ -66,7 +67,7 @@ export default function UsersPanel({ workspaceId, users, setUsers }: Props) {
 
     try {
       const response = await axiosInstance.post(
-        `/workspace/BulkAddition/${workspaceId}`,
+        `/workspace/users/BulkAddition/${workspaceId}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -128,7 +129,7 @@ export default function UsersPanel({ workspaceId, users, setUsers }: Props) {
     return (
       <Box
         sx={{
-          backgroundColor: "#121212", // dark background
+          backgroundColor: "#121212", 
           color: "#fff",
           padding: "8px 12px",
           borderRadius: 2,
@@ -240,7 +241,7 @@ export default function UsersPanel({ workspaceId, users, setUsers }: Props) {
             }
           >
             <ListItemAvatar>
-              <Avatar>{user.name.charAt(0)}</Avatar>
+              <Avatar src={user.avatar}>{user.name.charAt(0)}</Avatar>
             </ListItemAvatar>
             <ListItemText
               primary={`${user.name} (${user.role})`}

@@ -12,8 +12,10 @@ interface Group {
   description: string;
   type: "Main" | "Custom";
   createdAt: string;
+  memberCount?: number;
 }
 
+//This page is for students to view all groups in a workspace
 const WorkspacePage = () => {
   const { workspaceId, workspaceName } = useParams<{ workspaceId: string, workspaceName: string }>();
   const navigate = useNavigate();
@@ -26,7 +28,7 @@ const WorkspacePage = () => {
   useEffect(() => {
     const fetchWorkspace = async (userId: string, workspaceId: string) => {
       try {
-        const response = await axiosInstance.post(`/workspace/fetchGroupsByUserInWorkspace`, {
+        const response = await axiosInstance.post(`/workspace/groups/fetchByUserId`, {
           userId,
           workspaceId,
         });
@@ -41,7 +43,7 @@ const WorkspacePage = () => {
           setOtherGroups(groups.filter((g) => g.type === "Custom"));
 
           
-          // setWorkspaceName("Workspace " + workspaceId);
+          
         }
       } catch (error) {
         console.error("Error fetching workspace data:", error);
@@ -72,6 +74,7 @@ const WorkspacePage = () => {
               key={group.groupId}
               id={group.groupId}
               name={group.name}
+              memberCount={group.memberCount}
               type="main"
               onClick={handleClick}
               footerSlot={
@@ -95,6 +98,7 @@ const WorkspacePage = () => {
               key={group.groupId}
               id={group.groupId}
               name={group.name}
+              memberCount={group.memberCount}
               type="other"
               onClick={handleClick}
               footerSlot={
