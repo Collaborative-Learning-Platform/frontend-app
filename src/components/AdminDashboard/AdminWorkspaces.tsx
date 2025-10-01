@@ -7,20 +7,18 @@ import {
   Typography,
   Button,
   TextField,
-  Chip,
   InputAdornment,
   Skeleton,
 } from "@mui/material";
 import {
   Search as SearchIcon,
   Add as PlusIcon,
-  People as UsersIcon,
-  Message as MessageSquareIcon,
-  Description as FileTextIcon,
-  BarChart as BarChart3Icon,
+
 } from "@mui/icons-material";
 import CreateWorkspaceModal from "../workpsaces/CreateWorkspaceModal";
 import axiosInstance from "../../api/axiosInstance";
+import WorkspaceCard from "../workpsaces/WorkspaceCard";
+import { useNavigate } from "react-router-dom";
 
 interface Workspace {
   workspaceId: string;
@@ -34,6 +32,7 @@ interface Workspace {
 }
 
 export function WorkspaceManagement() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [workspaces, setWorkspaces] = useState<any[]>([]);
@@ -42,9 +41,7 @@ export function WorkspaceManagement() {
   const fetchWorkspaces = async () => {
     try {
       setLoading(true);
-      const response = (await axiosInstance.get("/workspace/getAllWorkspaces"))
-        .data;
-
+      const response = (await axiosInstance.get("/workspace/getAllWorkspaces")).data;
       if (!response.success) {
         console.error("Failed to fetch workspaces");
       } else {
@@ -90,6 +87,12 @@ export function WorkspaceManagement() {
     setWorkspaces((prev) => [mapped, ...prev]);
   }
 
+  const handleManageWorkspace = (workspace: any) => {
+    // setSelectedWorkspace(workspace);
+    // setIsManagementModalOpen(true);
+    navigate(`/admin-workspaces/manage/${workspace.id}`);
+  };
+
   // filter workspaces by searchTerm
   const filteredWorkspaces = workspaces.filter(
     (ws) =>
@@ -97,77 +100,8 @@ export function WorkspaceManagement() {
       ws.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Workspace Card Component
-  const WorkspaceCard = ({ ws }: { ws: any }) => (
-    <Card
-      sx={{
-        height: "100%",
-        transition: "box-shadow 0.2s",
-        "&:hover": {
-          boxShadow: 4,
-        },
-      }}
-    >
-      <CardHeader
-        title={
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="h6">{ws.name}</Typography>
-            <Chip
-              label={ws.status}
-              color={ws.status === "Active" ? "primary" : "default"}
-              size="small"
-            />
-          </Box>
-        }
-        subheader={ws.description}
-        sx={{ pb: 2 }}
-      />
-      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-          <Stat icon={<UsersIcon />} label={`${ws.students} Students`} />
-          <Stat icon={<MessageSquareIcon />} label={`${ws.groups} Groups`} />
-          <Stat icon={<FileTextIcon />} label={`${ws.tutors} Tutors`} />
-          <Stat icon={<BarChart3Icon />} label="Analytics" />
-        </Box>
-
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-          <Typography variant="caption" color="text.secondary">
-            Created: {ws.created}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Last activity: {ws.lastActivity}
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Button size="small" variant="contained" sx={{ flex: 1 }}>
-            Manage
-          </Button>
-          <Button size="small" variant="outlined" sx={{ flex: 1 }}>
-            View
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-
-  // Small stat item with icon
-  const Stat = ({ icon, label }: { icon: any; label: string }) => (
-    <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: 120 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {icon}
-        <Typography variant="body2">{label}</Typography>
-      </Box>
-    </Box>
-  );
-
-  // Skeleton card placeholder
+  
+  
   const WorkspaceSkeleton = () => (
     <Card>
       <CardHeader
@@ -268,7 +202,10 @@ export function WorkspaceManagement() {
                   },
                 }}
               >
-                <WorkspaceCard ws={ws} />
+                <WorkspaceCard 
+                  workspace={ws}
+                  onManage={() => handleManageWorkspace(ws)}
+                />
               </Box>
             ))}
       </Box>
@@ -322,6 +259,8 @@ export function WorkspaceManagement() {
         onCreated={handleCreated}
         endpoint="/workspace/create"
       />
+
+     
     </Box>
   );
 }

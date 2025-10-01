@@ -85,25 +85,18 @@ const getRandomColor = () => getRandomElement(colors);
 interface TiptapProps {
   provider: any;
   ydoc: any;
-  room: string;
-  isConnected: boolean;
   fontSize: string;
 }
 
-const Tiptap = ({
-  ydoc,
-  provider,
-  room,
-  isConnected,
-  fontSize,
-}: TiptapProps) => {
+const Tiptap = ({ ydoc, provider, fontSize }: TiptapProps) => {
   const theme = useTheme();
+  const color = getRandomColor();
   const { name, loading, user_id } = useAuth();
   const [status, setStatus] = useState("connecting");
   const [users, setUsers] = useState<User[] | null>(null);
   const [currentUser, setCurrentUser] = useState({
     name: name || "Anonymous",
-    color: getRandomColor(),
+    color: color,
     user_id: user_id,
   });
 
@@ -111,17 +104,23 @@ const Tiptap = ({
     if (!loading && name && user_id) {
       setCurrentUser({
         name,
-        color: getRandomColor(),
+        color: color,
         user_id,
+      });
+
+      editor.commands.updateUser({
+        name: name,
+        color: color,
+        user_id: user_id,
       });
     }
   }, [loading, name, user_id]);
 
-  useEffect(() => {
-    if (isConnected) {
-      setStatus("connected");
-    }
-  }, [isConnected]);
+  // useEffect(() => {
+  //   if (isConnected) {
+  //     setStatus("connected");
+  //   }
+  // }, [isConnected]);
 
   const editor = useEditor({
     enableContentCheck: true,
@@ -135,11 +134,6 @@ const Tiptap = ({
           currentEditor.commands.setContent("");
         }
         currentEditor.commands.setFontSize(fontSize);
-        currentEditor.commands.updateUser({
-          name,
-          color: getRandomColor(),
-          user_id,
-        });
       });
     },
     extensions: [
@@ -221,15 +215,15 @@ const Tiptap = ({
     };
   }, [provider]);
 
-  useEffect(() => {
-    if (!editor || !currentUser) return;
+  // useEffect(() => {
+  //   if (!editor || !currentUser) return;
 
-    editor.commands.updateUser({
-      name: currentUser.name,
-      color: getRandomColor(),
-      user_id: currentUser.user_id,
-    });
-  }, [editor, currentUser]);
+  //   editor.commands.updateUser({
+  //     name: currentUser.name,
+  //     color: color,
+  //     user_id: currentUser.user_id,
+  //   });
+  // }, [currentUser]);
 
   // Keep currentUser state for future AuthContext integration
   // setCurrentUser will be used when integrating with AuthContext
@@ -241,18 +235,22 @@ const Tiptap = ({
   useEffect(() => {
     if (!provider) return;
 
-    const awarenessHandler = ({ added, removed, updated }: any) => {
+    const awarenessHandler = () => {
       const states = provider.awareness.getStates();
 
       const entries = Array.from(states.entries()) as [number, any][];
 
-      const usersArray = entries.map(([clientId, state]) => ({
-        clientId,
-        ...state.user,
-      }));
+      const usersArray = entries
+        .filter(
+          ([_, state]) => state.user && state.user.name && state.user.color
+        )
+        .map(([clientId, state]) => ({
+          clientId,
+          ...state.user,
+        }));
 
       setUsers(usersArray);
-      console.log("Awareness change:", { added, removed, updated, usersArray });
+      console.log("Awareness change:", { usersArray });
     };
 
     provider.on("awarenessUpdate", awarenessHandler);
@@ -430,7 +428,7 @@ const Tiptap = ({
             }}
           >
             {status === "connected" && users != null
-              ? `${users.length} online • Room ${room}`
+              ? `${users.length} online •`
               : status === "connecting"
               ? "Connecting..."
               : "Offline"}
