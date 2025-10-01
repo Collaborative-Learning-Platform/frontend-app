@@ -46,12 +46,23 @@ import {
   toolBarStyles,
 } from "../../../styles/components/DocumentEditor/Titlebar";
 
-export const Titlebar = () => {
+interface TitlebarProps {
+  documentData?: {
+    documentId: string;
+    title: string;
+    groupId: string;
+    groupName: string;
+  };
+}
+
+export const Titlebar = ({ documentData }: TitlebarProps) => {
   const theme = useTheme();
   // const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   // const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
   // Removed loggedInUsers state and related logic
-  const [documentName, setDocumentName] = useState<string>("Untitled Document");
+  const [documentName, setDocumentName] = useState<string>(
+    documentData?.title || "Untitled Document"
+  );
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

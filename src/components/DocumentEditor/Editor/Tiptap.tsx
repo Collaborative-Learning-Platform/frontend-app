@@ -82,13 +82,21 @@ const getRandomElement = (list: any) =>
 
 const getRandomColor = () => getRandomElement(colors);
 
+interface documentData {
+  documentId: string;
+  title: string;
+  groupId: string;
+  groupName: string;
+}
+
 interface TiptapProps {
   provider: any;
   ydoc: any;
   fontSize: string;
+  documentData: documentData | null;
 }
 
-const Tiptap = ({ ydoc, provider, fontSize }: TiptapProps) => {
+const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
   const theme = useTheme();
   const color = getRandomColor();
   const { name, loading, user_id } = useAuth();
@@ -357,7 +365,7 @@ const Tiptap = ({ ydoc, provider, fontSize }: TiptapProps) => {
       }}
     >
       <Box>
-        <Titlebar />
+        <Titlebar documentData={documentData ?? undefined} />
         <Formatbar commands={commands} editor={editor} fontSize={fontSize} />
       </Box>
       <Box
@@ -428,7 +436,7 @@ const Tiptap = ({ ydoc, provider, fontSize }: TiptapProps) => {
             }}
           >
             {status === "connected" && users != null
-              ? `${users.length} online •`
+              ? `${users.length} online • Group - ${documentData?.groupName}`
               : status === "connecting"
               ? "Connecting..."
               : "Offline"}
