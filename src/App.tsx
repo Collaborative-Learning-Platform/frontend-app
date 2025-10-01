@@ -63,7 +63,10 @@ function App() {
         >
           <Route path="user-profile" element={<ProfilePage />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="workspace/:workspaceId/:workspaceName" element={<WorkspacePage />} />
+          <Route
+            path="workspace/:workspaceId/:workspaceName"
+            element={<WorkspacePage />}
+          />
           <Route
             path="workspace/:workspaceId/group/:groupId"
             element={<GroupPage />}
@@ -106,7 +109,7 @@ function App() {
 
       <Route element={<ProtectedRoute allowedRoles={["user", "tutor"]} />}>
         <Route path="/whiteboard" element={<Whiteboard />} />
-        <Route path="/document-editor" element={<EditorApp />} />
+        <Route path="/document-editor/:room" element={<EditorApp />} />
       </Route>
 
       {/* Catch-all route for 404 Not Found */}
