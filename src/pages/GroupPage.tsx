@@ -17,7 +17,9 @@ import GroupNavigation from '../components/Group/GroupNavigation';
 import QuizSection from '../components/Group/QuizSection';
 import ResourceSection from '../components/Group/ResourceSection';
 import GroupChat from '../components/Group/GroupChat';
+import AddMembersDialog from '../components/workpsaces/Management/AddMembersToGroups';
 import { useAuth } from '../contexts/Authcontext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import axiosInstance from '../api/axiosInstance';
 
 interface GroupData {
@@ -27,6 +29,7 @@ interface GroupData {
   memberCount: number;
   members: Array<{ userId: string; name: string; email: string; role: string; avatar: string }>;
   recentActivity: string;
+  type?: "Main" | "Custom";
 }
 
 const GroupPage = () => {
@@ -36,6 +39,8 @@ const GroupPage = () => {
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState<GroupData | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
+  const [addMembersOpen, setAddMembersOpen] = useState(false);
+  const { showSnackbar } = useSnackbar();
 
   
 
@@ -70,24 +75,25 @@ const GroupPage = () => {
       return;
     } ;
 
-      const fetchGroupData = async (groupId: string) => {
-    try{
-      const response = await axiosInstance.get(`/workspace/groups/${groupId}/fetchDetails`);
-      console.log("Fetched group data:", response.data);
-      setGroupData({
-      id: response.data.data.id || '',
-      name: `${workspaceName} - ${response.data.data.name}` || 'Group Name',
-      description:
-        response.data.data.description || 'No description available',
-      memberCount: response.data.data.memberCount || 0,
-      members: response.data.data.members || [],
-      recentActivity: response.data.data.recentActivity || 'No recent activity',
-    });
-    } catch (error) {
-      console.error("Error fetching group data:", error);
+    const fetchGroupData = async (groupId: string) => {
+      try{
+        const response = await axiosInstance.get(`/workspace/groups/${groupId}/fetchDetails`);
+        console.log("Fetched group data:", response.data);
+        setGroupData({
+        id: response.data.data.id || '',
+        name: `${response.data.data.name}` || 'Group Name',
+        description:
+          response.data.data.description || 'No description available',
+        memberCount: response.data.data.memberCount || 0,
+        members: response.data.data.members || [],
+        recentActivity: response.data.data.recentActivity || 'No recent activity',
+        type: response.data.data.type || "Custom",
+      });
+      } catch (error) {
+        console.error("Error fetching group data:", error);
+      }
     }
-  }
-  fetchGroupData(groupId!);
+    fetchGroupData(groupId!);
   }, [groupId,workspaceName]);
 
 
@@ -97,6 +103,7 @@ const GroupPage = () => {
 
   const handleNavigateToWhiteboard = () => navigate(`/whiteboard`);
   const handleNavigateToEditor = () => navigate(`/document-editor`);
+  const handleAddUsers = () => setAddMembersOpen(true);
 
 
   if (!groupData) {
@@ -137,7 +144,7 @@ const GroupPage = () => {
           }}
         >
           <Dashboard sx={{ mr: 0.5 }} />
-          <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>Workspace</Typography>
+          <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>{workspaceName}</Typography>
         </Link>
 
         <Typography
@@ -145,7 +152,7 @@ const GroupPage = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            overflow: 'hidden',
+            
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             maxWidth: '200px',
@@ -157,7 +164,7 @@ const GroupPage = () => {
       </Breadcrumbs>
 
       {/* Group Header */}
-      <GroupHeader groupData={groupData} />
+      <GroupHeader groupData={groupData} onAddUsers={handleAddUsers} />
 
       {/* Tabs */}
       <Box sx={{ mt: 3 }}>
@@ -194,6 +201,16 @@ const GroupPage = () => {
           )}
         </Box>
       </Box>
+
+      {/* Add Members Dialog */}
+      <AddMembersDialog
+        open={addMembersOpen}
+        onClose={() => setAddMembersOpen(false)}
+        workspaceId={workspaceId || ''}
+        groupId={groupId || ''}
+        setSuccess={(msg) => showSnackbar(msg || '', 'success')}
+        setError={(msg) => showSnackbar(msg || '', 'error')}
+      />
     </Box>
   );
 };

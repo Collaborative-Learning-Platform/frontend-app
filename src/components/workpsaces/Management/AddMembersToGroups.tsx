@@ -75,7 +75,7 @@ export default function AddMembersDialog({
     try {
       const res = await axiosInstance.get(`/workspace/users/fetch/${workspaceId}`);
       if (res.data.success) {
-        console.log("Fetched users:", res.data.data);
+        // console.log("Fetched users:", res.data.data);
         const extractedUsers: User[] = res.data.data.map((wu: any) => ({
           userId: wu.user.userId,
           name: wu.user.name,
