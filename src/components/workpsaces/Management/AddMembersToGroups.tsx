@@ -42,6 +42,7 @@ interface User {
   name: string;
   email: string;
   role: string;
+  avatar?: string;
 }
 
 interface Props {
@@ -81,6 +82,7 @@ export default function AddMembersDialog({
           name: wu.user.name,
           email: wu.user.email,
           role: wu.role,
+          avatar: wu.user.avatar || "",
         }));
         setWorkspaceUsers(extractedUsers);
       } else {
@@ -326,6 +328,7 @@ export default function AddMembersDialog({
                         }
                       >
                         <Avatar
+                          src={user.avatar || undefined}
                           sx={{
                             bgcolor: isExisting 
                               ? "success.main" 
