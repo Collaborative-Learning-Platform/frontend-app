@@ -34,6 +34,9 @@ import {
   FolderOpen as FolderOpenIcon,
   CalendarToday as CalendarIcon,
 } from "@mui/icons-material";
+import NewDocumentDialog from "../components/UserDocuments/NewDocumentDialog";
+import { useAuth } from "../contexts/Authcontext";
+import axiosInstance from "../api/axiosInstance";
 
 interface Document {
   id: number;
@@ -52,6 +55,11 @@ interface Folder {
   count: number;
   color: string;
 }
+
+const groups = [
+  { id: "a1b2c3d4-e5f6-7890-abcd-1234567890ab", name: "Team Alpha" },
+  { id: "b2c3d4e5-f6a7-8901-bcde-2345678901bc", name: "Team Beta" },
+]; // Replace with API fetched groups
 
 const recentDocuments: Document[] = [
   {
@@ -124,11 +132,45 @@ const folders: Folder[] = [
 ];
 
 export const UserDocuments = () => {
+  const auth = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  // const [currentDoc, setCurrentDoc] = useState<{ title: string; name: string }>(
+  //   {
+  //     title: "",
+  //     name: "",
+  //   }
+  // );
+
+  const handleCreate = async ({
+    title,
+    groupId,
+  }: {
+    title: string;
+    groupId: string;
+  }) => {
+    try {
+      const createdBy = auth.user_id;
+      const res = await axiosInstance.post("/documents/create", {
+        title,
+        groupId,
+        createdBy,
+      });
+      console.log("Document create response:", res);
+      if (res.data.success) {
+        console.log("Navigating to:", `/document-editor/${res.data.data.name}`);
+        navigate(`/document-editor/${res.data.data.name}`);
+      } else {
+        console.warn("Document creation failed:", res.data);
+      }
+    } catch (error) {
+      console.error("Error creating document:", error);
+    }
+  };
 
   const filteredDocuments = recentDocuments.filter(
     (doc) =>
@@ -154,10 +196,6 @@ export const UserDocuments = () => {
     if (newViewMode !== null) {
       setViewMode(newViewMode);
     }
-  };
-
-  const handleNewDocument = () => {
-    navigate("/document-editor");
   };
 
   return (
@@ -222,10 +260,16 @@ export const UserDocuments = () => {
               <Button
                 variant="contained"
                 startIcon={<PlusIcon />}
-                onClick={handleNewDocument}
+                onClick={() => setDialogOpen(true)}
               >
                 New Document
               </Button>
+              <NewDocumentDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                onCreate={handleCreate}
+                groups={groups}
+              />
             </Box>
           </Box>
         </CardContent>
