@@ -79,7 +79,7 @@ export default function WorkspaceManagementPage() {
             avatar: wu.user.avatar || "",
         }));
           setUsers(extractedUsers);
-          console.log(extractedUsers)
+          
         }
       } catch (err: any) {
         setError(err?.response?.data?.message || "Failed to load workspace");
