@@ -85,11 +85,10 @@ const getRandomColor = () => getRandomElement(colors);
 interface TiptapProps {
   provider: any;
   ydoc: any;
-  isConnected: boolean;
   fontSize: string;
 }
 
-const Tiptap = ({ ydoc, provider, isConnected, fontSize }: TiptapProps) => {
+const Tiptap = ({ ydoc, provider, fontSize }: TiptapProps) => {
   const theme = useTheme();
   const color = getRandomColor();
   const { name, loading, user_id } = useAuth();
