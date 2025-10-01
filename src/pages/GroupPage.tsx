@@ -17,43 +17,85 @@ import GroupNavigation from '../components/Group/GroupNavigation';
 import QuizSection from '../components/Group/QuizSection';
 import ResourceSection from '../components/Group/ResourceSection';
 import GroupChat from '../components/Group/GroupChat';
+import AddMembersDialog from '../components/workpsaces/Management/AddMembersToGroups';
 import { useAuth } from '../contexts/Authcontext';
+import { useSnackbar } from '../contexts/SnackbarContext';
+import axiosInstance from '../api/axiosInstance';
 
 interface GroupData {
   id: string;
   name: string;
   description: string;
   memberCount: number;
-  members: Array<{ id: string; name: string; avatar: string }>;
+  members: Array<{ userId: string; name: string; email: string; role: string; avatar: string }>;
   recentActivity: string;
+  type?: "Main" | "Custom";
 }
 
 const GroupPage = () => {
   const { workspaceId, groupId } = useParams<{ workspaceId: string; groupId: string }>();
   const { name } = useAuth();
+  const [workspaceName, setWorkspaceName] = useState<string>('');
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState<GroupData | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
+  const [addMembersOpen, setAddMembersOpen] = useState(false);
+  const { showSnackbar } = useSnackbar();
 
-  // Fetch group data (simulate async call)
+  
+
+
   useEffect(() => {
-    setGroupData({
-      id: groupId || '',
-      name: 'CS3040 Software Engineering - Group 12',
-      description:
-        'Software Engineering project group focused on developing a collaborative learning platform',
-      memberCount: 6,
-      members: [
-        { id: '1', name: 'Theekshana', avatar: '' },
-        { id: '2', name: 'Vinuka', avatar: '' },
-        { id: '3', name: 'Erandathe', avatar: '' },
-        { id: '4', name: 'Sachini Fernando', avatar: '' },
-        { id: '5', name: 'Nimesh Rajapaksha', avatar: '' },
-        { id: '6', name: 'Dilani Wickramasinghe', avatar: '' },
-      ],
-      recentActivity: '15 minutes ago',
-    });
-  }, [workspaceId, groupId]);
+    if (!workspaceId) {
+      navigate(-1);
+      return;
+    }
+
+    const fetchWorkspaceData = async (workspaceId: string) => {
+    try {
+      const response = await axiosInstance.get(`/workspace/getWorkspace/${workspaceId}`);
+      if (response.data.success) {
+        setWorkspaceName(response.data.data.name);
+        
+      }
+    } catch (error) {
+      console.error("Error fetching workspace data:", error);
+    }
+   };
+   fetchWorkspaceData(workspaceId!);
+
+  }, [workspaceId]);
+
+
+
+
+  useEffect(() => {
+    if (!groupId){
+      navigate(-1);
+      return;
+    } ;
+
+    const fetchGroupData = async (groupId: string) => {
+      try{
+        const response = await axiosInstance.get(`/workspace/groups/${groupId}/fetchDetails`);
+        console.log("Fetched group data:", response.data);
+        setGroupData({
+        id: response.data.data.id || '',
+        name: `${response.data.data.name}` || 'Group Name',
+        description:
+          response.data.data.description || 'No description available',
+        memberCount: response.data.data.memberCount || 0,
+        members: response.data.data.members || [],
+        recentActivity: response.data.data.recentActivity || 'No recent activity',
+        type: response.data.data.type || "Custom",
+      });
+      } catch (error) {
+        console.error("Error fetching group data:", error);
+      }
+    }
+    fetchGroupData(groupId!);
+  }, [groupId,workspaceName]);
+
 
   const handleTabChange = (_: any, newValue: number) => {
     setTabIndex(newValue);
@@ -61,8 +103,9 @@ const GroupPage = () => {
 
   const handleNavigateToWhiteboard = () => navigate(`/whiteboard`);
   const handleNavigateToEditor = () => navigate(`/document-editor`);
+  const handleAddUsers = () => setAddMembersOpen(true);
 
-  // Loader while fetching data
+
   if (!groupData) {
     return (
       <Box sx={{ py: 4, px: 2 }}>
@@ -101,7 +144,7 @@ const GroupPage = () => {
           }}
         >
           <Dashboard sx={{ mr: 0.5 }} />
-          <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>Workspace</Typography>
+          <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>{workspaceName}</Typography>
         </Link>
 
         <Typography
@@ -109,7 +152,7 @@ const GroupPage = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            overflow: 'hidden',
+            
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             maxWidth: '200px',
@@ -121,7 +164,7 @@ const GroupPage = () => {
       </Breadcrumbs>
 
       {/* Group Header */}
-      <GroupHeader groupData={groupData} />
+      <GroupHeader groupData={groupData} onAddUsers={handleAddUsers} />
 
       {/* Tabs */}
       <Box sx={{ mt: 3 }}>
@@ -158,6 +201,16 @@ const GroupPage = () => {
           )}
         </Box>
       </Box>
+
+      {/* Add Members Dialog */}
+      <AddMembersDialog
+        open={addMembersOpen}
+        onClose={() => setAddMembersOpen(false)}
+        workspaceId={workspaceId || ''}
+        groupId={groupId || ''}
+        setSuccess={(msg) => showSnackbar(msg || '', 'success')}
+        setError={(msg) => showSnackbar(msg || '', 'error')}
+      />
     </Box>
   );
 };

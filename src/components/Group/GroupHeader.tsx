@@ -1,24 +1,22 @@
-import { Box, Typography, Card, Avatar, AvatarGroup, Chip } from '@mui/material';
-import { Group, AccessTime } from '@mui/icons-material';
+import { Box, Typography, Card, Avatar, AvatarGroup, Chip, Button } from '@mui/material';
+import { Group, AccessTime, PersonAdd } from '@mui/icons-material';
 
 interface GroupData {
   id: string;
   name: string;
   description: string;
   memberCount: number;
-  members: Array<{
-    id: string;
-    name: string;
-    avatar: string;
-  }>;
+  members: Array<{ userId: string; name: string; email: string; role: string; avatar: string }>;
   recentActivity: string;
+  type?: "Main" | "Custom";
 }
 
 interface GroupHeaderProps {
   groupData: GroupData;
+  onAddUsers?: () => void;
 }
 
-const GroupHeader = ({ groupData }: GroupHeaderProps) => {
+const GroupHeader = ({ groupData, onAddUsers }: GroupHeaderProps) => {
   return (
     <Card sx={{ 
       p: { xs: 2, sm: 3 }, 
@@ -74,7 +72,7 @@ const GroupHeader = ({ groupData }: GroupHeaderProps) => {
           }}>
             <Chip 
               icon={<AccessTime sx={{ fontSize: 16 }} />} 
-              label={`Active ${groupData.recentActivity}`}
+              label={`Active : ${groupData.recentActivity}`}
               sx={{ 
                 bgcolor: 'rgba(255,255,255,0.15)', 
                 color: 'white',
@@ -95,15 +93,15 @@ const GroupHeader = ({ groupData }: GroupHeaderProps) => {
                 }}
               >
                 {groupData.members.map((member) => (
-                  <Avatar key={member.id} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
-                    {member.name.split(' ').map(n => n[0]).join('')}
+                  <Avatar src={member.avatar} key={member.userId} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                    {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                   </Avatar>
                 ))}
               </AvatarGroup>
               <Typography 
                 variant="body2" 
                 sx={{ 
-                  color: 'rgba(255,255,255,0.9)', 
+                  color: 'rgba(255,255,255,0.9)',
                   ml: 1,
                   fontSize: { xs: '0.75rem', sm: '0.875rem' }
                 }}
@@ -113,6 +111,27 @@ const GroupHeader = ({ groupData }: GroupHeaderProps) => {
             </Box>
           </Box>
         </Box>
+        {/* Add Users Button - Only show for custom groups */}
+        {groupData.type === "Custom" && onAddUsers && (
+          <Button
+            variant="contained"
+            startIcon={<PersonAdd />}
+            onClick={onAddUsers}
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              '&:hover': {
+                bgcolor: 'rgba(255,255,255,0.3)',
+              },
+              mt: { xs: 2, sm: 0 },
+              alignSelf: { xs: 'flex-start', sm: 'flex-start' }
+            }}
+          >
+            Add Users
+          </Button>
+        )}
       </Box>
     </Card>
   );

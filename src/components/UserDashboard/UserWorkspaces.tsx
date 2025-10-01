@@ -15,9 +15,9 @@ export interface Workspace {
   createdBy: string;        // User ID of the creator
   tutorCount: number;       // Number of tutors
   studentCount: number;     // Number of students
-  groups?: number;          // Optional: number of groups
-  status?: string;          // Optional: status, e.g., "Active"
-  lastActivity?: string;    // Optional: last activity timestamp or description
+  groupsCount: number;      // Number of groups
+  status?: string;          //  status, e.g., "Active"
+  lastActivity?: string;    //  last activity timestamp or description
 }
 
 
@@ -44,6 +44,7 @@ export function UserWorkspaces() {
         }>(`/workspace/getWorkspacesByUser/${user_id}`);
 
         if (res.data.success) {
+          console.log("Fetched workspaces:", res.data.data);
           setWorkspaces(res.data.data);
         } else {
           console.error("Failed to fetch workspaces:", res.data.message);
@@ -159,11 +160,11 @@ export function UserWorkspaces() {
                       description: workspace.description,
                       tutors: workspace.tutorCount,
                       students: workspace.studentCount,
-                      groups: workspace.groups || 0,
+                      groups: workspace.groupsCount || 0,
                       status: "Active",
                       created: formatDate(workspace.createdAt),
                       lastActivity: "N/A",
-                      color: "#1976d2",
+                      
                     }}
                     onView={() => handleEnterWorkspace(workspace.workspaceId, workspace.name)}
                     onManage={() => handleEnterWorkspace(workspace.workspaceId, workspace.name)}
@@ -232,7 +233,7 @@ export function UserWorkspaces() {
             </Box>
             <Box>
               <Typography variant="h4" fontWeight="600" color="text.primary">
-                {workspaces.reduce((sum, ws) => sum + (ws.groups || 0), 0)}
+                {workspaces.reduce((sum, ws) => sum + (ws.groupsCount || 0), 0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Total Groups

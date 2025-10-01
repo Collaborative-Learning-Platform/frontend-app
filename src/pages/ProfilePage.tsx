@@ -257,7 +257,7 @@ export default function ProfilePage() {
                   >
                     <Avatar
                       sx={{ width: 80, height: 80, fontSize: 32 }}
-                      src="/student-profile.png"
+                      src={profileData.profile_picture}
                     >
                       JS
                     </Avatar>

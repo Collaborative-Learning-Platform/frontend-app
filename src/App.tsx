@@ -6,7 +6,7 @@ import About from "./pages/About";
 import Layout from "./components/Layout";
 import AdminDashboard from "./pages/AdminDashboard";
 import { UserManagement } from "./components/AdminDashboard/UserManagement";
-import { WorkspaceManagement } from "./components/AdminDashboard/WorkspaceMAnagement";
+import { WorkspaceManagement } from "./components/AdminDashboard/AdminWorkspaces";
 import { AnalyticsDashboard } from "./components/AdminDashboard/AnalyticsDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import { UserOverview } from "./components/UserDashboard/UserOverview";
@@ -36,6 +36,7 @@ import QuizAttempt from "./pages/quiz/QuizAttempt";
 import Unauthorized from "./pages/Unauthorized";
 import Settings from "./pages/Settings";
 import EditorApp from "./components/DocumentEditor/EditorApp/EditorApp";
+import WorkspaceManagementPage from "./pages/WorkspaceManagementPage";
 
 function App() {
   return (
@@ -101,6 +102,7 @@ function App() {
             <Route path="admin-dashboard" element={<AdminOverview />} />
             <Route path="admin-users" element={<UserManagement />} />
             <Route path="admin-workspaces" element={<WorkspaceManagement />} />
+            <Route path="admin-workspaces/manage/:workspaceId" element={<WorkspaceManagementPage />} />
             <Route path="admin-analytics" element={<AnalyticsDashboard />} />
             <Route path="admin-settings" element={<SystemSettings />} />
           </Route>

@@ -71,6 +71,7 @@ export function UserManagement() {
       const res = await axiosInstance.get("/auth/users");
       if (res.data.success) {
         setUsers(res.data.users);
+        console.log("Fetched users:", res.data.users);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -225,7 +226,7 @@ export function UserManagement() {
                         }}
                       >
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                          <Avatar sx={{ bgcolor: "primary.main", color: "white" }}>
+                          <Avatar src={user.avatar} sx={{ bgcolor: "primary.main", color: "white" }}>
                             {user.name
                               .split(" ")
                               .map((n: string) => n[0])
