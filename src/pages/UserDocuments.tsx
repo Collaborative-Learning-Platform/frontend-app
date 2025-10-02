@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -27,16 +27,40 @@ import {
   FilterList as FilterIcon,
   GridView as Grid3X3Icon,
   ViewList as ListIcon,
-  AccessTime as ClockIcon,
   People as UsersIcon,
   Star as StarIcon,
   MoreHoriz as MoreHorizontalIcon,
-  FolderOpen as FolderOpenIcon,
   CalendarToday as CalendarIcon,
 } from "@mui/icons-material";
 import NewDocumentDialog from "../components/UserDocuments/NewDocumentDialog";
 import { useAuth } from "../contexts/Authcontext";
 import axiosInstance from "../api/axiosInstance";
+
+// Interface for document response from API
+interface DocumentResponse {
+  documentId: string;
+  name: string;
+  title: string;
+  groupId: string;
+  createdBy: string;
+  lastEdited: string;
+  contributorIds: string[];
+  sizeInBytes: number;
+}
+
+// Interface for group with documents
+interface GroupWithDocuments {
+  groupId: string;
+  name: string;
+  documents: DocumentResponse[];
+}
+
+// Interface for workspace with groups
+interface WorkspaceWithGroups {
+  workspaceId: string;
+  name: string;
+  groups: GroupWithDocuments[];
+}
 
 interface Document {
   id: number;
@@ -49,12 +73,7 @@ interface Document {
   owner: string;
 }
 
-interface Folder {
-  id: number;
-  name: string;
-  count: number;
-  color: string;
-}
+// Removed Folder interface
 
 // const groups = [
 //   { id: "a1b2c3d4-e5f6-7890-abcd-1234567890ab", name: "Team Alpha" },
@@ -82,53 +101,6 @@ const recentDocuments: Document[] = [
     starred: false,
     owner: "Sarah Chen",
   },
-  {
-    id: 3,
-    title: "Technical Specifications",
-    lastModified: "3 days ago",
-    collaborators: 2,
-    size: "3.2 MB",
-    folder: "Design",
-    starred: true,
-    owner: "Mike Johnson",
-  },
-  {
-    id: 4,
-    title: "Budget Analysis 2024",
-    lastModified: "1 week ago",
-    collaborators: 4,
-    size: "1.1 MB",
-    folder: "Design",
-    starred: false,
-    owner: "Emma Davis",
-  },
-  {
-    id: 5,
-    title: "Design System Guidelines",
-    lastModified: "2 weeks ago",
-    collaborators: 6,
-    size: "4.7 MB",
-    folder: "Marketing",
-    starred: true,
-    owner: "You",
-  },
-  {
-    id: 6,
-    title: "Meeting Notes - Sprint Planning",
-    lastModified: "3 weeks ago",
-    collaborators: 8,
-    size: "892 KB",
-    folder: "Projects",
-    starred: false,
-    owner: "Team Lead",
-  },
-];
-
-const folders: Folder[] = [
-  { id: 1, name: "Projects", count: 12, color: "#3b82f6" },
-  { id: 2, name: "Marketing", count: 8, color: "#10b981" },
-  { id: 3, name: "Design", count: 15, color: "#8b5cf6" },
-  { id: 4, name: "Archive", count: 24, color: "#6b7280" },
 ];
 
 export const UserDocuments = () => {
@@ -139,12 +111,60 @@ export const UserDocuments = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  // const [currentDoc, setCurrentDoc] = useState<{ title: string; name: string }>(
-  //   {
-  //     title: "",
-  //     name: "",
-  //   }
-  // );
+  const [workspaceDocuments, setWorkspaceDocuments] = useState<
+    WorkspaceWithGroups[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Function to fetch documents grouped by workspace and group
+  const fetchDocuments = async () => {
+    if (!auth.user_id) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // Call the endpoint via gateway
+      const response = await axiosInstance.get(
+        `/documents/user/${auth.user_id}`
+      );
+
+      console.log("Documents by workspace response:", response.data);
+
+      if (response.data.success) {
+        // response.data.data structure:
+        // [{
+        //   workspaceId: string,
+        //   name: string,
+        //   groups: [{
+        //     groupId: string,
+        //     name: string,
+        //     documents: [{
+        //       documentId: string,
+        //       name: string,
+        //       title: string,
+        //       groupId: string,
+        //       createdBy: string
+        //     }]
+        //   }]
+        // }]
+        setWorkspaceDocuments(response.data.data);
+      } else {
+        setError(response.data.message || "Failed to fetch documents");
+      }
+    } catch (err: any) {
+      console.error("Error fetching documents:", err);
+      setError(err.message || "An error occurred while fetching documents");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch documents when component mounts
+  useEffect(() => {
+    fetchDocuments();
+  }, [auth.user_id]); // Re-fetch when user ID changes
 
   const handleCreate = async ({
     title,
@@ -163,6 +183,9 @@ export const UserDocuments = () => {
       console.log("Document create response:", res);
 
       if (res.data.success) {
+        // Refresh the document list
+        await fetchDocuments();
+
         const groupDetails = await axiosInstance.get(
           `workspace/groups/${res.data.data.groupId}/fetchDetails`
         );
@@ -366,61 +389,15 @@ export const UserDocuments = () => {
       {/* Main Content */}
       <Box sx={{ flex: 1, overflow: "auto", p: { xs: 2, sm: 3 } }}>
         <Box sx={{ maxWidth: "lg", mx: "auto", width: "100%" }}>
-          {/* Quick Access Folders */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" fontWeight="600" sx={{ mb: 2 }}>
-              Folders
-            </Typography>
-            <Grid container spacing={2}>
-              {folders.map((folder) => (
-                <Grid size={{ xs: 6, md: 3 }} key={folder.id}>
-                  <Card
-                    sx={{
-                      cursor: "pointer",
-                      transition: "all 0.2s ease-in-out",
-                      "&:hover": {
-                        boxShadow: theme.shadows[4],
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <CardContent sx={{ p: 2 }}>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                      >
-                        <Box
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 1,
-                            backgroundColor: folder.color,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <FolderOpenIcon
-                            sx={{ color: "white", fontSize: 20 }}
-                          />
-                        </Box>
-                        <Box>
-                          <Typography fontWeight="500">
-                            {folder.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {folder.count} items
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+          {/* Error State */}
+          {error && (
+            <Box sx={{ textAlign: "center", my: 4 }}>
+              <Typography color="error">{error}</Typography>
+            </Box>
+          )}
 
           {/* Recent Documents */}
-          <Box>
+          <Box sx={{ mb: 4 }}>
             <Box
               sx={{
                 display: "flex",
@@ -429,6 +406,8 @@ export const UserDocuments = () => {
                 mb: 2,
                 flexDirection: { xs: "column", sm: "row" },
                 gap: { xs: 1, sm: 0 },
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                pb: 1,
               }}
             >
               <Typography variant="h6" fontWeight="600">
@@ -436,25 +415,17 @@ export const UserDocuments = () => {
                   ? `Search Results (${filteredDocuments.length})`
                   : "Recent Documents"}
               </Typography>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<ClockIcon />}
-                sx={{ alignSelf: { xs: "flex-start", sm: "center" } }}
-              >
-                Sort by Modified
-              </Button>
             </Box>
 
             {viewMode === "grid" ? (
-              <Grid container spacing={2}>
+              <Grid container spacing={2} sx={{ width: "100%", margin: 0 }}>
                 {filteredDocuments.map((doc) => (
                   <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={doc.id}>
                     <Card
                       sx={{
                         cursor: "pointer",
                         transition: "all 0.2s ease-in-out",
-                        height: { xs: 260, sm: 280 }, // Responsive height for uniform cards
+                        height: { xs: 260, sm: 280 },
                         display: "flex",
                         flexDirection: "column",
                         "&:hover": {
@@ -512,7 +483,7 @@ export const UserDocuments = () => {
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
                           }}
-                          title={doc.title} // Shows full title on hover
+                          title={doc.title}
                         >
                           {doc.title}
                         </Typography>
@@ -553,7 +524,7 @@ export const UserDocuments = () => {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              mt: "auto", // Push to bottom
+                              mt: "auto",
                             }}
                           >
                             <Typography
@@ -695,6 +666,255 @@ export const UserDocuments = () => {
               </List>
             )}
           </Box>
+
+          {/* Workspaces and Documents */}
+          {/* Loading State for Workspaces */}
+          {isLoading ? (
+            <Box sx={{ textAlign: "center", my: 4 }}>
+              <Typography>Loading your documents...</Typography>
+            </Box>
+          ) : (
+            workspaceDocuments.length > 0 && (
+              <Box sx={{ mb: 4 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    justifyContent: "space-between",
+                    mb: 2,
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: { xs: 1, sm: 0 },
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    pb: 1,
+                  }}
+                >
+                  <Typography variant="h6" fontWeight="600">
+                    My Workspaces
+                  </Typography>
+                </Box>
+
+                {workspaceDocuments.map((workspace) => (
+                  <Box key={workspace.workspaceId} sx={{ mb: 4 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        mb: 2,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        pb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        sx={{ color: theme.palette.primary.main }}
+                      >
+                        Workspace: {workspace.name}
+                      </Typography>
+                    </Box>
+
+                    {workspace.groups
+                      .filter((group) => group.documents.length > 0)
+                      .map((group) => (
+                        <Box key={group.groupId} sx={{ mb: 3 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              mb: 1.5,
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="500"
+                              sx={{ color: theme.palette.primary.main }}
+                            >
+                              <Chip
+                                label={group.name}
+                                size="small"
+                                sx={{
+                                  mr: 1,
+                                  color: theme.palette.primary.main,
+                                  borderColor: theme.palette.primary.main,
+                                }}
+                              />
+                              Group Documents
+                            </Typography>
+                          </Box>
+
+                          <Grid
+                            container
+                            spacing={2}
+                            sx={{ width: "100%", margin: 0 }}
+                          >
+                            {group.documents.map((doc) => (
+                              <Grid
+                                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                                key={doc.documentId}
+                              >
+                                <Card
+                                  sx={{
+                                    cursor: "pointer",
+                                    transition: "all 0.2s ease-in-out",
+                                    height: { xs: 260, sm: 280 },
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    "&:hover": {
+                                      boxShadow: theme.shadows[4],
+                                      transform: "translateY(-2px)",
+                                      "& .document-actions": {
+                                        opacity: 1,
+                                      },
+                                    },
+                                  }}
+                                  onClick={() =>
+                                    navigate(`/document-editor/${doc.name}`)
+                                  }
+                                >
+                                  <CardHeader
+                                    sx={{ pb: 1 }}
+                                    title={
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <FileTextIcon />
+                                      </Box>
+                                    }
+                                    action={
+                                      <IconButton
+                                        size="small"
+                                        className="document-actions"
+                                        sx={{
+                                          opacity: 0.7,
+                                          transition: "opacity 0.2s",
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleMenuOpen(
+                                            e,
+                                            parseInt(doc.documentId)
+                                          );
+                                        }}
+                                      >
+                                        <MoreHorizontalIcon />
+                                      </IconButton>
+                                    }
+                                  />
+                                  <CardContent
+                                    sx={{
+                                      pt: 0,
+                                      flex: 1,
+                                      display: "flex",
+                                      flexDirection: "column",
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="body1"
+                                      fontWeight="500"
+                                      sx={{
+                                        mb: 2,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                      title={doc.title}
+                                    >
+                                      {doc.title}
+                                    </Typography>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: 1,
+                                        flex: 1,
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <CalendarIcon sx={{ fontSize: 14 }} />
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          {new Date(
+                                            doc.lastEdited
+                                          ).toLocaleDateString()}{" "}
+                                          {new Date(
+                                            doc.lastEdited
+                                          ).toLocaleTimeString([], {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <UsersIcon sx={{ fontSize: 14 }} />
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          {doc.contributorIds?.length || 1}{" "}
+                                          collaborators
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "space-between",
+                                          mt: "auto",
+                                        }}
+                                      >
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          {doc.sizeInBytes < 1024
+                                            ? `${doc.sizeInBytes} B`
+                                            : doc.sizeInBytes < 1048576
+                                            ? `${(
+                                                doc.sizeInBytes / 1024
+                                              ).toFixed(1)} KB`
+                                            : `${(
+                                                doc.sizeInBytes / 1048576
+                                              ).toFixed(1)} MB`}
+                                        </Typography>
+                                        <Chip
+                                          label={group.name}
+                                          size="small"
+                                          variant="outlined"
+                                        />
+                                      </Box>
+                                    </Box>
+                                  </CardContent>
+                                </Card>
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </Box>
+                      ))}
+                  </Box>
+                ))}
+              </Box>
+            )
+          )}
         </Box>
       </Box>
 
