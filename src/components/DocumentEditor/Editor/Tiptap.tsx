@@ -1,53 +1,53 @@
-import { useEditor, EditorContent } from "@tiptap/react";
-import "../../../styles/components/DocumentEditor/Tiptap.css";
-import { Box, Typography, Avatar, useTheme } from "@mui/material";
-import { Formatbar } from "../Toolbars/Formatbar";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Bold from "@tiptap/extension-bold";
-import Italic from "@tiptap/extension-italic";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import { ListKit } from "@tiptap/extension-list";
-import Link from "@tiptap/extension-link";
-import { TextStyle, Color, FontSize } from "@tiptap/extension-text-style";
-import { Image } from "@tiptap/extension-image";
-import { CharacterCount } from "@tiptap/extensions";
-import { TableKit } from "@tiptap/extension-table";
+import { useEditor, EditorContent } from '@tiptap/react';
+import '../../../styles/components/DocumentEditor/Tiptap.css';
+import { Box, Typography, Avatar, useTheme } from '@mui/material';
+import { Formatbar } from '../Toolbars/Formatbar';
+import Document from '@tiptap/extension-document';
+import Paragraph from '@tiptap/extension-paragraph';
+import Text from '@tiptap/extension-text';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import { ListKit } from '@tiptap/extension-list';
+import Link from '@tiptap/extension-link';
+import { TextStyle, Color, FontSize } from '@tiptap/extension-text-style';
+import { Image } from '@tiptap/extension-image';
+import { CharacterCount } from '@tiptap/extensions';
+import { TableKit } from '@tiptap/extension-table';
 // import { Pagination } from "tiptap-pagination-breaks";
-import Collaboration from "@tiptap/extension-collaboration";
-import CollaborationCaret from "@tiptap/extension-collaboration-caret";
-import Highlight from "@tiptap/extension-highlight";
-import { useEffect, useMemo, useState } from "react";
-import type { User } from "../Types/User";
-import { Titlebar } from "../Toolbars/Titlebar";
-import { useAuth } from "../../../contexts/Authcontext";
+import Collaboration from '@tiptap/extension-collaboration';
+import CollaborationCaret from '@tiptap/extension-collaboration-caret';
+import Highlight from '@tiptap/extension-highlight';
+import { useEffect, useMemo, useState } from 'react';
+import type { User } from '../Types/User';
+import { Titlebar } from '../Toolbars/Titlebar';
+import { useAuth } from '../../../contexts/Authcontext';
 
 const colors = [
-  "#958DF1",
-  "#F98181",
-  "#FBBC88",
-  "#FAF594",
-  "#70CFF8",
-  "#94FADB",
-  "#B9F18D",
-  "#C3E2C2",
-  "#EAECCC",
-  "#AFC8AD",
-  "#EEC759",
-  "#9BB8CD",
-  "#FF90BC",
-  "#FFC0D9",
-  "#DC8686",
-  "#7ED7C1",
-  "#F3EEEA",
-  "#89B9AD",
-  "#D0BFFF",
-  "#FFF8C9",
-  "#CBFFA9",
-  "#9BABB8",
-  "#E3F4F4",
+  '#958DF1',
+  '#F98181',
+  '#FBBC88',
+  '#FAF594',
+  '#70CFF8',
+  '#94FADB',
+  '#B9F18D',
+  '#C3E2C2',
+  '#EAECCC',
+  '#AFC8AD',
+  '#EEC759',
+  '#9BB8CD',
+  '#FF90BC',
+  '#FFC0D9',
+  '#DC8686',
+  '#7ED7C1',
+  '#F3EEEA',
+  '#89B9AD',
+  '#D0BFFF',
+  '#FFF8C9',
+  '#CBFFA9',
+  '#9BABB8',
+  '#E3F4F4',
 ];
 // const names = [
 //   "Lea Thompson",
@@ -94,19 +94,34 @@ interface TiptapProps {
   ydoc: any;
   fontSize: string;
   documentData: documentData | null;
+  isConnected: boolean;
 }
 
-const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
+const Tiptap = ({
+  ydoc,
+  provider,
+  fontSize,
+  documentData,
+  isConnected,
+}: TiptapProps) => {
   const theme = useTheme();
   const color = getRandomColor();
   const { name, loading, user_id } = useAuth();
-  const [status, setStatus] = useState("connecting");
+  const [status, setStatus] = useState('connecting');
   const [users, setUsers] = useState<User[] | null>(null);
   const [currentUser, setCurrentUser] = useState({
-    name: name || "Anonymous",
+    name: name || 'Anonymous',
     color: color,
     user_id: user_id,
   });
+
+  useEffect(() => {
+    if (isConnected) {
+      setStatus('connected');
+    } else {
+      setStatus('disconnected');
+    }
+  }, [isConnected]);
 
   useEffect(() => {
     if (!loading && name && user_id) {
@@ -137,9 +152,9 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
     },
 
     onCreate: ({ editor: currentEditor }) => {
-      provider.on("synced", () => {
+      provider.on('synced', () => {
         if (currentEditor.isEmpty) {
-          currentEditor.commands.setContent("");
+          currentEditor.commands.setContent('');
         }
         currentEditor.commands.setFontSize(fontSize);
       });
@@ -152,9 +167,9 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
       Italic,
       Underline,
       TextAlign.configure({
-        types: ["heading", "paragraph"],
-        alignments: ["left", "center", "right"],
-        defaultAlignment: "left",
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right'],
+        defaultAlignment: 'left',
       }),
       TextStyle,
       Color,
@@ -185,41 +200,41 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
       // }),
     ],
 
-    content: "",
+    content: '',
   });
 
   useEffect(() => {
     // HocuspocusProvider official events
 
     const connectHandler = () => {
-      console.log("Provider connected!");
-      setStatus("connected");
+      console.log('Provider connected!');
+      setStatus('connected');
     };
 
     const disconnectHandler = () => {
-      console.log("Provider disconnected!");
-      setStatus("disconnected");
+      console.log('Provider disconnected!');
+      setStatus('disconnected');
     };
 
     const statusHandler = (event: any) => {
-      console.log("Status event:", event);
-      setStatus("connected");
+      console.log('Status event:', event);
+      setStatus('connected');
     };
 
     // Listen to all relevant events
-    provider.on("connect", connectHandler);
-    provider.on("disconnect", disconnectHandler);
-    provider.on("status", statusHandler);
-    provider.on("synced", () => console.log("Synced!"));
+    provider.on('connect', connectHandler);
+    provider.on('disconnect', disconnectHandler);
+    provider.on('status', statusHandler);
+    provider.on('synced', () => console.log('Synced!'));
 
     // Check initial status
-    console.log("Initial provider status:", provider.status);
+    console.log('Initial provider status:', provider.status);
 
     return () => {
-      provider.off("connect", connectHandler);
-      provider.off("disconnect", disconnectHandler);
-      provider.off("status", statusHandler);
-      provider.off("synced");
+      provider.off('connect', connectHandler);
+      provider.off('disconnect', disconnectHandler);
+      provider.off('status', statusHandler);
+      provider.off('synced');
     };
   }, [provider]);
 
@@ -258,13 +273,13 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
         }));
 
       setUsers(usersArray);
-      console.log("Awareness change:", { usersArray });
+      console.log('Awareness change:', { usersArray });
     };
 
-    provider.on("awarenessUpdate", awarenessHandler);
+    provider.on('awarenessUpdate', awarenessHandler);
 
     return () => {
-      provider.off("awarenessUpdate", awarenessHandler);
+      provider.off('awarenessUpdate', awarenessHandler);
     };
   }, [provider]);
 
@@ -291,17 +306,17 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
         if (editor && !editor.state.selection.empty) {
           const { from, to } = editor.state.selection;
           // This preserves newlines and whitespace
-          const selectedText = editor.state.doc.textBetween(from, to, "\n");
+          const selectedText = editor.state.doc.textBetween(from, to, '\n');
           try {
             await navigator.clipboard.writeText(selectedText);
             return true;
           } catch (err) {
             // Fallback for older browsers
-            const textarea = document.createElement("textarea");
+            const textarea = document.createElement('textarea');
             textarea.value = selectedText;
             document.body.appendChild(textarea);
             textarea.select();
-            document.execCommand("copy");
+            document.execCommand('copy');
             document.body.removeChild(textarea);
             return true;
           }
@@ -321,11 +336,11 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
               return true;
             } else {
               // Fallback to execCommand for older browsers
-              return document.execCommand("cut");
+              return document.execCommand('cut');
             }
           } catch (err) {
-            console.warn("Clipboard access denied, trying fallback");
-            return document.execCommand("cut");
+            console.warn('Clipboard access denied, trying fallback');
+            return document.execCommand('cut');
           }
         }
         return false;
@@ -340,7 +355,7 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
             }
           }
         } catch (err) {
-          console.warn("Clipboard access denied or not supported");
+          console.warn('Clipboard access denied or not supported');
           // Fallback: Focus editor so user can use Ctrl+V
           if (editor) {
             editor.commands.focus();
@@ -355,13 +370,13 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
   return (
     <Box
       sx={{
-        "--editor-bg": theme.palette.background.paper,
-        "--editor-text": theme.palette.text.primary,
-        "--app-bg": theme.palette.background.default,
-        "--selection-bg":
-          theme.palette.mode === "dark"
-            ? "rgba(144, 202, 249, 0.3)"
-            : "rgba(25, 118, 210, 0.3)",
+        '--editor-bg': theme.palette.background.paper,
+        '--editor-text': theme.palette.text.primary,
+        '--app-bg': theme.palette.background.default,
+        '--selection-bg':
+          theme.palette.mode === 'dark'
+            ? 'rgba(144, 202, 249, 0.3)'
+            : 'rgba(25, 118, 210, 0.3)',
       }}
     >
       <Box>
@@ -370,23 +385,23 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
       </Box>
       <Box
         sx={{
-          minHeight: "80vh",
-          width: "min(700px, 90vw)",
-          maxWidth: "700px",
-          margin: "20px auto",
-          padding: "20px",
+          minHeight: '80vh',
+          width: 'min(700px, 90vw)',
+          maxWidth: '700px',
+          margin: '20px auto',
+          padding: '20px',
           background: theme.palette.background.paper,
-          borderRadius: "8px",
+          borderRadius: '8px',
           border: `1px solid ${theme.palette.divider}`,
           boxShadow: theme.shadows[2],
-          boxSizing: "border-box",
-          transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-          position: "relative",
-          overflowX: "hidden",
-          "&:focus-within": {
+          boxSizing: 'border-box',
+          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+          position: 'relative',
+          overflowX: 'hidden',
+          '&:focus-within': {
             borderColor: theme.palette.primary.main,
             boxShadow:
-              theme.palette.mode === "dark"
+              theme.palette.mode === 'dark'
                 ? `${theme.shadows[4]}, 0 0 0 3px ${theme.palette.primary.main}40`
                 : `${theme.shadows[2]}, 0 0 0 3px ${theme.palette.primary.main}20`,
           },
@@ -396,34 +411,34 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
       </Box>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "min(700px, 90vw)",
-          maxWidth: "700px",
-          margin: "0 auto 20px auto",
-          padding: "16px 20px",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: 'min(700px, 90vw)',
+          maxWidth: '700px',
+          margin: '0 auto 20px auto',
+          padding: '16px 20px',
           background:
-            theme.palette.mode === "dark"
-              ? "rgba(30, 30, 30, 0.8)"
-              : "rgba(255, 255, 255, 0.8)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "12px",
+            theme.palette.mode === 'dark'
+              ? 'rgba(30, 30, 30, 0.8)'
+              : 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '12px',
           border: `1px solid ${theme.palette.divider}`,
           boxShadow: theme.shadows[4],
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box
             sx={{
               width: 8,
               height: 8,
-              borderRadius: "50%",
-              backgroundColor: status === "connected" ? "#10b981" : "#f59e0b",
-              animation: status === "connecting" ? "pulse 2s infinite" : "none",
-              "@keyframes pulse": {
-                "0%, 100%": { opacity: 1 },
-                "50%": { opacity: 0.5 },
+              borderRadius: '50%',
+              backgroundColor: status === 'connected' ? '#10b981' : '#f59e0b',
+              animation: status === 'connecting' ? 'pulse 2s infinite' : 'none',
+              '@keyframes pulse': {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0.5 },
               },
             }}
           />
@@ -432,24 +447,24 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
             sx={{
               fontWeight: 500,
               color: theme.palette.text.secondary,
-              fontSize: "0.875rem",
+              fontSize: '0.875rem',
             }}
           >
-            {status === "connected" && users != null
+            {status === 'connected' && users != null
               ? `${users.length} online • Group - ${documentData?.groupName}`
-              : status === "connecting"
-              ? "Connecting..."
-              : "Offline"}
+              : status === 'connecting'
+              ? 'Connecting...'
+              : 'Offline'}
           </Typography>
         </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Avatar
             sx={{
               width: 28,
               height: 28,
               bgcolor: currentUser.color,
-              color: "black",
-              fontSize: "0.75rem",
+              color: 'black',
+              fontSize: '0.75rem',
               fontWeight: 600,
             }}
           >
@@ -460,7 +475,7 @@ const Tiptap = ({ ydoc, provider, fontSize, documentData }: TiptapProps) => {
             sx={{
               fontWeight: 500,
               color: theme.palette.text.secondary,
-              fontSize: "0.875rem",
+              fontSize: '0.875rem',
             }}
           >
             {currentUser.name}
