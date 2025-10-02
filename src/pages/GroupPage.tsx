@@ -15,6 +15,7 @@ import { Dashboard, Group, NavigateNext } from '@mui/icons-material';
 import GroupHeader from '../components/Group/GroupHeader';
 import GroupNavigation from '../components/Group/GroupNavigation';
 import QuizSection from '../components/Group/QuizSection';
+// import ResourceSection from '../components/Group/ResourceSection';
 import ResourceSection from '../components/Group/ResourceSection';
 import GroupChat from '../components/Group/GroupChat';
 import AddMembersDialog from '../components/workpsaces/Management/AddMembersToGroups';
