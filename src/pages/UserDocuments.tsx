@@ -56,10 +56,10 @@ interface Folder {
   color: string;
 }
 
-const groups = [
-  { id: "a1b2c3d4-e5f6-7890-abcd-1234567890ab", name: "Team Alpha" },
-  { id: "b2c3d4e5-f6a7-8901-bcde-2345678901bc", name: "Team Beta" },
-]; // Replace with API fetched groups
+// const groups = [
+//   { id: "a1b2c3d4-e5f6-7890-abcd-1234567890ab", name: "Team Alpha" },
+//   { id: "b2c3d4e5-f6a7-8901-bcde-2345678901bc", name: "Team Beta" },
+// ]; // Replace with API fetched groups
 
 const recentDocuments: Document[] = [
   {
@@ -161,9 +161,21 @@ export const UserDocuments = () => {
         createdBy,
       });
       console.log("Document create response:", res);
+
       if (res.data.success) {
+        const groupDetails = await axiosInstance.get(
+          `workspace/groups/${res.data.data.groupId}/fetchDetails`
+        );
+        console.log(groupDetails);
         console.log("Navigating to:", `/document-editor/${res.data.data.name}`);
-        navigate(`/document-editor/${res.data.data.name}`);
+        navigate(`/document-editor/${res.data.data.name}`, {
+          state: {
+            documentId: res.data.data.id,
+            title: res.data.data.title,
+            groupId: groupDetails.data.data.groupId,
+            groupName: groupDetails.data.data.name,
+          },
+        });
       } else {
         console.warn("Document creation failed:", res.data);
       }
@@ -268,7 +280,7 @@ export const UserDocuments = () => {
                 open={dialogOpen}
                 onClose={() => setDialogOpen(false)}
                 onCreate={handleCreate}
-                groups={groups}
+                userId={auth.user_id ?? ""}
               />
             </Box>
           </Box>
