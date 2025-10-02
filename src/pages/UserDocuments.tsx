@@ -27,7 +27,6 @@ import {
   FilterList as FilterIcon,
   GridView as Grid3X3Icon,
   ViewList as ListIcon,
-  AccessTime as ClockIcon,
   People as UsersIcon,
   Star as StarIcon,
   MoreHoriz as MoreHorizontalIcon,
