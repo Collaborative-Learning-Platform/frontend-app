@@ -406,15 +406,17 @@ const ResourceSection = ({ groupId }: ResourceSectionProps) => {
 
       const downloadUrl = response.data.downloadUrl;
       
-      
+    
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = resource.fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
       showSnackbar('Download started', 'success');
+
+      // window.open(downloadUrl, '_blank');
+
     } catch (error) {
       console.error('Download error:', error);
       showSnackbar('Failed to download file', 'error');
