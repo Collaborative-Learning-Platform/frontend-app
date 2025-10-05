@@ -1,6 +1,6 @@
 
 import { useParams } from "react-router-dom";
-import SimpleWhiteboard from "../components/Whiteboard";
+import Whiteboard from "../components/Whiteboard";
 
 export default function WhiteboardPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -10,10 +10,8 @@ export default function WhiteboardPage() {
   }
 
   return (
-    <SimpleWhiteboard
+    <Whiteboard
       roomId={roomId}
-      // sessionId={`user-${Date.now()}`}
-      // wsUrl="ws://localhost:8080"
     />
   );
 }
