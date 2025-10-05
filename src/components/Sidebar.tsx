@@ -170,17 +170,30 @@ function resolveNavItems(
     }));
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onToggle?: () => void;
+  isMobile?: boolean;
+}
+
+export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobileProp }: SidebarProps) {
   const theme = useTheme();
   const { role } = useAuth();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobileDefault = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = isMobileProp !== undefined ? isMobileProp : isMobileDefault;
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isMobileOpen, setMobileOpen] = useState(false);
+  // Fallback state for when component is used standalone
+  const [internalMobileOpen, setInternalMobileOpen] = useState(false);
+  const isMobileOpen = mobileOpen !== undefined ? mobileOpen : internalMobileOpen;
 
   const handleDrawerToggle = () => {
-    setMobileOpen((prev) => !prev);
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalMobileOpen((prev) => !prev);
+    }
   };
 
   const handleItemClick = (item: any) => {
