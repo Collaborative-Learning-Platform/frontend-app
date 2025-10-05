@@ -1,10 +1,11 @@
 // EditorApp.tsx
 import Box from '@mui/material/Box';
-import { getProvider } from '../Provider/providerStore';
+import { destroyProvider, getProvider } from '../Provider/providerStore';
 import Tiptap from '../Editor/Tiptap';
 // import { useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useBeforeUnload, useParams } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+// import { useEffect } from 'react';
 // Create one Y.Doc
 // const ydoc = new Y.Doc();
 // const room = "shared-doc";
@@ -24,6 +25,10 @@ function EditorApp() {
   const { provider, isConnected } = getProvider(room || 'untitled-room');
 
   const ydoc = provider.document;
+
+  useBeforeUnload(() => {
+    destroyProvider(room || 'untitled-room');
+  });
 
   return (
     <Box>
