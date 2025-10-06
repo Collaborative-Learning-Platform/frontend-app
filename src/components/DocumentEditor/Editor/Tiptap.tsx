@@ -11,7 +11,12 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import { ListKit } from '@tiptap/extension-list';
 import Link from '@tiptap/extension-link';
-import { TextStyle, Color, FontSize } from '@tiptap/extension-text-style';
+import {
+  TextStyle,
+  Color,
+  FontSize,
+  FontFamily,
+} from '@tiptap/extension-text-style';
 import { Image } from '@tiptap/extension-image';
 import { CharacterCount } from '@tiptap/extensions';
 import { TableKit } from '@tiptap/extension-table';
@@ -49,33 +54,6 @@ const colors = [
   '#9BABB8',
   '#E3F4F4',
 ];
-// const names = [
-//   "Lea Thompson",
-//   "Cyndi Lauper",
-//   "Tom Cruise",
-//   "Madonna",
-//   "Jerry Hall",
-//   "Joan Collins",
-//   "Winona Ryder",
-//   "Christina Applegate",
-//   "Alyssa Milano",
-//   "Molly Ringwald",
-//   "Ally Sheedy",
-//   "Debbie Harry",
-//   "Olivia Newton-John",
-//   "Elton John",
-//   "Michael J. Fox",
-//   "Axl Rose",
-//   "Emilio Estevez",
-//   "Ralph Macchio",
-//   "Rob Lowe",
-//   "Jennifer Grey",
-//   "Mickey Rourke",
-//   "John Cusack",
-//   "Matthew Broderick",
-//   "Justine Bateman",
-//   "Lisa Bonet",
-// ];
 
 const getRandomElement = (list: any) =>
   list[Math.floor(Math.random() * list.length)];
@@ -172,6 +150,7 @@ const Tiptap = ({
         defaultAlignment: 'left',
       }),
       TextStyle,
+      FontFamily,
       Color,
       FontSize,
       ListKit,
@@ -179,9 +158,6 @@ const Tiptap = ({
       Link.configure({
         openOnClick: true,
       }),
-      // UndoRedo.configure({
-      //   depth: 15,
-      // }),
       Highlight,
       TableKit,
       CharacterCount.extend().configure({
@@ -300,6 +276,8 @@ const Tiptap = ({
       setLink: (url: string) =>
         editor?.chain().focus().setLink({ href: url }).run(),
       unsetLink: () => editor?.chain().focus().unsetLink().run(),
+      setFontFamily: (family: string) =>
+        editor?.chain().focus().setFontFamily(family),
       undo: () => editor?.chain().undo().run(),
       redo: () => editor?.chain().redo().run(),
       copy: async () => {
@@ -380,7 +358,7 @@ const Tiptap = ({
       }}
     >
       <Box>
-        <Titlebar documentData={documentData ?? undefined} />
+        <Titlebar documentData={documentData ?? undefined} editor={editor} />
         <Formatbar commands={commands} editor={editor} fontSize={fontSize} />
       </Box>
       <Box

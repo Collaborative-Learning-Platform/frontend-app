@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Box,
   AppBar,
@@ -14,32 +14,32 @@ import {
   Typography,
   Autocomplete,
   TextField,
-} from "@mui/material";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
-import AddLinkIcon from "@mui/icons-material/AddLink";
-import UndoIcon from "@mui/icons-material/Undo";
-import RedoIcon from "@mui/icons-material/Redo";
-import CopyIcon from "@mui/icons-material/ContentCopy";
-import CutIcon from "@mui/icons-material/ContentCut";
-import PasteIcon from "@mui/icons-material/ContentPaste";
-import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
-import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
-import FormatItalicIcon from "@mui/icons-material/FormatItalic";
-import FormatBoldIcon from "@mui/icons-material/FormatBold";
-import FormatUnderlinedIcon from "@mui/icons-material/FormatUnderlined";
-import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
-import TextFieldsIcon from "@mui/icons-material/TextFields";
-import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
-import { getButtonGroupStyles } from "../../../styles/components/DocumentEditor/Formatbar";
+} from '@mui/material';
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
+import AddLinkIcon from '@mui/icons-material/AddLink';
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
+import CopyIcon from '@mui/icons-material/ContentCopy';
+import CutIcon from '@mui/icons-material/ContentCut';
+import PasteIcon from '@mui/icons-material/ContentPaste';
+import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
+import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
+import FormatItalicIcon from '@mui/icons-material/FormatItalic';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
+import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
+import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import FormatColorTextIcon from '@mui/icons-material/FormatColorText';
+import { getButtonGroupStyles } from '../../../styles/components/DocumentEditor/Formatbar';
 import {
   dividerStyles,
   popOverBoxSize,
-} from "../../../styles/components/DocumentEditor/common";
-import { MuiColorInput } from "mui-color-input";
-import { Editor } from "@tiptap/react";
+} from '../../../styles/components/DocumentEditor/common';
+import { MuiColorInput } from 'mui-color-input';
+import { Editor } from '@tiptap/react';
 
 type FormatbarProps = {
   commands: {
@@ -59,6 +59,7 @@ type FormatbarProps = {
     copy: () => Promise<boolean>;
     cut: () => Promise<boolean>;
     paste: () => Promise<boolean>;
+    setFontFamily: (fontFamily: string) => void; // Added setFontFamily to commands
   };
   editor: Editor;
   fontSize: string;
@@ -73,7 +74,7 @@ export const Formatbar: React.FC<FormatbarProps> = ({
 
   // State for editor-driven UI that needs to update on editor changes
   const [selectedFormat, setSelectedFormat] = useState<string[]>([]);
-  const [selectedAlignment, setSelectedAlignment] = useState<string>("Left");
+  const [selectedAlignment, setSelectedAlignment] = useState<string>('Left');
   const [selectedList, setSelectedList] = useState<string | null>(null);
 
   // Keep these as React state since they're UI-only (not part of document state)
@@ -84,6 +85,11 @@ export const Formatbar: React.FC<FormatbarProps> = ({
   const [color, setColor] = useState<string>(theme.palette.text.primary);
   const [size, setSize] = useState<string>(fontSize);
 
+  // Font family state
+  const [fontFamily, setFontFamily] = useState<string>(
+    editor.getAttributes('textStyle').fontFamily || 'Gill Sans'
+  );
+
   // Update UI state when editor state changes
   useEffect(() => {
     if (!editor) return;
@@ -91,43 +97,48 @@ export const Formatbar: React.FC<FormatbarProps> = ({
     const updateUIState = () => {
       // Update format state
       const formats = [
-        ...(editor.isActive("bold") ? ["Bold"] : []),
-        ...(editor.isActive("italic") ? ["Italic"] : []),
-        ...(editor.isActive("underline") ? ["Underline"] : []),
+        ...(editor.isActive('bold') ? ['Bold'] : []),
+        ...(editor.isActive('italic') ? ['Italic'] : []),
+        ...(editor.isActive('underline') ? ['Underline'] : []),
       ];
       setSelectedFormat(formats);
 
       // Update alignment state
-      const alignment = editor.isActive({ textAlign: "left" })
-        ? "Left"
-        : editor.isActive({ textAlign: "center" })
-        ? "Center"
-        : editor.isActive({ textAlign: "right" })
-        ? "Right"
-        : "Left";
+      const alignment = editor.isActive({ textAlign: 'left' })
+        ? 'Left'
+        : editor.isActive({ textAlign: 'center' })
+        ? 'Center'
+        : editor.isActive({ textAlign: 'right' })
+        ? 'Right'
+        : 'Left';
       setSelectedAlignment(alignment);
 
       // Update list state
-      const list = editor.isActive("bulletList")
-        ? "Bullets"
-        : editor.isActive("orderedList")
-        ? "Numbering"
+      const list = editor.isActive('bulletList')
+        ? 'Bullets'
+        : editor.isActive('orderedList')
+        ? 'Numbering'
         : null;
       setSelectedList(list);
 
       // Update color and size state
       const currentColor =
-        editor.getAttributes("textStyle").color || theme.palette.text.primary;
+        editor.getAttributes('textStyle').color || theme.palette.text.primary;
       const currentSize =
-        editor.getAttributes("textStyle").fontSize || fontSize;
+        editor.getAttributes('textStyle').fontSize || fontSize;
       setColor(currentColor);
       setSize(currentSize);
+
+      // Update font family state
+      const currentFontFamily =
+        editor.getAttributes('textStyle').fontFamily || 'Gill Sans';
+      setFontFamily(currentFontFamily);
 
       // Update font size input to match current size (only if not actively typing)
       if (!sizeAnchorEl && fontSize) {
         const sizeNumber =
-          parseInt(currentSize.replace("px", "")) ||
-          parseInt(fontSize.replace("px", ""));
+          parseInt(currentSize.replace('px', '')) ||
+          parseInt(fontSize.replace('px', ''));
         setFontSizeInput(sizeNumber.toString());
       }
     };
@@ -136,24 +147,24 @@ export const Formatbar: React.FC<FormatbarProps> = ({
     updateUIState();
 
     // Listen for editor updates
-    editor.on("selectionUpdate", updateUIState);
-    editor.on("transaction", updateUIState);
+    editor.on('selectionUpdate', updateUIState);
+    editor.on('transaction', updateUIState);
 
     // Cleanup listeners
     return () => {
-      editor.off("selectionUpdate", updateUIState);
-      editor.off("transaction", updateUIState);
+      editor.off('selectionUpdate', updateUIState);
+      editor.off('transaction', updateUIState);
     };
   }, [editor]);
 
-  const [newColor, setNewColor] = useState<string>("#000000");
-  const [fontSizeInput, setFontSizeInput] = useState<string>("");
+  const [newColor, setNewColor] = useState<string>('#000000');
+  const [fontSizeInput, setFontSizeInput] = useState<string>('');
   const [sizeAnchorEl, setSizeAnchorEl] = useState<HTMLElement | null>(null);
   const [colorAnchorEl, setColorAnchorEl] = useState<HTMLElement | null>(null);
 
   // Link state
   const [linkAnchorEl, setLinkAnchorEl] = useState<HTMLElement | null>(null);
-  const [linkUrl, setLinkUrl] = useState<string>("");
+  const [linkUrl, setLinkUrl] = useState<string>('');
 
   const handleSelectedFormat = (
     _event: React.MouseEvent<HTMLElement>,
@@ -170,13 +181,13 @@ export const Formatbar: React.FC<FormatbarProps> = ({
     // Handle newly added formats
     added.forEach((format) => {
       switch (format) {
-        case "Bold":
+        case 'Bold':
           commands.toggleBold();
           break;
-        case "Italic":
+        case 'Italic':
           commands.toggleItalic();
           break;
-        case "Underline":
+        case 'Underline':
           commands.toggleUnderline();
           break;
       }
@@ -185,13 +196,13 @@ export const Formatbar: React.FC<FormatbarProps> = ({
     // Handle removed formats (toggle them off)
     removed.forEach((format) => {
       switch (format) {
-        case "Bold":
+        case 'Bold':
           commands.toggleBold();
           break;
-        case "Italic":
+        case 'Italic':
           commands.toggleItalic();
           break;
-        case "Underline":
+        case 'Underline':
           commands.toggleUnderline();
           break;
       }
@@ -229,17 +240,17 @@ export const Formatbar: React.FC<FormatbarProps> = ({
     updatedSelectedInsert: string
   ) => {
     setSelectedInsert(updatedSelectedInsert);
-    if (updatedSelectedInsert == "Image") {
+    if (updatedSelectedInsert == 'Image') {
       // Add:
       //1.FileUpload Functionality to s3/Cloudinary
       //2.Get link to uploaded file from s3/Cloudinary
       //3.Display the fetched image from Cloudinary
       //Also you can do signed Cloudfront URLs and get the benefit of caching.
-    } else if (updatedSelectedInsert == "Hyperlink") {
+    } else if (updatedSelectedInsert == 'Hyperlink') {
       // Open link input popover
       setLinkAnchorEl(event.currentTarget);
       // Pre-fill with existing link if text is already linked
-      const currentLink = editor.getAttributes("link").href || "";
+      const currentLink = editor.getAttributes('link').href || '';
       setLinkUrl(currentLink);
     }
     // Reset selection after handling
@@ -266,7 +277,7 @@ export const Formatbar: React.FC<FormatbarProps> = ({
     }
 
     // Otherwise, use fontSizeInput with validation
-    if (fontSizeInput && fontSizeInput.trim() !== "") {
+    if (fontSizeInput && fontSizeInput.trim() !== '') {
       const numValue = parseInt(fontSizeInput);
       if (!isNaN(numValue) && numValue >= 1 && numValue <= 72) {
         const validFontSize = `${numValue}px`;
@@ -295,14 +306,14 @@ export const Formatbar: React.FC<FormatbarProps> = ({
   // Link handlers
   const handleLinkPopoverClose = () => {
     setLinkAnchorEl(null);
-    setLinkUrl("");
+    setLinkUrl('');
   };
 
   const handleAddLink = () => {
     if (linkUrl.trim()) {
       // Add http:// if no protocol specified
       const url =
-        linkUrl.startsWith("http://") || linkUrl.startsWith("https://")
+        linkUrl.startsWith('http://') || linkUrl.startsWith('https://')
           ? linkUrl
           : `https://${linkUrl}`;
       commands.setLink(url);
@@ -326,7 +337,7 @@ export const Formatbar: React.FC<FormatbarProps> = ({
 
   // Helper functions for font size conversion
   const pxToNumber = (pxString: string): number => {
-    return parseInt(pxString.replace("px", "")) || 14;
+    return parseInt(pxString.replace('px', '')) || 14;
   };
 
   const handleUndo = () => {
@@ -350,63 +361,86 @@ export const Formatbar: React.FC<FormatbarProps> = ({
   };
 
   const predefinedColors = [
-    { name: "Black", value: "#000000" },
-    { name: "Dark Gray", value: "#424242" },
-    { name: "Gray", value: "#757575" },
-    { name: "Light Gray", value: "#BDBDBD" },
-    { name: "White", value: "#FFFFFF" },
-    { name: "Brown", value: "#795548" },
-    { name: "Red", value: "#F44336" },
-    { name: "Pink", value: "#E91E63" },
-    { name: "Purple", value: "#9C27B0" },
-    { name: "Deep Purple", value: "#673AB7" },
-    { name: "Indigo", value: "#3F51B5" },
-    { name: "Blue", value: "#2196F3" },
-    { name: "Light Blue", value: "#03A9F4" },
-    { name: "Cyan", value: "#00BCD4" },
-    { name: "Teal", value: "#009688" },
-    { name: "Green", value: "#4CAF50" },
-    { name: "Light Green", value: "#8BC34A" },
-    { name: "Lime", value: "#CDDC39" },
-    { name: "Yellow", value: "#FFEB3B" },
-    { name: "Amber", value: "#FFC107" },
-    { name: "Orange", value: "#FF9800" },
-    { name: "Deep Orange", value: "#FF5722" },
-    { name: "Maroon", value: "#800000" },
-    { name: "Navy", value: "#000080" },
+    { name: 'Black', value: '#000000' },
+    { name: 'Dark Gray', value: '#424242' },
+    { name: 'Gray', value: '#757575' },
+    { name: 'Light Gray', value: '#BDBDBD' },
+    { name: 'White', value: '#FFFFFF' },
+    { name: 'Brown', value: '#795548' },
+    { name: 'Red', value: '#F44336' },
+    { name: 'Pink', value: '#E91E63' },
+    { name: 'Purple', value: '#9C27B0' },
+    { name: 'Deep Purple', value: '#673AB7' },
+    { name: 'Indigo', value: '#3F51B5' },
+    { name: 'Blue', value: '#2196F3' },
+    { name: 'Light Blue', value: '#03A9F4' },
+    { name: 'Cyan', value: '#00BCD4' },
+    { name: 'Teal', value: '#009688' },
+    { name: 'Green', value: '#4CAF50' },
+    { name: 'Light Green', value: '#8BC34A' },
+    { name: 'Lime', value: '#CDDC39' },
+    { name: 'Yellow', value: '#FFEB3B' },
+    { name: 'Amber', value: '#FFC107' },
+    { name: 'Orange', value: '#FF9800' },
+    { name: 'Deep Orange', value: '#FF5722' },
+    { name: 'Maroon', value: '#800000' },
+    { name: 'Navy', value: '#000080' },
   ];
 
   const fontSizeOptionsList = [
-    "2",
-    "4",
-    "6",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-    "14",
-    "16",
-    "18",
-    "20",
-    "22",
-    "24",
-    "26",
-    "28",
-    "36",
-    "48",
-    "72",
+    '2',
+    '4',
+    '6',
+    '8',
+    '9',
+    '10',
+    '11',
+    '12',
+    '14',
+    '16',
+    '18',
+    '20',
+    '22',
+    '24',
+    '26',
+    '28',
+    '36',
+    '48',
+    '72',
+  ];
+
+  const commandsWithFontFamily = {
+    ...commands,
+    setFontFamily: (fontFamily: string) => {
+      console.log('Applying font family:', fontFamily);
+      editor.chain().focus().setFontFamily(fontFamily).run();
+    },
+  };
+
+  const fontFamilies = [
+    'Helvetica',
+    'Verdana',
+    'Tahoma',
+    'Gill Sans',
+    'Garamond',
+    'Courier New',
+    'Lucida Console',
+    'Consolas',
+    'Comic Sans MS',
+    'Brush Script MT',
+    'Impact',
+    'Papyrus',
   ];
 
   return (
-    <Box sx={{ width: "100%", flexGrow: 1, padding: 0, overflow: "visible" }}>
+    <Box sx={{ width: '100%', flexGrow: 1, padding: 0, overflow: 'visible' }}>
       <AppBar
         position="static"
         elevation={0}
         sx={{
-          width: "100%",
+          width: '100%',
           background: theme.palette.background.paper,
-          backdropFilter: "blur(20px)",
+          backdropFilter: 'blur(20px)',
           borderBottom: `1px solid ${theme.palette.divider}`,
           color: theme.palette.text.primary,
         }}
@@ -416,18 +450,18 @@ export const Formatbar: React.FC<FormatbarProps> = ({
             minHeight: 56, // Single height for all devices
             px: 3,
             py: 1,
-            overflow: "visible",
+            overflow: 'visible',
           }}
           variant="dense"
         >
           <Box
             sx={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center", // Center alignment for single row
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center', // Center alignment for single row
               gap: { xs: 1, md: 2 }, // Consistent gaps
-              flexWrap: "wrap", // Traditional wrapping
-              justifyContent: "flex-start",
+              flexWrap: 'wrap', // Traditional wrapping
+              justifyContent: 'flex-start',
             }}
           >
             {/* Text formatting */}
@@ -452,6 +486,34 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                 </ToggleButton>
               </ToggleButtonGroup>
             </Tooltip>
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{
+                ...dividerStyles,
+              }}
+            />
+            {/* Font Family Selector */}
+            <Autocomplete
+              options={fontFamilies}
+              value={fontFamily}
+              onChange={(_, newValue) => {
+                if (newValue) {
+                  console.log('Selected font family:', newValue);
+                  setFontFamily(newValue);
+                  commandsWithFontFamily.setFontFamily(newValue);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Font Family"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              sx={{ width: 200, marginLeft: 2 }}
+            />
             <Divider
               orientation="vertical"
               flexItem
@@ -494,12 +556,12 @@ export const Formatbar: React.FC<FormatbarProps> = ({
               onClose={handleColorPopoverClose}
               disableScrollLock={true}
               anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
+                vertical: 'bottom',
+                horizontal: 'left',
               }}
               transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
+                vertical: 'top',
+                horizontal: 'left',
               }}
             >
               <Box sx={popOverBoxSize}>
@@ -508,13 +570,13 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                 </Typography>
                 <Box
                   sx={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(6, 1fr)",
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(6, 1fr)',
                     gap: 0.5,
                     mb: 2,
-                    overflow: "hidden",
-                    width: "100%", // Use full container width
-                    justifyItems: "center", // Center items in grid cells
+                    overflow: 'hidden',
+                    width: '100%', // Use full container width
+                    justifyItems: 'center', // Center items in grid cells
                   }}
                 >
                   {predefinedColors.map((colorOption) => (
@@ -529,20 +591,20 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                         backgroundColor: colorOption.value,
                         border:
                           color === colorOption.value
-                            ? "2px solid #1976d2"
-                            : "1px solid #ccc",
+                            ? '2px solid #1976d2'
+                            : '1px solid #ccc',
                         borderRadius: 0.5,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         flexGrow: 1,
                         flexShrink: 0, // Prevent shrinking
-                        position: "relative", // Fixed positioning context
-                        "&:hover": {
-                          transform: "scale(1.1)",
+                        position: 'relative', // Fixed positioning context
+                        '&:hover': {
+                          transform: 'scale(1.1)',
                           boxShadow: 1,
-                          overflow: "hidden",
+                          overflow: 'hidden',
                           zIndex: 1, // Ensure hover state stays on top
                         },
                       }}
@@ -558,7 +620,7 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                   value={newColor}
                   onChange={handleColorChange}
                   size="small"
-                  sx={{ width: "100%" }}
+                  sx={{ width: '100%' }}
                 />
               </Box>
             </Popover>
@@ -569,19 +631,19 @@ export const Formatbar: React.FC<FormatbarProps> = ({
               onClose={handleTextPopoverClose}
               disableScrollLock={true}
               anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
+                vertical: 'bottom',
+                horizontal: 'left',
               }}
               transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
+                vertical: 'top',
+                horizontal: 'left',
               }}
             >
               <Box sx={{ ...popOverBoxSize, py: 3 }}>
                 <Typography variant="subtitle2" sx={{ mb: 2 }}>
                   Font Size
                 </Typography>
-                <Box sx={{ px: 0, display: "flex", justifyContent: "left" }}>
+                <Box sx={{ px: 0, display: 'flex', justifyContent: 'left' }}>
                   <Autocomplete
                     value={null} // Don't control the value, let it be free
                     onChange={(_, newValue) => {
@@ -618,14 +680,14 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                           step: 1,
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
+                          if (e.key === 'Enter') {
                             e.preventDefault();
                             handleTextPopoverClose();
                           }
                         }}
                         sx={{
-                          "& input": {
-                            textAlign: "center",
+                          '& input': {
+                            textAlign: 'center',
                           },
                         }}
                       />
@@ -637,9 +699,9 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                   variant="caption"
                   sx={{
                     mt: 2,
-                    color: "text.secondary",
-                    display: "block",
-                    textAlign: "left",
+                    color: 'text.secondary',
+                    display: 'block',
+                    textAlign: 'left',
                   }}
                 >
                   (1-72)
@@ -654,12 +716,12 @@ export const Formatbar: React.FC<FormatbarProps> = ({
               onClose={handleLinkPopoverClose}
               disableScrollLock={true}
               anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
+                vertical: 'bottom',
+                horizontal: 'left',
               }}
               transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
+                vertical: 'top',
+                horizontal: 'left',
               }}
             >
               <Box sx={{ ...popOverBoxSize, py: 3 }}>
@@ -675,7 +737,7 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                   fullWidth
                   size="small"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === 'Enter') {
                       e.preventDefault();
                       handleAddLink();
                     }
@@ -683,12 +745,12 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                   sx={{ mb: 2 }}
                 />
                 <Box
-                  sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}
+                  sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}
                 >
                   <Button size="small" onClick={handleLinkPopoverClose}>
                     Cancel
                   </Button>
-                  {editor.getAttributes("link").href && (
+                  {editor.getAttributes('link').href && (
                     <Button
                       size="small"
                       color="error"
