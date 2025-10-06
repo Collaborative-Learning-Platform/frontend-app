@@ -18,7 +18,6 @@ import { ThemeToggle } from "./Buttons/ThemeToggle";
 import { NotificationsButton } from "./Buttons/NotificationsButton";
 import { useAuth } from "../contexts/Authcontext";
 
-const DRAWER_WIDTH = 280;
 const APPBAR_HEIGHT = 70;
 
 const Layout = () => {
@@ -41,7 +40,7 @@ const Layout = () => {
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
       {/* Modernized AppBar */}
       <AppBar
-        position="absolute"
+        position="fixed"
         elevation={0}
         sx={{
           background: `${alpha(theme.palette.background.paper, 0.8)}`,
@@ -52,13 +51,17 @@ const Layout = () => {
           height: APPBAR_HEIGHT,
         }}
       >
-        <Toolbar sx={{ minHeight: `${APPBAR_HEIGHT}px !important`, px: 3 }}>
+        <Toolbar sx={{ 
+          minHeight: `${APPBAR_HEIGHT}px !important`, 
+          px: { xs: 2, sm: 3 },
+          gap: { xs: 1, sm: 2 } 
+        }}>
           {isMobile && (
             <IconButton
               edge="start"
               onClick={handleDrawerToggle}
               sx={{
-                mr: 2,
+                mr: { xs: 1, sm: 2 },
                 transition: "all 0.2s ease",
                 "&:hover": {
                   backgroundColor: alpha(theme.palette.primary.main, 0.1),
@@ -78,7 +81,8 @@ const Layout = () => {
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              fontSize: "1.3rem",
+              fontSize: { xs: "1.1rem", sm: "1.3rem" },
+              display: { xs: isMobile && mobileOpen ? "none" : "block", sm: "block" },
             }}
           >
             Learni
@@ -87,17 +91,33 @@ const Layout = () => {
           <Box sx={{ flexGrow: 1 }} />
 
           {/*  header actions */}
-          <Stack direction="row" spacing={1} alignItems="center">
-            <IconButton color="inherit" onClick={handleLogout}>
+          <Stack 
+            direction="row" 
+            spacing={{ xs: 0.5, sm: 1 }} 
+            alignItems="center"
+            sx={{ minWidth: 0 }} // Allow shrinking
+          >
+            <IconButton 
+              color="inherit" 
+              onClick={handleLogout}
+              size={isMobile ? "small" : "medium"}
+            >
               <LogoutIcon fontSize="small" />
             </IconButton>
-            <NotificationsButton size="small" badgeContent={3} />
+            <NotificationsButton 
+              size="small" 
+              badgeContent={3} 
+            />
             <ThemeToggle />
           </Stack>
         </Toolbar>
       </AppBar>
 
-      <Sidebar />
+      <Sidebar 
+        mobileOpen={mobileOpen} 
+        onToggle={handleDrawerToggle} 
+        isMobile={isMobile}
+      />
 
       {/* Enhanced Main Content */}
       <Box
@@ -106,25 +126,23 @@ const Layout = () => {
           flexGrow: 1,
           minHeight: "100vh",
           backgroundColor: theme.palette.background.default,
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          transition: theme.transitions.create(["margin", "width"], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
           display: "flex",
           flexDirection: "column",
+          overflowX: "hidden",
+          width: "100%",
         }}
       >
         <Toolbar sx={{ minHeight: `${APPBAR_HEIGHT}px !important` }} />
         <Box
           sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            // maxWidth: { xs: "100%", md: "1400px" }, // Full width on mobile, max width on desktop
-            // mx: { xs: 0, md: "auto" }, // No centering on mobile, auto-center on desktop
-            // width: "100%", // Ensure full width utilization
-            flexGrow: 1, // Allow content to grow and fill available space
+            p: { xs: 1, sm: 2, md: 3, lg: 4 },
+            width: "100%",
+            maxWidth: "100%",
+            flexGrow: 1,
             display: "flex",
             flexDirection: "column",
+            overflowX: "hidden", // Prevent horizontal overflow
+            minHeight: 0, // Allow content to shrink
           }}
         >
           <Outlet />
