@@ -17,7 +17,7 @@ import { UserDocuments } from "./pages/UserDocuments";
 import { AdminOverview } from "./components/AdminDashboard/AdminOverview";
 import { SystemSettings } from "./components/AdminDashboard/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
-import { Whiteboard } from "./pages/Whiteboard";
+import WhiteboardPage from "./pages/Whiteboard";
 // import { DocumentEditor } from "./pages/DocumentEditor";
 import { FlashCardGenerator } from "./pages/FlashCardGenerator";
 import { FlashCardLibrary } from "./pages/FlashCardLibrary";
@@ -102,7 +102,10 @@ function App() {
             <Route path="admin-dashboard" element={<AdminOverview />} />
             <Route path="admin-users" element={<UserManagement />} />
             <Route path="admin-workspaces" element={<WorkspaceManagement />} />
-            <Route path="admin-workspaces/manage/:workspaceId" element={<WorkspaceManagementPage />} />
+            <Route
+              path="admin-workspaces/manage/:workspaceId"
+              element={<WorkspaceManagementPage />}
+            />
             <Route path="admin-analytics" element={<AnalyticsDashboard />} />
             <Route path="admin-settings" element={<SystemSettings />} />
           </Route>
@@ -110,7 +113,7 @@ function App() {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["user", "tutor"]} />}>
-        <Route path="/whiteboard" element={<Whiteboard />} />
+        <Route path="/whiteboard/:roomId" element={<WhiteboardPage />} />
         <Route path="/document-editor/:room" element={<EditorApp />} />
       </Route>
 
