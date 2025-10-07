@@ -12,6 +12,12 @@ import {
   useMediaQuery,
   Avatar,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -49,6 +55,9 @@ export default function GroupsPanel({
   const [newGroup, setNewGroup] = useState({ name: "", description: "" });
   const [openAddMembers, setOpenAddMembers] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const theme = useTheme();
   useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -81,16 +90,32 @@ export default function GroupsPanel({
     setOpenAddMembers(true);
   }
 
+  const handleDeleteClick = (groupId: string, groupName: string) => {
+    setGroupToDelete({ id: groupId, name: groupName });
+    setDeleteConfirmOpen(true);
+  };
 
-
-  const handleDeleteGroup = async (groupId: string) => {
+  const handleDeleteConfirm = async () => {
+    if (!groupToDelete) return;
+    
+    setIsDeleting(true);
     try {
-      await axiosInstance.delete(`/groups/${groupId}`);
-      setGroups((prev) => prev.filter((g) => g.groupId !== groupId));
+      await axiosInstance.delete(`workspace/groups/${groupToDelete.id}/delete`);
+      setGroups((prev) => prev.filter((g) => g.groupId !== groupToDelete.id));
       setSuccess("Group deleted successfully");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Failed to delete group");
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirmOpen(false);
+      setGroupToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    if (isDeleting) return; 
+    setDeleteConfirmOpen(false);
+    setGroupToDelete(null);
   };
 
   const mainGroups = groups.filter((group) => group.type === "Main");
@@ -384,7 +409,7 @@ export default function GroupsPanel({
                     </Typography>
                     <IconButton
                       size="small"
-                      onClick={() => handleDeleteGroup(group.groupId)}
+                      onClick={() => handleDeleteClick(group.groupId, group.name)}
                       sx={{
                         color: theme.palette.error.main,
                         "&:hover": {
@@ -520,7 +545,7 @@ export default function GroupsPanel({
                     </Typography>
                     <IconButton
                       size="small"
-                      onClick={() => handleDeleteGroup(group.groupId)}
+                      onClick={() => handleDeleteClick(group.groupId, group.name)}
                       sx={{
                         color: theme.palette.error.main,
                         "&:hover": {
@@ -546,6 +571,84 @@ export default function GroupsPanel({
           setSuccess={setSuccess}
           setError={setError}
         />
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleDeleteCancel}
+        disableEscapeKeyDown={isDeleting}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: `0 8px 40px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.15)'}`,
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          pb: 1,
+          fontWeight: 600,
+          fontSize: '1.25rem'
+        }}>
+          Confirm Group Deletion
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ 
+            color: theme.palette.text.primary,
+            fontSize: '1rem',
+            lineHeight: 1.6
+          }}>
+            Are you sure you want to delete the group <strong>"{groupToDelete?.name}"</strong>?
+            <br />
+            <br />
+            This action cannot be undone. All group data, including members, discussions, and shared resources will be permanently removed.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 2 }}>
+          <Button 
+            onClick={handleDeleteCancel}
+            variant="outlined"
+            disabled={isDeleting}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 500,
+              minWidth: 100
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+            startIcon={isDeleting ? <CircularProgress size={16} color="inherit" /> : null}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 500,
+              minWidth: 120,
+              background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+              boxShadow: `0 4px 15px ${theme.palette.error.main}40`,
+              '&:hover': {
+                background: `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`,
+                boxShadow: `0 6px 20px ${theme.palette.error.main}60`,
+                transform: 'translateY(-1px)',
+              },
+              '&:disabled': {
+                background: theme.palette.action.disabledBackground,
+                color: theme.palette.action.disabled,
+                boxShadow: 'none',
+                transform: 'none',
+              }
+            }}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Group'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
     
   );

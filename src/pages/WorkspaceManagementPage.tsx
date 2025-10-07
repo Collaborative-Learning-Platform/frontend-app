@@ -82,6 +82,10 @@ export default function WorkspaceManagementPage() {
           
         }
       } catch (err: any) {
+        if(err?.response?.data?.message === "Failed to fetch user details from Auth Service"){
+          setError("Failed to load users: Auth Service is unreachable");
+          return;
+        }
         setError(err?.response?.data?.message || "Failed to load workspace");
       }
     };
