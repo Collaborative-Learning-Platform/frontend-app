@@ -122,7 +122,7 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
       }
       br {
         content: "\\A";
-        white-space: pre;
+        white-space: pre-line;
       }
     </style>
     ${html}
