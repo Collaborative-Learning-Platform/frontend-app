@@ -102,8 +102,8 @@ const GroupPage = () => {
     setTabIndex(newValue);
   };
 
-  const handleNavigateToWhiteboard = () => navigate(`/whiteboard`);
-  const handleNavigateToEditor = () => navigate(`/document-editor`);
+  const handleNavigateToWhiteboard = () => navigate(`/whiteboard/${groupId}`);
+  const handleNavigateToEditor = () => navigate(`/document-editor/${groupId}`);
   const handleAddUsers = () => setAddMembersOpen(true);
 
 
