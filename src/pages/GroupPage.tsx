@@ -35,7 +35,7 @@ interface GroupData {
 
 const GroupPage = () => {
   const { workspaceId, groupId } = useParams<{ workspaceId: string; groupId: string }>();
-  const { name } = useAuth();
+  const { name,user_id } = useAuth();
   const [workspaceName, setWorkspaceName] = useState<string>('');
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState<GroupData | null>(null);
@@ -198,6 +198,7 @@ const GroupPage = () => {
             <GroupChat
               groupId={groupId || ''}
               currentUserName={name || 'Anonymous'}
+              currentUserId={user_id || ''}
             />
           )}
         </Box>

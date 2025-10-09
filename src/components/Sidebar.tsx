@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Drawer,
@@ -13,6 +13,7 @@ import {
   useTheme,
   alpha,
   useMediaQuery,
+  Avatar,
 } from "@mui/material";
 import {
   Dashboard,
@@ -25,12 +26,12 @@ import {
   Tune,
 } from "@mui/icons-material";
 import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/Authcontext";
+import axiosInstance from "../api/axiosInstance";
 
 const drawerWidth = 280;
 
@@ -142,13 +143,6 @@ const navConfig: NavItem[] = [
     roles: ["admin"],
     section: "bottom",
   },
-  {
-    text: "User Profile",
-    icon: <AccountCircleIcon />,
-    path: "/user-profile",
-    roles: ["user", "tutor", "admin"],
-    section: "bottom",
-  },
 ];
 
 function resolveNavItems(
@@ -178,11 +172,33 @@ interface SidebarProps {
 
 export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobileProp }: SidebarProps) {
   const theme = useTheme();
-  const { role } = useAuth();
+  const { role, user_id, name } = useAuth();
+  const [s3ProfilePictureDownloadUrl, setS3ProfilePictureDownloadURL] = useState<string | null>(null);
   const isMobileDefault = useMediaQuery(theme.breakpoints.down("md"));
   const isMobile = isMobileProp !== undefined ? isMobileProp : isMobileDefault;
   const navigate = useNavigate();
   const location = useLocation();
+
+  const fetchProfilePicture = async () => {
+    if (!user_id) return;
+    
+    try {
+      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url', { userId: user_id });
+      if (response.data?.downloadUrl) {
+        setS3ProfilePictureDownloadURL(response.data.downloadUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);
+      // Don't set error state, just keep the default avatar
+    }
+  };
+
+  // Fetch profile picture when user_id changes
+  useEffect(() => {
+    if (user_id) {
+      fetchProfilePicture();
+    }
+  }, [user_id]);
 
   // Fallback state for when component is used standalone
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
@@ -364,6 +380,61 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
             );
           })}
         </List>
+
+        {/* User Profile Section */}
+        <Box
+          sx={{
+            px: 2,
+            py: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            cursor: "pointer",
+            "&:hover": {
+              bgcolor: alpha(theme.palette.action.hover, 0.04),
+            },
+            borderRadius: 2,
+            mx: 2,
+            mt: 1,
+          }}
+          onClick={() => navigate("/user-profile")}
+        >
+          <Avatar
+            src={s3ProfilePictureDownloadUrl || undefined}
+            sx={{
+              width: 36,
+              height: 36,
+              bgcolor: theme.palette.primary.main,
+              fontSize: "0.9rem",
+              fontWeight: 600,
+            }}
+          >
+            {name ? name.charAt(0).toUpperCase() : "U"}
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: "text.primary",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {name || "User"}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                textTransform: "capitalize",
+              }}
+            >
+              {role === "user" ? "Student" : role || "Member"}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

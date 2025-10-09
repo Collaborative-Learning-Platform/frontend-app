@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Box,
   Container,
@@ -44,12 +44,15 @@ interface ProfileData {
 export default function ProfilePage() {
   const auth = useAuth();
   const { showSnackbar } = useSnackbar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     email: "",
     role: "",
     profile_picture: "",
   });
+
+
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [privacySettings, setPrivacySettings] = useState({
     profileVisibility: true,
@@ -64,6 +67,93 @@ export default function ProfilePage() {
   const [open2FADialog, setOpen2FADialog] = useState(false);
   const [loadingProfileData, setLoadingProfileData] = useState(true);
   const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
+
+  const handleProfilePictureUpload = () => {
+    if (!auth?.user_id) {
+      showSnackbar("User ID not available", "error");
+      return;
+    }
+
+    // Trigger the hidden file input
+    fileInputRef.current?.click();
+  };
+
+  const setS3DownloadURL = async () => {
+        const response = await axiosInstance.post('/storage/generate-profile-pic-download-url',{userId: auth.user_id})
+        console.log("Generated profile pic download URL", response.data);
+        setProfileData({...profileData, profile_picture: response.data.downloadUrl});
+
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showSnackbar("Please select an image file", "error");
+      return;
+    }
+
+    // Validate file size 
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      showSnackbar("File size must be less than 5MB", "error");
+      return;
+    }
+
+    setUploadingProfilePicture(true);
+
+    try {
+      // Generate upload URL
+      const uploadUrlResponse = await axiosInstance.post('/storage/generate-profile-pic-upload-url', {
+        userId: auth.user_id,
+        fileName: file.name,
+        contentType: file.type
+      });
+
+      if (uploadUrlResponse.data.success) {
+        const { uploadUrl } = uploadUrlResponse.data;
+
+        // Upload file to the generated URL
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+          },
+        });
+
+        if (uploadResponse.ok) {
+          
+            showSnackbar("Profile picture updated successfully!", "success");
+            await fetchProfileData(); 
+            await setS3DownloadURL();
+            
+          
+        } else {
+          showSnackbar("Failed to upload image", "error");
+        }
+      } else {
+        showSnackbar("Failed to generate upload URL", "error");
+      }
+    } catch (error: any) {
+      console.error("Error uploading profile picture:", error);
+      if (error.response?.data?.message) {
+        showSnackbar(error.response.data.message, "error");
+      } else {
+        showSnackbar("Failed to upload profile picture", "error");
+      }
+    } finally {
+      setUploadingProfilePicture(false);
+      // Reset the input value to allow selecting the same file again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const fetchProfileData = async () => {
     try {
@@ -72,11 +162,13 @@ export default function ProfilePage() {
       if (res.data.success) {
         console.log("Fetched profile info", res.data);
         setProfileData({
-          name: res.data.user.name,
-          email: res.data.user.email,
-          role: res.data.user.role,
-          profile_picture: res.data.user.profile_picture,
+          name: res.data.user.name || "",
+          email: res.data.user.email || "",
+          role: res.data.user.role || "",
         });
+        setS3DownloadURL();
+      } else {
+        console.error("API response not successful:", res.data);
       }
     } catch (error) {
       console.error("Error fetching profile data:", error);
@@ -94,6 +186,22 @@ export default function ProfilePage() {
       setLoadingProfileData(false);
     }
   }, [auth?.user_id]);
+
+  // // Update profile data when auth context data changes
+  // useEffect(() => {
+  //   if (auth && !auth.loading) {
+  //     console.log("Auth context data:", { name: auth.name, email: auth.email, role: auth.role });
+  //     // Use auth context as fallback if profile data is empty
+  //     if (auth.name && auth.email && auth.role) {
+  //       setProfileData(prevData => ({
+  //         ...prevData,
+  //         name: prevData.name || auth.name || "",
+  //         email: prevData.email || auth.email || "",
+  //         role: prevData.role || auth.role || "",
+  //       }));
+  //     }
+  //   }
+  // }, [auth?.name, auth?.email, auth?.role, auth?.loading]);
 
   const handleUpdateProfile = async () => {
     if (!auth?.user_id) {
@@ -145,6 +253,15 @@ export default function ProfilePage() {
 
   return (
     <Box>
+      {/* Hidden file input for profile picture upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+      
       <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
         <Container>
           <Box sx={{ mb: 4 }}>
@@ -266,13 +383,12 @@ export default function ProfilePage() {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() =>
-                          showSnackbar("Profile picture updated!", "success")
-                        }
+                        onClick={handleProfilePictureUpload}
+                        disabled={uploadingProfilePicture}
                         sx={{ mt: 1 }}
                       >
                         <Camera sx={{ mr: 0.75, fontSize: 16 }} />
-                        Change Picture
+                        {uploadingProfilePicture ? "Uploading..." : "Change Picture"}
                       </Button>
                     </Box>
                   </Box>
@@ -286,7 +402,7 @@ export default function ProfilePage() {
                   >
                     <TextField
                       label="Name"
-                      defaultValue={profileData.name || ""}
+                      defaultValue={profileData.name || auth?.name || ""}
                       onChange={(e) =>
                         setProfileData({ ...profileData, name: e.target.value })
                       }
@@ -296,7 +412,7 @@ export default function ProfilePage() {
                       disabled
                       label="Email Address"
                       type="email"
-                      value={profileData.email || ""}
+                      value={profileData.email || auth?.email || ""}
                       InputLabelProps={{
                         shrink: true,
                       }}
@@ -305,7 +421,7 @@ export default function ProfilePage() {
                     <TextField
                       disabled
                       label="Role"
-                      value={profileData.role || ""}
+                      value={profileData.role || auth?.role || ""}
                       InputLabelProps={{
                         shrink: true,
                       }}

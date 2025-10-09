@@ -1,12 +1,23 @@
 import { Box, Typography, Card, Avatar, AvatarGroup, Chip, Button } from '@mui/material';
 import { Group, AccessTime, PersonAdd } from '@mui/icons-material';
+import { useEffect, useState } from 'react';
+import axiosInstance from '../../api/axiosInstance';
+
+interface GroupMember {
+  userId: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+  s3Avatar?: string;
+}
 
 interface GroupData {
   id: string;
   name: string;
   description: string;
   memberCount: number;
-  members: Array<{ userId: string; name: string; email: string; role: string; avatar: string }>;
+  members: Array<GroupMember>;
   recentActivity: string;
   type?: "Main" | "Custom";
 }
@@ -17,6 +28,40 @@ interface GroupHeaderProps {
 }
 
 const GroupHeader = ({ groupData, onAddUsers }: GroupHeaderProps) => {
+  const [membersWithS3Avatars, setMembersWithS3Avatars] = useState<GroupMember[]>([]);
+
+  const setS3DownloadURL = async (userId: string) => {
+    try {
+      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url', { userId });
+      if (response.data.success) {
+        return response.data.downloadUrl;
+      }
+    } catch (error) {
+      console.error('Error fetching S3 profile picture:', error);
+    }
+    return null;
+  };
+
+  // Fetch S3 profile pictures for all members
+  useEffect(() => {
+    const fetchMemberAvatars = async () => {
+      const updatedMembers = [...groupData.members];
+      
+      for (const member of updatedMembers) {
+        const s3Avatar = await setS3DownloadURL(member.userId);
+        if (s3Avatar) {
+          member.s3Avatar = s3Avatar;
+        }
+      }
+      
+      setMembersWithS3Avatars(updatedMembers);
+    };
+
+    if (groupData.members && groupData.members.length > 0) {
+      fetchMemberAvatars();
+    }
+  }, [groupData.members]);
+
   return (
     <Card sx={{ 
       p: { xs: 2, sm: 3 }, 
@@ -92,8 +137,12 @@ const GroupHeader = ({ groupData, onAddUsers }: GroupHeaderProps) => {
                   } 
                 }}
               >
-                {groupData.members.map((member) => (
-                  <Avatar src={member.avatar} key={member.userId} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                {(membersWithS3Avatars.length > 0 ? membersWithS3Avatars : groupData.members).map((member) => (
+                  <Avatar 
+                    src={member.s3Avatar || member.avatar} 
+                    key={member.userId} 
+                    sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}
+                  >
                     {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                   </Avatar>
                 ))}
