@@ -109,7 +109,6 @@ export function UserManagement() {
 
   const setS3DownloadURL = async (user: User) => {
         const response = await axiosInstance.post('/storage/generate-profile-pic-download-url',{userId: user.id})
-        console.log("Generated profile pic download URL", response.data);
         user.avatar = response.data.downloadUrl;
   }
 
