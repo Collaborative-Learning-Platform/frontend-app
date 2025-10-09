@@ -24,18 +24,19 @@ interface Message {
 interface GroupChatProps {
   groupId: string
   currentUserName: string
+  currentUserId: string
 }
 
 let socket: Socket 
 
-const GroupChat = ({ groupId, currentUserName }: GroupChatProps) => {
+const GroupChat = ({ groupId, currentUserName, currentUserId }: GroupChatProps) => {
   const theme = useTheme()
   const [messages, setMessages] = useState<Message[]>([])
   const [message, setMessage] = useState("")
   const [otherUserTyping, setOtherUserTyping] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<number | null>(null)
-
+  console.log(currentUserId)
   useEffect(() => {
   
   socket = io(import.meta.env.VITE_BASEURL)
