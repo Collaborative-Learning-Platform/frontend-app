@@ -57,7 +57,10 @@ function App() {
       <Route element={<Layout />}>
         <Route element={<ProtectedRoute allowedRoles={['tutor']} />}>
           <Route path="/quiz" element={<CreateQuizPage />} />
+          <Route path="/tutor-analytics" element={<TutorAnalytics />} />
         </Route>
+        
+        
         {/* All authenticated users */}
         <Route
           element={<ProtectedRoute allowedRoles={['user', 'admin', 'tutor']} />}
@@ -79,11 +82,10 @@ function App() {
           <Route element={<UserDashboard />}>
             <Route path="/user-dashboard" element={<UserOverview />} />
             <Route path="/tutor-dashboard" element={<TutorOverview />} />
-            <Route path="/study-plans" element={<UserStudyPlan />} />
             <Route path="/analytics" element={<UserAnalytics />} />
           </Route>
+          <Route path="/study-plans" element={<UserStudyPlan />} />
           <Route path="/user-workspaces" element={<UserWorkspaces />} />
-          <Route path="/tutor-analytics" element={<TutorAnalytics />} />
           <Route path="/quiz/attempt/:quizId" element={<QuizAttempt />} />
           <Route path="/user-documents" element={<UserDocuments />} />
           <Route element={<FlashCardLayout />}>

@@ -32,6 +32,21 @@ interface TabPanelProps {
   index: number;
   value: number;
 }
+
+
+interface User{
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  joinDate?: string;
+  avatar?: string;
+  
+}
+
+
+
+
 function TabPanel({ children, value, index, ...other }: TabPanelProps) {
   return (
     <div
@@ -49,7 +64,7 @@ function TabPanel({ children, value, index, ...other }: TabPanelProps) {
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState(0);
-  const [users, setUsers] = useState<Array<any>>([]);
+  const [users, setUsers] = useState<Array<User>>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -69,9 +84,16 @@ export function UserManagement() {
     try {
       setLoading(true);
       const res = await axiosInstance.get("/auth/users");
+      console.log("API Response:", res.data);
       if (res.data.success) {
         setUsers(res.data.users);
-        console.log("Fetched users:", res.data.users);
+        // Fetch profile pictures for each user
+        for (const user of res.data.users) {
+          await setS3DownloadURL(user);
+        }
+
+      } else {
+        console.error("API request failed:", res.data.message);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -84,44 +106,72 @@ export function UserManagement() {
     fetchUsers();
   }, []);
 
+
+  const setS3DownloadURL = async (user: User) => {
+        const response = await axiosInstance.post('/storage/generate-profile-pic-download-url',{userId: user.id})
+        user.avatar = response.data.downloadUrl;
+  }
+
+
+
   // Filter users based on tab & search
   const filteredUsers = users.filter((user) => {
     const term = searchTerm.toLowerCase();
     const matchesSearch =
-      user.name.toLowerCase().includes(term) ||
-      user.email.toLowerCase().includes(term);
+      user.name?.toLowerCase().includes(term) ||
+      user.email?.toLowerCase().includes(term);
 
     if (!matchesSearch) return false;
 
     switch (activeTab) {
       case 1:
-        return user.role.toLowerCase() === "student";
+        const isStudent = user.role?.toLowerCase() === "user";
+        return isStudent;
       case 2:
-        return user.role.toLowerCase() === "tutor";
+        const isTutor = user.role?.toLowerCase() === "tutor";
+        return isTutor;
       case 3:
-        return user.role.toLowerCase() === "admin";
+        const isAdmin = user.role?.toLowerCase() === "admin";
+        return isAdmin;
       default:
         return true;
     }
   });
 
+
+
   const getRoleIcon = (role: string) => {
-    switch (role.toLowerCase()) {
+    switch (role?.toLowerCase()) {
       case "admin":
         return <ShieldIcon sx={{ fontSize: 16 }} />;
       case "tutor":
         return <GraduationCapIcon sx={{ fontSize: 16 }} />;
+      case "user":
+        return <MailIcon sx={{ fontSize: 16 }} />;
       default:
         return <MailIcon sx={{ fontSize: 16 }} />;
     }
   };
 
+  const getDisplayRole = (role: string) => {
+    if (role?.toLowerCase() === "user") {
+      return "Student";
+    }
+    // Capitalize first letter for other roles
+    if (role) {
+      return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+    }
+    return "Unknown";
+  };
+
   const getRoleColor = (role: string) => {
-    switch (role.toLowerCase()) {
+    switch (role?.toLowerCase()) {
       case "admin":
         return "error";
       case "tutor":
         return "primary";
+      case "user":
+        return "success";
       default:
         return "default";
     }
@@ -228,10 +278,12 @@ export function UserManagement() {
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                           <Avatar src={user.avatar} sx={{ bgcolor: "primary.main", color: "white" }}>
                             {user.name
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")
-                              .toUpperCase()}
+                              ? user.name
+                                  .split(" ")
+                                  .map((n: string) => n[0])
+                                  .join("")
+                                  .toUpperCase()
+                              : "U"}
                           </Avatar>
                           <Box>
                             <Box
@@ -247,7 +299,7 @@ export function UserManagement() {
                               </Typography>
                               <Chip
                                 icon={getRoleIcon(user.role)}
-                                label={user.role}
+                                label={getDisplayRole(user.role)}
                                 size="small"
                                 color={getRoleColor(user.role)}
                                 variant="outlined"
@@ -260,23 +312,11 @@ export function UserManagement() {
                               <Typography variant="caption" color="text.secondary">
                                 Joined: {user.joinDate}
                               </Typography>
-                              {user.workspaces && (
-                                <Typography variant="caption" color="text.secondary">
-                                  Workspaces: {user.workspaces}
-                                </Typography>
-                              )}
                             </Box>
                           </Box>
                         </Box>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Chip
-                            label={user.status || "Active"}
-                            size="small"
-                            color={
-                              user.status === "Active" ? "primary" : "default"
-                            }
-                            variant={user.status === "Active" ? "filled" : "outlined"}
-                          />
+
                           <IconButton size="small">
                             <MoreHorizontalIcon />
                           </IconButton>
@@ -296,10 +336,10 @@ export function UserManagement() {
             <CardHeader
               title={
                 tabIndex === 1
-                  ? "Students"
+                  ? `Students (${filteredUsers.filter((u) => u.role?.toLowerCase() === "user").length})`
                   : tabIndex === 2
-                  ? "Tutors"
-                  : "Administrators"
+                  ? `Tutors (${filteredUsers.filter((u) => u.role?.toLowerCase() === "tutor").length})`
+                  : `Administrators (${filteredUsers.filter((u) => u.role?.toLowerCase() === "admin").length})`
               }
               subheader={
                 tabIndex === 1
@@ -310,16 +350,102 @@ export function UserManagement() {
               }
             />
             <CardContent>
-              <Typography variant="body2" color="text.secondary">
-                {filteredUsers.filter((u) => {
-                  if (tabIndex === 1) return u.role.toLowerCase() === "student";
-                  if (tabIndex === 2) return u.role.toLowerCase() === "tutor";
-                  if (tabIndex === 3) return u.role.toLowerCase() === "admin";
-                  return false;
-                }).length
-                  ? "User list shown above."
-                  : "No users found for this role."}
-              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {loading
+                  ? Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton
+                        key={i}
+                        variant="rectangular"
+                        height={72}
+                        sx={{ borderRadius: 2 }}
+                      />
+                    ))
+                  : filteredUsers.filter((u) => {
+                      if (tabIndex === 1) return u.role?.toLowerCase() === "user";
+                      if (tabIndex === 2) return u.role?.toLowerCase() === "tutor";
+                      if (tabIndex === 3) return u.role?.toLowerCase() === "admin";
+                      return false;
+                    }).length > 0
+                    ? filteredUsers.filter((u) => {
+                        if (tabIndex === 1) return u.role?.toLowerCase() === "user";
+                        if (tabIndex === 2) return u.role?.toLowerCase() === "tutor";
+                        if (tabIndex === 3) return u.role?.toLowerCase() === "admin";
+                        return false;
+                      }).map((user) => (
+                        <Paper
+                          key={user.id}
+                          sx={{
+                            p: 2,
+                            border: 1,
+                            borderColor: "divider",
+                            borderRadius: 2,
+                            transition: "all 0.2s",
+                            "&:hover": { boxShadow: 3 },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                              <Avatar src={user.avatar} sx={{ bgcolor: "primary.main", color: "white" }}>
+                                {user.name
+                                  ? user.name
+                                      .split(" ")
+                                      .map((n: string) => n[0])
+                                      .join("")
+                                      .toUpperCase()
+                                  : "U"}
+                              </Avatar>
+                              <Box>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                    mb: 0.5,
+                                  }}
+                                >
+                                  <Typography variant="body1" fontWeight="medium">
+                                    {user.name || "Unknown User"}
+                                  </Typography>
+                                  <Chip
+                                    icon={getRoleIcon(user.role)}
+                                    label={getDisplayRole(user.role)}
+                                    size="small"
+                                    color={getRoleColor(user.role)}
+                                    variant="outlined"
+                                  />
+                                </Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  {user.email || "No email provided"}
+                                </Typography>
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                                  <Typography variant="caption" color="text.secondary">
+                                    Joined: {user.joinDate || "N/A"}
+                                  </Typography>
+                                  
+                                </Box>
+                              </Box>
+                            </Box>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+                              <IconButton size="small">
+                                <MoreHorizontalIcon />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        </Paper>
+                      ))
+                    : (
+                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 4 }}>
+                        No users found for this role.
+                      </Typography>
+                    )}
+              </Box>
             </CardContent>
           </Card>
         </TabPanel>

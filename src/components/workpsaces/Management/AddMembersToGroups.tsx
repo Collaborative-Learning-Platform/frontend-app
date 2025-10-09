@@ -70,6 +70,17 @@ export default function AddMembersDialog({
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const setS3ProfilePictureDownloadURL = async (userId: string) => {
+    try {
+      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url',{userId: userId})
+      console.log("Generated profile pic download URL", response.data);
+      return response.data.downloadUrl;
+    } catch (error) {
+      console.error("Error generating profile pic download URL", error);
+      return null;
+    }
+  }
+
   const fetchWorkspaceUsers = async () => {
     if (!workspaceId) return;
     setLoading(true);
@@ -84,6 +95,15 @@ export default function AddMembersDialog({
           role: wu.role,
           avatar: wu.user.avatar || "",
         }));
+        
+        // Fetch S3 profile pictures for each user
+        for (const user of extractedUsers) {
+          const s3Url = await setS3ProfilePictureDownloadURL(user.userId);
+          if (s3Url) {
+            user.avatar = s3Url;
+          }
+        }
+        
         setWorkspaceUsers(extractedUsers);
       } else {
         setError(res.data.message || "Failed to load users");
@@ -345,6 +365,7 @@ export default function AddMembersDialog({
                             transition: "all 0.2s ease-in-out",
                           }}
                         >
+                          {/* {user.name.charAt(0).toUpperCase()} */}
                           <PersonIcon />
                         </Avatar>
                       </Badge>

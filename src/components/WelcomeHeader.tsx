@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,22 +9,42 @@ import {
   alpha,
 } from "@mui/material";
 import { useAuth } from "../contexts/Authcontext";
-
 const mockUser = {
   name: "user",
   role: "Student",
   studyStreak: 7,
 };
+import axiosInstance from "../api/axiosInstance";
+
 
 export default function WelcomeHeader() {
-  const { name, role } = useAuth();
+  const { name, role ,user_id} = useAuth();
   const theme = useTheme();
+  const [profilePictureURL,setProfilePictureURL] = useState<string|null>(null);
   const userRole = role === "user" ? "Student" : role;
   const user = {
     ...mockUser,
     name: name || mockUser.name,
     role: userRole || mockUser.role,
   };
+
+  const setS3ProfilePictureDownloadURL = async (userId: string) => {
+    try {
+      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url', { userId });
+      if (response.data.success) {
+        setProfilePictureURL(response.data.downloadUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching S3 profile picture:', error);
+    }
+  };
+
+  // Fetch profile picture on component mount
+  useEffect(() => {
+    if(!user_id) return;
+    setS3ProfilePictureDownloadURL(user_id);
+    
+  }, [user_id]);
 
   return (
     <Paper
@@ -46,7 +67,7 @@ export default function WelcomeHeader() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Avatar
+          <Avatar src={profilePictureURL || undefined}
             sx={{
               width: { xs: 48, sm: 56 },
               height: { xs: 48, sm: 56 },

@@ -56,6 +56,42 @@ export default function UsersPanel({ workspaceId, users, setUsers }: Props) {
     if (event.target.files) setSelectedFile(event.target.files[0]);
   };
 
+  const setS3ProfilePictureDownloadURL = async (userId: string) => {
+    try {
+      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url',{userId: userId})
+      return response.data.downloadUrl;
+    } catch (error) {
+      console.error("Error generating profile pic download URL", error);
+      return null;
+    }
+  }
+
+  // Function to load S3 profile pictures for all users
+  const loadUserProfilePictures = async () => {
+    try {
+      const updatedUsers = await Promise.all(
+        users.map(async (user) => {
+          const s3Url = await setS3ProfilePictureDownloadURL(user.userId);
+          return {
+            ...user,
+            avatar: s3Url || user.avatar 
+          };
+        })
+      );
+      setUsers(updatedUsers);
+    } catch (error) {
+      console.error("Error loading profile pictures:", error);
+    }
+  };
+
+  // Load profile pictures when users list changes
+  React.useEffect(() => {
+    if (users.length > 0) {
+      loadUserProfilePictures();
+    }
+  }, [users.length]); // Only trigger when the number of users changes
+
+
   const handleUpload = async () => {
     if (!selectedFile) {
       setErrorMsg("Please select a file to upload.");
@@ -85,9 +121,21 @@ export default function UsersPanel({ workspaceId, users, setUsers }: Props) {
             email: r.email || "",
             role: r.role,
             joinedAt: new Date().toISOString(),
+            avatar: "", 
           }));
 
-        setUsers([...users, ...newlyAddedUsers]);
+        // Load profile pictures for newly added users
+        const usersWithProfilePics = await Promise.all(
+          newlyAddedUsers.map(async (user: User) => {
+            const s3Url = await setS3ProfilePictureDownloadURL(user.userId);
+            return {
+              ...user,
+              avatar: s3Url || user.avatar
+            };
+          })
+        );
+
+        setUsers([...users, ...usersWithProfilePics]);
 
         setSummary({
           total: data.summary.total,

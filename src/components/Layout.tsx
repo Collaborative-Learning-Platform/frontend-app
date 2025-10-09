@@ -24,9 +24,10 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const {clearAuth } = useAuth();
+  const {clearAuth,role } = useAuth();
   const navigate = useNavigate();
-  // Memoized handlers to prevent unnecessary re-renders
+  
+
   const handleDrawerToggle = useCallback(() => {
     setMobileOpen((prev) => !prev);
   }, []);
@@ -38,7 +39,7 @@ const Layout = () => {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      {/* Modernized AppBar */}
+      {/*  AppBar */}
       <AppBar
         position="fixed"
         elevation={0}
@@ -84,6 +85,8 @@ const Layout = () => {
               fontSize: { xs: "1.1rem", sm: "1.3rem" },
               display: { xs: isMobile && mobileOpen ? "none" : "block", sm: "block" },
             }}
+            // component={"button"}
+            onClick={() => navigate(`/${role}-dashboard`)}
           >
             Learni
           </Typography>
@@ -119,7 +122,7 @@ const Layout = () => {
         isMobile={isMobile}
       />
 
-      {/* Enhanced Main Content */}
+      {/*  Main Content */}
       <Box
         component="main"
         sx={{
