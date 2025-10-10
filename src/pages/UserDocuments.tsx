@@ -186,13 +186,19 @@ export const UserDocuments = () => {
       console.log('Document create response:', res);
 
       if (res.data.success) {
-        // Refresh the document list
         await fetchDocuments();
 
         const groupDetails = await axiosInstance.get(
           `workspace/groups/${res.data.data.groupId}/fetchDetails`
         );
         console.log(groupDetails);
+
+        logJoinedDocument(
+          res.data.data.name,
+          res.data.dta.title,
+          res.data.data.createdBy,
+          groupDetails.data.data.groupId
+        );
         console.log('Navigating to:', `/document-editor/${res.data.data.name}`);
         navigate(`/document-editor/${res.data.data.name}`, {
           state: {
@@ -268,6 +274,7 @@ export const UserDocuments = () => {
     doc: DocumentResponse,
     group: GroupWithDocuments
   ) => {
+    logJoinedDocument(doc.name, doc.title, doc.createdBy, group.groupId);
     navigate(`/document-editor/${doc.name}`, {
       state: {
         documentId: doc.documentId,
@@ -298,6 +305,28 @@ export const UserDocuments = () => {
       console.log('Contributor added successfully:', response.data);
     } catch (error) {
       console.error('Error adding contributor:', error);
+    }
+  };
+
+  const logJoinedDocument = async (
+    name: string,
+    title: string,
+    createdBy: string,
+    groupId: string
+  ) => {
+    try {
+      await axiosInstance.post('/analytics/log-activity', {
+        category: 'COLLABORATION',
+        activity_type: 'JOINED_DOCUMENT',
+        metadata: {
+          name,
+          title,
+          createdBy,
+          groupId,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to log joined document activity:', error);
     }
   };
 
