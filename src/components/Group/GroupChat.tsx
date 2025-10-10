@@ -35,7 +35,7 @@ const GroupChat = ({ groupId, currentUserName, currentUserId }: GroupChatProps) 
   const [message, setMessage] = useState("")
   const [otherUserTyping, setOtherUserTyping] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const typingTimeoutRef = useRef<number | null>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   console.log(currentUserId)
   useEffect(() => {
   
