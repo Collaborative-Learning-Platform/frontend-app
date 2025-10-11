@@ -97,9 +97,6 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
     } else {
       return deadlineDate.toLocaleDateString();
     }
-
-    // Navigate to quiz (existing logic)
-    navigate(`/quiz/attempt/${quiz.id}`);
   };
 
   const getQuizStatus = (quiz: QuizItem) => {
