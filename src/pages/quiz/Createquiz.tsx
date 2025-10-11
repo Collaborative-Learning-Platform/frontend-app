@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -26,7 +26,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton as MuiIconButton,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -35,53 +35,35 @@ import {
   AccessTime as AccessTimeIcon,
   Edit as EditIcon,
   Close as CloseIcon,
-} from "@mui/icons-material";
-import QuizAttempt from "./QuizAttempt";
-import axiosInstance from "../../api/axiosInstance";
-import { useAuth } from "../../contexts/Authcontext";
+} from '@mui/icons-material';
+import QuizAttempt from './QuizAttempt';
+import axiosInstance from '../../api/axiosInstance';
+import { useAuth } from '../../contexts/Authcontext';
+import { CreateQuestion, CreateQuiz, Quiz } from './types';
 
-interface Question {
-  id: string;
-  type: "MCQ" | "short_answer" | "true_false";
-  question: string;
-  options?: string[];
-  correctAnswer: string | number;
-  points: number;
-}
-
-interface Quiz {
-  title: string;
-  description: string;
-  group: string;
-  duration: number;
-  dueDate: string;
-  questions: Question[];
-  totalPoints: number;
-}
-
-const INITIAL_QUESTION: Question = {
-  id: "",
-  type: "MCQ",
-  question: "",
-  options: ["", "", "", ""],
+const INITIAL_QUESTION: CreateQuestion = {
+  id: '',
+  type: 'MCQ',
+  question: '',
+  options: ['', '', '', ''],
   correctAnswer: 0,
   points: 1,
 };
 
-const INITIAL_QUIZ: Quiz = {
-  title: "",
-  description: "",
-  group: "",
+const INITIAL_QUIZ: CreateQuiz = {
+  title: '',
+  description: '',
+  group: '',
   duration: 30,
-  dueDate: "",
+  dueDate: '',
   questions: [],
   totalPoints: 0,
 };
 
 const GROUP_OPTIONS = [
-  { value: "math-101-a", label: "Math 101 - Group A" },
-  { value: "math-101-b", label: "Math 101 - Group B" },
-  { value: "advanced-calculus", label: "Advanced Calculus" },
+  { value: 'math-101-a', label: 'Math 101 - Group A' },
+  { value: 'math-101-b', label: 'Math 101 - Group B' },
+  { value: 'advanced-calculus', label: 'Advanced Calculus' },
 ];
 
 // Main Component
@@ -90,21 +72,21 @@ export default function CreateQuizPage() {
   const { user_id } = useAuth();
 
   // State
-  const [quiz, setQuiz] = useState<Quiz>(INITIAL_QUIZ);
+  const [quiz, setQuiz] = useState<CreateQuiz>(INITIAL_QUIZ);
   const [currentQuestion, setCurrentQuestion] =
-    useState<Question>(INITIAL_QUESTION);
+    useState<CreateQuestion>(INITIAL_QUESTION);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
   );
   const [showPreview, setShowPreview] = useState(false);
   const [alert, setAlert] = useState<{
-    type: "error" | "success";
+    type: 'error' | 'success';
     message: string;
   } | null>(null);
 
   // Utility Functions
-  const showAlert = (type: "error" | "success", message: string) => {
+  const showAlert = (type: 'error' | 'success', message: string) => {
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 3000);
   };
@@ -115,7 +97,7 @@ export default function CreateQuizPage() {
     setEditingQuestionId(null);
   };
 
-  const startEditingQuestion = (question: Question) => {
+  const startEditingQuestion = (question: CreateQuestion) => {
     setCurrentQuestion({ ...question });
     setEditingQuestionId(question.id);
     setIsAddingQuestion(false);
@@ -127,38 +109,38 @@ export default function CreateQuizPage() {
   };
 
   // Validation Functions
-  const validateQuestion = (question: Question): string | null => {
+  const validateQuestion = (question: CreateQuestion): string | null => {
     if (!question.question.trim()) {
-      return "Please enter a question";
+      return 'Please enter a question';
     }
 
-    if (question.type === "MCQ") {
+    if (question.type === 'MCQ') {
       const hasEmptyOptions = question.options?.some(
         (option) => !option.trim()
       );
       if (hasEmptyOptions) {
-        return "Please fill in all answer options";
+        return 'Please fill in all answer options';
       }
     }
 
-    if (question.type === "short_answer" && !question.correctAnswer) {
-      return "Please provide a sample answer";
+    if (question.type === 'short_answer' && !question.correctAnswer) {
+      return 'Please provide a sample answer';
     }
 
     return null;
   };
 
-  const validateQuiz = (quiz: Quiz): string | null => {
+  const validateQuiz = (quiz: CreateQuiz): string | null => {
     if (!quiz.title.trim()) {
-      return "Please enter a quiz title";
+      return 'Please enter a quiz title';
     }
 
     if (!quiz.group) {
-      return "Please select a group";
+      return 'Please select a group';
     }
 
     if (quiz.questions.length === 0) {
-      return "Please add at least one question";
+      return 'Please add at least one question';
     }
 
     return null;
@@ -168,7 +150,7 @@ export default function CreateQuizPage() {
   const handleAddQuestion = async () => {
     const validationError = validateQuestion(currentQuestion);
     if (validationError) {
-      showAlert("error", validationError);
+      showAlert('error', validationError);
       return;
     }
 
@@ -190,9 +172,9 @@ export default function CreateQuizPage() {
         totalPoints: prev.totalPoints + pointsDifference,
       }));
 
-      showAlert("success", "Question updated successfully!");
+      showAlert('success', 'Question updated successfully!');
     } else {
-      const newQuestion: Question = {
+      const newQuestion: CreateQuestion = {
         ...currentQuestion,
         id: Date.now().toString(),
       };
@@ -204,7 +186,7 @@ export default function CreateQuizPage() {
       }));
 
       const payload = {
-        quizId: "7e086d26-ac69-4887-b0af-eea1d807be6b",
+        quizId: '7e086d26-ac69-4887-b0af-eea1d807be6b',
         question_no: quiz.questions.length + 1,
         question: {
           text: currentQuestion.question,
@@ -215,12 +197,12 @@ export default function CreateQuizPage() {
       };
 
       const response = await axiosInstance.post(
-        "/quiz/question/create",
+        '/quiz/question/create',
         payload
       );
-      console.log("Response:", response.data);
+      console.log('Response:', response.data);
 
-      showAlert("success", "Question added successfully!");
+      showAlert('success', 'Question added successfully!');
     }
 
     resetCurrentQuestion();
@@ -240,7 +222,7 @@ export default function CreateQuizPage() {
   const handleSaveQuiz = async () => {
     const validationError = validateQuiz(quiz);
     if (validationError) {
-      showAlert("error", validationError);
+      showAlert('error', validationError);
       return;
     }
 
@@ -248,24 +230,49 @@ export default function CreateQuizPage() {
       const payload = {
         title: quiz.title,
         description: quiz.description,
-        groupId: "c662c945-2e9b-4739-bef5-f9a8e2e05bab",
+        groupId: 'c662c945-2e9b-4739-bef5-f9a8e2e05bab',
         createdById: user_id,
         timeLimit: quiz.duration,
         deadline: quiz.dueDate,
       };
-      const response = await axiosInstance.post("/quiz/create", payload);
-      console.log("Response:", response.data);
-      setTimeout(() => navigate("/tutor-dashboard"), 1500);
+      const response = await axiosInstance.post('/quiz/create', payload);
+      console.log('Response:', response.data);
+      setTimeout(() => navigate('/tutor-dashboard'), 1500);
     } catch (error) {
       console.error(error);
     }
+  };
+  // Transform quiz from CreateQuiz format to QuizAttempt format
+  const transformQuizForPreview = (createQuiz: CreateQuiz): Quiz => {
+    return {
+      quizId: 'preview',
+      title: createQuiz.title,
+      description: createQuiz.description,
+      timeLimit: createQuiz.duration,
+      deadline: createQuiz.dueDate,
+      questions: createQuiz.questions.map((q, index) => ({
+        question_no: index + 1,
+        question_type: q.type,
+        question:
+          q.type === 'MCQ'
+            ? {
+                text: q.question,
+                options: q.options || [],
+              }
+            : q.question,
+        correct_answer: q.correctAnswer.toString(),
+        quizId: 'preview',
+        points: q.points,
+      })),
+      totalPoints: createQuiz.totalPoints,
+    };
   };
 
   const handlePreviewQuiz = () => {
     if (quiz.questions.length === 0) {
       showAlert(
-        "error",
-        "Please add at least one question to preview the quiz"
+        'error',
+        'Please add at least one question to preview the quiz'
       );
       return;
     }
@@ -285,9 +292,9 @@ export default function CreateQuizPage() {
       <Box sx={{ mb: 4 }}>
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
             mb: 2,
           }}
         >
@@ -325,16 +332,16 @@ export default function CreateQuizPage() {
           subheader="Configure the basic settings for your quiz"
         />
         <CardContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {/* Basic Information Section */}
             <Box>
               <Typography
                 variant="h6"
-                sx={{ mb: 3, color: "text.secondary", fontWeight: 500 }}
+                sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}
               >
                 Basic Information
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   fullWidth
                   label="Quiz Title"
@@ -365,11 +372,11 @@ export default function CreateQuizPage() {
             <Box>
               <Typography
                 variant="h6"
-                sx={{ mb: 3, color: "text.secondary", fontWeight: 500 }}
+                sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}
               >
                 Assignment & Timing
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <FormControl fullWidth>
                   <InputLabel>Assign to Group</InputLabel>
                   <Select
@@ -389,8 +396,8 @@ export default function CreateQuizPage() {
 
                 <Box
                   sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
                     gap: 3,
                   }}
                 >
@@ -426,11 +433,11 @@ export default function CreateQuizPage() {
             <Box>
               <Typography
                 variant="h6"
-                sx={{ mb: 3, color: "text.secondary", fontWeight: 500 }}
+                sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}
               >
                 Quiz Overview
               </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 <Chip
                   icon={<AccessTimeIcon />}
                   label={`${quiz.duration} minutes`}
@@ -476,11 +483,12 @@ export default function CreateQuizPage() {
               {editingQuestionId === question.id ? (
                 // Edit Mode
                 <Box>
+                  {' '}
                   <Box
                     sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
                       mb: 3,
                     }}
                   >
@@ -491,14 +499,13 @@ export default function CreateQuizPage() {
                       Cancel
                     </Button>
                   </Box>
-
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
                     <Box
                       sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", md: "row" },
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
                         gap: 3,
                       }}
                     >
@@ -510,7 +517,7 @@ export default function CreateQuizPage() {
                           onChange={(e) =>
                             setCurrentQuestion((prev) => ({
                               ...prev,
-                              type: e.target.value as Question["type"],
+                              type: e.target.value as CreateQuestion['type'],
                             }))
                           }
                         >
@@ -551,7 +558,7 @@ export default function CreateQuizPage() {
                     />
 
                     {/* Multiple Choice Options */}
-                    {currentQuestion.type === "MCQ" && (
+                    {currentQuestion.type === 'MCQ' && (
                       <Box>
                         <FormLabel component="legend" sx={{ mb: 2 }}>
                           Answer Options
@@ -567,8 +574,8 @@ export default function CreateQuizPage() {
                         >
                           <Box
                             sx={{
-                              display: "flex",
-                              flexDirection: "column",
+                              display: 'flex',
+                              flexDirection: 'column',
                               gap: 2,
                             }}
                           >
@@ -577,8 +584,8 @@ export default function CreateQuizPage() {
                                 <Box
                                   key={optionIndex}
                                   sx={{
-                                    display: "flex",
-                                    alignItems: "center",
+                                    display: 'flex',
+                                    alignItems: 'center',
                                     gap: 2,
                                   }}
                                 >
@@ -612,7 +619,7 @@ export default function CreateQuizPage() {
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          sx={{ mt: 1, display: "block" }}
+                          sx={{ mt: 1, display: 'block' }}
                         >
                           Select the correct answer by clicking the radio button
                         </Typography>
@@ -620,7 +627,7 @@ export default function CreateQuizPage() {
                     )}
 
                     {/* True/False Options */}
-                    {currentQuestion.type === "true_false" && (
+                    {currentQuestion.type === 'true_false' && (
                       <Box>
                         <FormControl>
                           <FormLabel component="legend">
@@ -651,7 +658,7 @@ export default function CreateQuizPage() {
                     )}
 
                     {/* Short Answer */}
-                    {currentQuestion.type === "short_answer" && (
+                    {currentQuestion.type === 'short_answer' && (
                       <TextField
                         fullWidth
                         label="Sample Answer (for grading reference)"
@@ -680,13 +687,13 @@ export default function CreateQuizPage() {
                 // Display Mode
                 <Box
                   sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
                   }}
                 >
                   <Box sx={{ flex: 1 }}>
-                    <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                       <Chip label={`Question ${index + 1}`} size="small" />
                       <Chip
                         label={question.type}
@@ -704,14 +711,14 @@ export default function CreateQuizPage() {
                     </Typography>
 
                     {/* Multiple Choice Options */}
-                    {question.type === "MCQ" && question.options && (
+                    {question.type === 'MCQ' && question.options && (
                       <Box sx={{ ml: 2 }}>
                         {question.options.map((option, optionIndex) => (
                           <Box
                             key={optionIndex}
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               gap: 1,
                               mb: 1,
                             }}
@@ -720,23 +727,23 @@ export default function CreateQuizPage() {
                               sx={{
                                 width: 8,
                                 height: 8,
-                                borderRadius: "50%",
+                                borderRadius: '50%',
                                 bgcolor:
                                   optionIndex === question.correctAnswer
-                                    ? "success.main"
-                                    : "grey.300",
+                                    ? 'success.main'
+                                    : 'grey.300',
                               }}
                             />
                             <Typography
                               color={
                                 optionIndex === question.correctAnswer
-                                  ? "success.main"
-                                  : "text.primary"
+                                  ? 'success.main'
+                                  : 'text.primary'
                               }
                               fontWeight={
                                 optionIndex === question.correctAnswer
-                                  ? "bold"
-                                  : "normal"
+                                  ? 'bold'
+                                  : 'normal'
                               }
                             >
                               {option}
@@ -747,7 +754,7 @@ export default function CreateQuizPage() {
                     )}
 
                     {/* True/False Answer */}
-                    {question.type === "true_false" && (
+                    {question.type === 'true_false' && (
                       <Typography
                         color="success.main"
                         fontWeight="bold"
@@ -758,7 +765,7 @@ export default function CreateQuizPage() {
                     )}
 
                     {/* Short Answer */}
-                    {question.type === "short_answer" && (
+                    {question.type === 'short_answer' && (
                       <Typography
                         color="success.main"
                         fontWeight="bold"
@@ -768,7 +775,7 @@ export default function CreateQuizPage() {
                       </Typography>
                     )}
                   </Box>
-                  <Box sx={{ display: "flex", gap: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <IconButton
                       color="primary"
                       onClick={() => startEditingQuestion(question)}
@@ -796,16 +803,17 @@ export default function CreateQuizPage() {
             <Paper
               sx={{
                 p: 3,
-                border: "2px dashed",
-                borderColor: "grey.300",
+                border: '2px dashed',
+                borderColor: 'grey.300',
                 mb: 2,
               }}
             >
+              {' '}
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                   mb: 3,
                 }}
               >
@@ -814,12 +822,11 @@ export default function CreateQuizPage() {
                   Cancel
                 </Button>
               </Box>
-
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Box
                   sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
                     gap: 3,
                   }}
                 >
@@ -831,7 +838,7 @@ export default function CreateQuizPage() {
                       onChange={(e) =>
                         setCurrentQuestion((prev) => ({
                           ...prev,
-                          type: e.target.value as Question["type"],
+                          type: e.target.value as CreateQuestion['type'],
                         }))
                       }
                     >
@@ -872,7 +879,7 @@ export default function CreateQuizPage() {
                 />
 
                 {/* Multiple Choice Options */}
-                {currentQuestion.type === "MCQ" && (
+                {currentQuestion.type === 'MCQ' && (
                   <Box>
                     <FormLabel component="legend" sx={{ mb: 2 }}>
                       Answer Options
@@ -888,8 +895,8 @@ export default function CreateQuizPage() {
                     >
                       <Box
                         sx={{
-                          display: "flex",
-                          flexDirection: "column",
+                          display: 'flex',
+                          flexDirection: 'column',
                           gap: 2,
                         }}
                       >
@@ -897,8 +904,8 @@ export default function CreateQuizPage() {
                           <Box
                             key={index}
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               gap: 2,
                             }}
                           >
@@ -931,7 +938,7 @@ export default function CreateQuizPage() {
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ mt: 1, display: "block" }}
+                      sx={{ mt: 1, display: 'block' }}
                     >
                       Select the correct answer by clicking the radio button
                     </Typography>
@@ -939,7 +946,7 @@ export default function CreateQuizPage() {
                 )}
 
                 {/* True/False Options */}
-                {currentQuestion.type === "true_false" && (
+                {currentQuestion.type === 'true_false' && (
                   <Box>
                     <FormControl>
                       <FormLabel component="legend">Correct Answer</FormLabel>
@@ -968,7 +975,7 @@ export default function CreateQuizPage() {
                 )}
 
                 {/* Short Answer */}
-                {currentQuestion.type === "short_answer" && (
+                {currentQuestion.type === 'short_answer' && (
                   <TextField
                     fullWidth
                     label="Sample Answer (for grading reference)"
@@ -999,7 +1006,7 @@ export default function CreateQuizPage() {
           {quiz.questions.length === 0 &&
             !isAddingQuestion &&
             !editingQuestionId && (
-              <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
+              <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>
                 <Typography variant="body1">
                   No questions added yet. Click "Add Question" to get started.
                 </Typography>
@@ -1015,23 +1022,23 @@ export default function CreateQuizPage() {
         maxWidth="lg"
         fullWidth
         PaperProps={{
-          sx: { height: "90vh" },
+          sx: { height: '90vh' },
         }}
       >
         <DialogTitle
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
           <Typography variant="h6">Quiz Preview</Typography>
           <MuiIconButton onClick={() => setShowPreview(false)}>
             <CloseIcon />
           </MuiIconButton>
-        </DialogTitle>
+        </DialogTitle>{' '}
         <DialogContent sx={{ p: 0 }}>
-          <QuizAttempt quiz={quiz} isPreview={true} />
+          <QuizAttempt quiz={transformQuizForPreview(quiz)} isPreview={true} />
         </DialogContent>
       </Dialog>
     </Container>
