@@ -39,7 +39,6 @@ interface QuizSectionProps {
 }
 
 const QuizSection = ({ groupId }: QuizSectionProps) => {
-  const { user_id } = useAuth();
   console.log('QuizSection groupId:', groupId); // For debugging
   const theme = useTheme();
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
