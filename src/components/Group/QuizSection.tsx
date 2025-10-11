@@ -39,7 +39,7 @@ interface QuizSectionProps {
 }
 
 const QuizSection = ({ groupId }: QuizSectionProps) => {
-  console.log('QuizSection groupId:', groupId); 
+  console.log('QuizSection groupId:', groupId); // For debugging
   const theme = useTheme();
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,7 +121,6 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
     return totalQuizzes > 0 ? (completedQuizzes / totalQuizzes) * 100 : 0;
   };
 
- 
   const getVisibleQuizzes = () => {
     return role === 'user'
       ? quizzes.filter((quiz) => quiz.isPublished)
@@ -177,7 +176,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                 borderRadius: 4,
               },
             }}
-          />{' '}
+          />
           <Typography
             variant="caption"
             sx={{ mt: 0.5, display: 'block', color: 'text.secondary' }}
@@ -311,7 +310,6 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                               }}
                             />
                           )}
-                          
                         </Box>
                       </Box>
 

@@ -211,6 +211,8 @@ export default function QuizAttempt({
     if (!quiz) return;
 
     setIsSubmitted(true);
+    //Log the quiz submission to the analytics service
+
     calculateResults();
   };
   const calculateResults = () => {
@@ -453,7 +455,7 @@ export default function QuizAttempt({
                       sx={{ mb: 1 }}
                     >
                       Your Answer:
-                    </Typography>{' '}
+                    </Typography>
                     <Typography
                       variant="body1"
                       color={result.isCorrect ? 'success.main' : 'error.main'}
