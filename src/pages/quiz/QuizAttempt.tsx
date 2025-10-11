@@ -664,12 +664,8 @@ export default function QuizAttempt({
               {question.question_type === 'MCQ' && (
                 <FormControl component="fieldset" fullWidth>
                   {/* Debug: Show question structure */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
+                  {import.meta.env.DEV && (
+                    <Typography variant="caption" color="text.secondary">
                       Debug - Question type: {typeof question.question}, Has
                       options:{' '}
                       {typeof question.question === 'object' &&
