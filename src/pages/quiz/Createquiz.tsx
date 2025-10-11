@@ -39,27 +39,9 @@ import {
 import QuizAttempt from './QuizAttempt';
 import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../contexts/Authcontext';
+import type { CreateQuestion, CreateQuiz, Quiz } from './types';
 
-interface Question {
-  id: string;
-  type: 'MCQ' | 'short_answer' | 'true_false';
-  question: string;
-  options?: string[];
-  correctAnswer: string | number;
-  points: number;
-}
-
-interface Quiz {
-  title: string;
-  description: string;
-  group: string;
-  duration: number;
-  dueDate: string;
-  questions: Question[];
-  totalPoints: number;
-}
-
-const INITIAL_QUESTION: Question = {
+const INITIAL_QUESTION: CreateQuestion = {
   id: '',
   type: 'MCQ',
   question: '',
@@ -68,7 +50,7 @@ const INITIAL_QUESTION: Question = {
   points: 1,
 };
 
-const INITIAL_QUIZ: Quiz = {
+const INITIAL_QUIZ: CreateQuiz = {
   title: '',
   description: '',
   group: '',
@@ -90,9 +72,9 @@ export default function CreateQuizPage() {
   const { user_id } = useAuth();
 
   // State
-  const [quiz, setQuiz] = useState<Quiz>(INITIAL_QUIZ);
+  const [quiz, setQuiz] = useState<CreateQuiz>(INITIAL_QUIZ);
   const [currentQuestion, setCurrentQuestion] =
-    useState<Question>(INITIAL_QUESTION);
+    useState<CreateQuestion>(INITIAL_QUESTION);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
@@ -115,7 +97,7 @@ export default function CreateQuizPage() {
     setEditingQuestionId(null);
   };
 
-  const startEditingQuestion = (question: Question) => {
+  const startEditingQuestion = (question: CreateQuestion) => {
     setCurrentQuestion({ ...question });
     setEditingQuestionId(question.id);
     setIsAddingQuestion(false);
@@ -127,7 +109,7 @@ export default function CreateQuizPage() {
   };
 
   // Validation Functions
-  const validateQuestion = (question: Question): string | null => {
+  const validateQuestion = (question: CreateQuestion): string | null => {
     if (!question.question.trim()) {
       return 'Please enter a question';
     }
@@ -148,7 +130,7 @@ export default function CreateQuizPage() {
     return null;
   };
 
-  const validateQuiz = (quiz: Quiz): string | null => {
+  const validateQuiz = (quiz: CreateQuiz): string | null => {
     if (!quiz.title.trim()) {
       return 'Please enter a quiz title';
     }
@@ -192,7 +174,7 @@ export default function CreateQuizPage() {
 
       showAlert('success', 'Question updated successfully!');
     } else {
-      const newQuestion: Question = {
+      const newQuestion: CreateQuestion = {
         ...currentQuestion,
         id: Date.now().toString(),
       };
@@ -261,7 +243,7 @@ export default function CreateQuizPage() {
     }
   };
   // Transform quiz from CreateQuiz format to QuizAttempt format
-  const transformQuizForPreview = (createQuiz: Quiz): any => {
+  const transformQuizForPreview = (createQuiz: CreateQuiz): Quiz => {
     return {
       quizId: 'preview',
       title: createQuiz.title,
@@ -501,6 +483,7 @@ export default function CreateQuizPage() {
               {editingQuestionId === question.id ? (
                 // Edit Mode
                 <Box>
+                  {' '}
                   <Box
                     sx={{
                       display: 'flex',
@@ -516,7 +499,6 @@ export default function CreateQuizPage() {
                       Cancel
                     </Button>
                   </Box>
-
                   <Box
                     sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
@@ -535,7 +517,7 @@ export default function CreateQuizPage() {
                           onChange={(e) =>
                             setCurrentQuestion((prev) => ({
                               ...prev,
-                              type: e.target.value as Question['type'],
+                              type: e.target.value as CreateQuestion['type'],
                             }))
                           }
                         >
@@ -826,6 +808,7 @@ export default function CreateQuizPage() {
                 mb: 2,
               }}
             >
+              {' '}
               <Box
                 sx={{
                   display: 'flex',
@@ -839,7 +822,6 @@ export default function CreateQuizPage() {
                   Cancel
                 </Button>
               </Box>
-
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Box
                   sx={{
@@ -856,7 +838,7 @@ export default function CreateQuizPage() {
                       onChange={(e) =>
                         setCurrentQuestion((prev) => ({
                           ...prev,
-                          type: e.target.value as Question['type'],
+                          type: e.target.value as CreateQuestion['type'],
                         }))
                       }
                     >

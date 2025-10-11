@@ -34,56 +34,14 @@ import {
   Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 import axiosInstance from '../../api/axiosInstance';
-
-interface Question {
-  question_no: number;
-  question_type: 'MCQ' | 'short_answer' | 'true_false';
-  question:
-    | {
-        text: string;
-        options?: string[];
-      }
-    | string;
-  correct_answer: string;
-  quizId: string;
-  points?: number;
-}
-
-interface Quiz {
-  quizId?: string;
-  title?: string;
-  description?: string;
-  timeLimit?: number;
-  deadline?: string;
-  questions: Question[];
-  totalPoints?: number;
-}
-
-interface Answer {
-  questionId: number;
-  answer: string | number;
-}
-
-interface QuestionResult {
-  question: Question;
-  userAnswer: string | number;
-  correctAnswer: string | number;
-  isCorrect: boolean;
-  pointsEarned: number;
-}
-
-interface QuizResult {
-  totalScore: number;
-  maxScore: number;
-  percentage: number;
-  timeSpent: number;
-  questionResults: QuestionResult[];
-}
-
-interface QuizAttemptProps {
-  quiz?: Quiz;
-  isPreview?: boolean;
-}
+import type {
+  Quiz,
+  QuizQuestion,
+  Answer,
+  QuestionResult,
+  QuizResult,
+  QuizAttemptProps,
+} from './types';
 
 export default function QuizAttempt({
   quiz: propQuiz,
@@ -291,7 +249,7 @@ export default function QuizAttempt({
     setShowResults(true);
   };
   const checkAnswer = (
-    question: Question,
+    question: QuizQuestion,
     userAnswer: string | number
   ): boolean => {
     if (!userAnswer && userAnswer !== 0) return false;
