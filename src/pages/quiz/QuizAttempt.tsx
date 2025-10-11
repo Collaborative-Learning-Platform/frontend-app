@@ -455,7 +455,7 @@ export default function QuizAttempt({
                       sx={{ mb: 1 }}
                     >
                       Your Answer:
-                    </Typography>{' '}
+                    </Typography>
                     <Typography
                       variant="body1"
                       color={result.isCorrect ? 'success.main' : 'error.main'}

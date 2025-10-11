@@ -39,7 +39,7 @@ interface QuizSectionProps {
 }
 
 const QuizSection = ({ groupId }: QuizSectionProps) => {
-  console.log('QuizSection groupId:', groupId);
+  console.log('QuizSection groupId:', groupId); // For debugging
   const theme = useTheme();
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,6 +97,9 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
     } else {
       return deadlineDate.toLocaleDateString();
     }
+
+    // Navigate to quiz (existing logic)
+    navigate(`/quiz/attempt/${quiz.id}`);
   };
 
   const getQuizStatus = (quiz: QuizItem) => {
@@ -176,7 +179,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                 borderRadius: 4,
               },
             }}
-          />{' '}
+          />
           <Typography
             variant="caption"
             sx={{ mt: 0.5, display: 'block', color: 'text.secondary' }}
