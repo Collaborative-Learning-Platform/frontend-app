@@ -33,53 +33,15 @@ import {
   Refresh as RefreshIcon,
   Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
-
-// Types
-interface Question {
-  id: string;
-  type: 'MCQ' | 'short_answer' | 'true_false';
-  question: string;
-  options?: string[];
-  correctAnswer: string | number;
-  points: number;
-}
-
-interface Quiz {
-  id?: string;
-  title: string;
-  description: string;
-  group: string;
-  duration: number;
-  dueDate: string;
-  questions: Question[];
-  totalPoints: number;
-}
-
-interface Answer {
-  questionId: string;
-  answer: string | number;
-}
-
-interface QuestionResult {
-  question: Question;
-  userAnswer: string | number;
-  correctAnswer: string | number;
-  isCorrect: boolean;
-  pointsEarned: number;
-}
-
-interface QuizResult {
-  totalScore: number;
-  maxScore: number;
-  percentage: number;
-  timeSpent: number;
-  questionResults: QuestionResult[];
-}
-
-interface QuizAttemptProps {
-  quiz?: Quiz; // For preview mode
-  isPreview?: boolean; // Preview mode vs actual attempt
-}
+import axiosInstance from '../../api/axiosInstance';
+import {
+  Quiz,
+  QuizQuestion,
+  Answer,
+  QuestionResult,
+  QuizResult,
+  QuizAttemptProps,
+} from './types';
 
 export default function QuizAttempt({
   quiz: propQuiz,
@@ -88,7 +50,6 @@ export default function QuizAttempt({
   const navigate = useNavigate();
   const { quizId } = useParams();
 
-  // State
   const [quiz, setQuiz] = useState<Quiz | null>(propQuiz || null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
@@ -101,15 +62,80 @@ export default function QuizAttempt({
     type: 'error' | 'success' | 'warning';
     message: string;
   } | null>(null);
-
-  // Initialize quiz and timer
   useEffect(() => {
     if (!propQuiz && quizId) {
-      // Load quiz from API
-      loadQuiz(quizId);
+      const fetchQuizData = async () => {
+        try {
+          const detailsResponse = await axiosInstance.get(`/quiz/${quizId}`);
+          console.log('Fetched quiz details:', detailsResponse.data);
+
+          let quizTimeLimit = 30;
+          if (detailsResponse.data?.success && detailsResponse.data.data) {
+            quizTimeLimit = detailsResponse.data.data.timeLimit || 30;
+            console.log('Quiz time limit:', quizTimeLimit);
+          }
+
+          const questionsResponse = await axiosInstance.get(
+            `/quiz/question/${quizId}`
+          );
+          console.log('Fetched questions:', questionsResponse.data);
+          if (questionsResponse.data.success) {
+            console.log('Raw question data:', questionsResponse.data.data);
+
+            const transformedQuiz: Quiz = {
+              quizId: quizId,
+              title: questionsResponse.data.title || 'Quiz',
+              description: questionsResponse.data.description || '',
+              timeLimit: quizTimeLimit,
+              deadline: questionsResponse.data.deadline,
+              questions: questionsResponse.data.data.map((item: any) => {
+                console.log('Processing question:', item);
+
+                let questionData;
+                if (item.question_type === 'MCQ') {
+                  if (typeof item.question === 'object') {
+                    questionData = item.question;
+                  } else {
+                    questionData = {
+                      text: item.question,
+                      options: item.options || [
+                        'Option A',
+                        'Option B',
+                        'Option C',
+                        'Option D',
+                      ],
+                    };
+                  }
+                } else {
+                  questionData = item.question;
+                }
+
+                return {
+                  question_no: item.question_no,
+                  question_type: item.question_type,
+                  question: questionData,
+                  correct_answer: item.correct_answer,
+                  quizId: item.quizId,
+                  points: 1,
+                };
+              }),
+              totalPoints: questionsResponse.data.data.length,
+            };
+
+            setQuiz(transformedQuiz);
+            setTimeRemaining(quizTimeLimit * 60);
+            setStartTime(Date.now());
+          }
+        } catch (error) {
+          console.error('Error fetching quiz data:', error);
+          showAlert('error', 'Unable to load quiz. Please try again.');
+        }
+      };
+
+      fetchQuizData();
     } else if (propQuiz) {
       setQuiz(propQuiz);
-      setTimeRemaining(propQuiz.duration * 60);
+      setTimeRemaining((propQuiz.timeLimit || 30) * 60);
       setStartTime(Date.now());
     }
   }, [quizId, propQuiz]);
@@ -120,7 +146,7 @@ export default function QuizAttempt({
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
-            handleSubmit(true); // Auto-submit when time runs out
+            handleSubmit(true);
             return 0;
           }
           return prev - 1;
@@ -131,47 +157,6 @@ export default function QuizAttempt({
     }
   }, [timeRemaining, isSubmitted, isPreview]);
 
-  const loadQuiz = (id: string) => {
-    //  API call
-    const mockQuiz: Quiz = {
-      id: id,
-      title: 'Sample Quiz',
-      description: 'This is a sample quiz for demonstration',
-      group: 'math-101-a',
-      duration: 30,
-      dueDate: '2025-08-20T10:00',
-      questions: [
-        {
-          id: '1',
-          type: 'MCQ',
-          question: 'What is 2 + 2?',
-          options: ['3', '4', '5', '6'],
-          correctAnswer: 1,
-          points: 2,
-        },
-        {
-          id: '2',
-          type: 'true_false',
-          question: 'The Earth is flat.',
-          correctAnswer: 'false',
-          points: 1,
-        },
-        {
-          id: '3',
-          type: 'short_answer',
-          question: 'What is the capital of France?',
-          correctAnswer: 'Paris',
-          points: 3,
-        },
-      ],
-      totalPoints: 6,
-    };
-
-    setQuiz(mockQuiz);
-    setTimeRemaining(mockQuiz.duration * 60);
-    setStartTime(Date.now());
-  };
-
   const showAlert = (
     type: 'error' | 'success' | 'warning',
     message: string
@@ -179,32 +164,31 @@ export default function QuizAttempt({
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 3000);
   };
-
-  const handleAnswerChange = (questionId: string, answer: string | number) => {
+  const handleAnswerChange = (questionNo: number, answer: string | number) => {
+    console.log(`Answer change: Question ${questionNo}, Answer: ${answer}`);
     setAnswers((prev) => {
-      const existingIndex = prev.findIndex((a) => a.questionId === questionId);
+      const existingIndex = prev.findIndex((a) => a.questionId === questionNo);
       if (existingIndex >= 0) {
-        // Update existing answer
         const newAnswers = [...prev];
-        newAnswers[existingIndex] = { questionId, answer };
+        newAnswers[existingIndex] = { questionId: questionNo, answer };
+        console.log('Updated answers:', newAnswers);
         return newAnswers;
       } else {
-        // Add new answer
-        return [...prev, { questionId, answer }];
+        const newAnswers = [...prev, { questionId: questionNo, answer }];
+        console.log('Added new answer:', newAnswers);
+        return newAnswers;
       }
     });
   };
-
-  const getAnswer = (questionId: string): string | number => {
-    const answer = answers.find((a) => a.questionId === questionId);
-    return answer?.answer || '';
+  const getAnswer = (questionNo: number): string | number => {
+    const answer = answers.find((a) => a.questionId === questionNo);
+    return answer?.answer ?? '';
   };
-
   const handleSubmit = (autoSubmit = false) => {
     if (!quiz) return;
 
     const unansweredQuestions = quiz.questions.filter(
-      (q) => !answers.find((a) => a.questionId === q.id)
+      (q) => !answers.find((a) => a.questionId === q.question_no)
     );
 
     if (!autoSubmit && unansweredQuestions.length > 0 && !isPreview) {
@@ -218,7 +202,6 @@ export default function QuizAttempt({
       showAlert('success', 'Quiz preview completed!');
       setTimeout(() => navigate(-1), 1500);
     } else {
-      // Calculate score and show results
       calculateResults();
     }
   };
@@ -232,34 +215,34 @@ export default function QuizAttempt({
 
     calculateResults();
   };
-
   const calculateResults = () => {
     if (!quiz) return;
 
-    const timeSpent = Math.round((Date.now() - startTime) / 1000); // in seconds
+    const timeSpent = Math.round((Date.now() - startTime) / 1000);
     let totalScore = 0;
     const questionResults: QuestionResult[] = [];
 
     quiz.questions.forEach((question) => {
-      const userAnswer = getAnswer(question.id);
+      const userAnswer = getAnswer(question.question_no);
       const isCorrect = checkAnswer(question, userAnswer);
-      const pointsEarned = isCorrect ? question.points : 0;
+      const pointsEarned = isCorrect ? question.points || 1 : 0;
 
       totalScore += pointsEarned;
 
       questionResults.push({
         question,
         userAnswer,
-        correctAnswer: question.correctAnswer,
+        correctAnswer: question.correct_answer,
         isCorrect,
         pointsEarned,
       });
     });
 
+    const maxScore = quiz.totalPoints || quiz.questions.length;
     const results: QuizResult = {
       totalScore,
-      maxScore: quiz.totalPoints,
-      percentage: Math.round((totalScore / quiz.totalPoints) * 100),
+      maxScore,
+      percentage: Math.round((totalScore / maxScore) * 100),
       timeSpent,
       questionResults,
     };
@@ -267,25 +250,23 @@ export default function QuizAttempt({
     setQuizResults(results);
     setShowResults(true);
   };
-
   const checkAnswer = (
-    question: Question,
+    question: QuizQuestion,
     userAnswer: string | number
   ): boolean => {
     if (!userAnswer && userAnswer !== 0) return false;
 
-    if (question.type === 'MCQ') {
-      return Number(userAnswer) === question.correctAnswer;
-    } else if (question.type === 'true_false') {
+    if (question.question_type === 'MCQ') {
+      return Number(userAnswer) === Number(question.correct_answer);
+    } else if (question.question_type === 'true_false') {
       return (
         userAnswer.toString().toLowerCase() ===
-        question.correctAnswer.toString().toLowerCase()
+        question.correct_answer.toString().toLowerCase()
       );
-    } else if (question.type === 'short_answer') {
-      // Simple string comparison - Not sufficient (Check later)
+    } else if (question.question_type === 'short_answer') {
       return (
         userAnswer.toString().toLowerCase().trim() ===
-        question.correctAnswer.toString().toLowerCase().trim()
+        question.correct_answer.toString().toLowerCase().trim()
       );
     }
     return false;
@@ -426,13 +407,11 @@ export default function QuizAttempt({
           </CardContent>
         </Card>
 
-        {/* Question by Question Review */}
         <Typography variant="h5" sx={{ mb: 3 }}>
           Question Review
         </Typography>
-
         {quizResults.questionResults.map((result, index) => (
-          <Card key={result.question.id} sx={{ mb: 3 }}>
+          <Card key={result.question.question_no} sx={{ mb: 3 }}>
             <CardContent>
               <Box
                 sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
@@ -442,19 +421,23 @@ export default function QuizAttempt({
                   <Typography variant="h6">Question {index + 1}</Typography>
                 </Box>
                 <Chip
-                  label={`${result.pointsEarned}/${result.question.points} pts`}
+                  label={`${result.pointsEarned}/${
+                    result.question.points || 1
+                  } pts`}
                   color={result.isCorrect ? 'success' : 'error'}
                   size="small"
                 />
                 <Chip
-                  label={result.question.type}
+                  label={result.question.question_type}
                   variant="outlined"
                   size="small"
                 />
               </Box>
 
               <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
-                {result.question.question}
+                {typeof result.question.question === 'string'
+                  ? result.question.question
+                  : result.question.question.text}
               </Typography>
 
               <Box
@@ -477,9 +460,12 @@ export default function QuizAttempt({
                       variant="body1"
                       color={result.isCorrect ? 'success.main' : 'error.main'}
                     >
-                      {result.question.type === 'MCQ' && result.question.options
-                        ? result.question.options[Number(result.userAnswer)] ||
-                          'No answer'
+                      {result.question.question_type === 'MCQ' &&
+                      typeof result.question.question === 'object' &&
+                      result.question.question.options
+                        ? result.question.question.options[
+                            Number(result.userAnswer)
+                          ] || 'No answer'
                         : result.userAnswer || 'No answer'}
                     </Typography>
                   </Box>
@@ -495,8 +481,12 @@ export default function QuizAttempt({
                       Correct Answer:
                     </Typography>
                     <Typography variant="body1" color="success.main">
-                      {result.question.type === 'MCQ' && result.question.options
-                        ? result.question.options[Number(result.correctAnswer)]
+                      {result.question.question_type === 'MCQ' &&
+                      typeof result.question.question === 'object' &&
+                      result.question.question.options
+                        ? result.question.question.options[
+                            Number(result.correctAnswer)
+                          ]
                         : result.correctAnswer}
                     </Typography>
                   </Box>
@@ -511,7 +501,6 @@ export default function QuizAttempt({
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Submit Confirmation Dialog */}
       <Dialog
         open={showSubmitDialog}
         onClose={() => setShowSubmitDialog(false)}
@@ -533,13 +522,11 @@ export default function QuizAttempt({
           </Button>
         </DialogActions>
       </Dialog>
-
       {alert && (
         <Alert severity={alert.type} sx={{ mb: 2 }}>
           {alert.message}
         </Alert>
       )}
-
       {/* Quiz Header */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
@@ -627,17 +614,20 @@ export default function QuizAttempt({
             </Box>
           )}
         </CardContent>
-      </Card>
-
+      </Card>{' '}
       {/* Questions */}
       <Box sx={{ mb: 4 }}>
         {quiz.questions.map((question, index) => (
           <Card
-            key={question.id}
+            key={question.question_no}
             sx={{
               mb: 3,
-              border: getAnswer(question.id) ? '2px solid' : '1px solid',
-              borderColor: getAnswer(question.id) ? 'success.main' : 'divider',
+              border: getAnswer(question.question_no)
+                ? '2px solid'
+                : '1px solid',
+              borderColor: getAnswer(question.question_no)
+                ? 'success.main'
+                : 'divider',
               transition: 'border-color 0.2s ease',
             }}
           >
@@ -648,62 +638,102 @@ export default function QuizAttempt({
                 <Chip
                   label={`${index + 1}`}
                   size="small"
-                  color={getAnswer(question.id) ? 'success' : 'default'}
+                  color={
+                    getAnswer(question.question_no) ? 'success' : 'default'
+                  }
                   sx={{ fontWeight: 'bold' }}
                 />
-                <Chip label={question.type} color="secondary" size="small" />
                 <Chip
-                  label={`${question.points} pts`}
+                  label={question.question_type}
+                  color="secondary"
+                  size="small"
+                />
+                <Chip
+                  label={`${question.points || 1} pts`}
                   variant="outlined"
                   size="small"
                 />
-                {getAnswer(question.id) && (
+                {getAnswer(question.question_no) && (
                   <CheckCircleIcon color="success" fontSize="small" />
                 )}
               </Box>
-
               <Typography variant="h6" sx={{ mb: 3, lineHeight: 1.4 }}>
-                {question.question}
-              </Typography>
-
+                {typeof question.question === 'string'
+                  ? question.question
+                  : question.question.text}
+              </Typography>{' '}
               {/* Multiple Choice */}
-              {question.type === 'MCQ' && question.options && (
+              {question.question_type === 'MCQ' && (
                 <FormControl component="fieldset" fullWidth>
+                  {/* Debug: Show question structure */}
+                  {import.meta.env.DEV && (
+                    <Typography variant="caption" color="text.secondary">
+                      Debug - Question type: {typeof question.question}, Has
+                      options:{' '}
+                      {typeof question.question === 'object' &&
+                      question.question.options
+                        ? 'Yes'
+                        : 'No'}
+                    </Typography>
+                  )}{' '}
                   <RadioGroup
-                    value={getAnswer(question.id).toString()}
-                    onChange={(e) =>
-                      handleAnswerChange(question.id, parseInt(e.target.value))
-                    }
+                    value={(() => {
+                      const answer = getAnswer(question.question_no);
+                      return answer !== '' ? answer.toString() : '';
+                    })()}
+                    onChange={(e) => {
+                      console.log(
+                        `Selecting option ${e.target.value} for question ${question.question_no}`
+                      );
+                      handleAnswerChange(
+                        question.question_no,
+                        parseInt(e.target.value)
+                      );
+                    }}
                   >
-                    {question.options.map((option, optionIndex) => (
-                      <FormControlLabel
-                        key={optionIndex}
-                        value={optionIndex.toString()}
-                        control={<Radio />}
-                        label={option}
-                        sx={{
-                          mb: 1,
-                          py: 1,
-                          px: 2,
-                          borderRadius: 1,
-                          border: '1px solid transparent',
-                          '&:hover': {
-                            bgcolor: 'action.hover',
-                          },
-                        }}
-                      />
-                    ))}
+                    {typeof question.question === 'object' &&
+                    question.question.options ? (
+                      question.question.options.map((option, optionIndex) => (
+                        <FormControlLabel
+                          key={optionIndex}
+                          value={optionIndex.toString()}
+                          control={<Radio />}
+                          label={option}
+                          sx={{
+                            mb: 1,
+                            py: 1,
+                            px: 2,
+                            borderRadius: 1,
+                            border: '1px solid transparent',
+                            '&:hover': {
+                              bgcolor: 'action.hover',
+                            },
+                          }}
+                        />
+                      ))
+                    ) : (
+                      // Question doesn't have options - provide default ones or show error
+                      <Typography color="error" variant="body2">
+                        MCQ question missing options. Question:{' '}
+                        {typeof question.question === 'string'
+                          ? question.question
+                          : question.question.text}
+                      </Typography>
+                    )}
                   </RadioGroup>
                 </FormControl>
               )}
-
               {/* True/False */}
-              {question.type === 'true_false' && (
+              {question.question_type === 'true_false' && (
                 <FormControl component="fieldset" fullWidth>
+                  {' '}
                   <RadioGroup
-                    value={getAnswer(question.id).toString()}
+                    value={(() => {
+                      const answer = getAnswer(question.question_no);
+                      return answer !== '' ? answer.toString() : '';
+                    })()}
                     onChange={(e) =>
-                      handleAnswerChange(question.id, e.target.value)
+                      handleAnswerChange(question.question_no, e.target.value)
                     }
                     sx={{ flexDirection: 'row', gap: 3 }}
                   >
@@ -738,17 +768,15 @@ export default function QuizAttempt({
                   </RadioGroup>
                 </FormControl>
               )}
-
-              {/* Short Answer */}
-              {question.type === 'short_answer' && (
+              {question.question_type === 'short_answer' && (
                 <TextField
                   fullWidth
                   multiline
                   rows={3}
                   placeholder="Enter your answer here..."
-                  value={getAnswer(question.id)}
+                  value={getAnswer(question.question_no)}
                   onChange={(e) =>
-                    handleAnswerChange(question.id, e.target.value)
+                    handleAnswerChange(question.question_no, e.target.value)
                   }
                   variant="outlined"
                   sx={{
@@ -764,7 +792,6 @@ export default function QuizAttempt({
           </Card>
         ))}
       </Box>
-
       {/* Submit Section */}
       <Paper sx={{ p: 3, textAlign: 'center' }}>
         <Typography variant="body1" sx={{ mb: 2 }}>
