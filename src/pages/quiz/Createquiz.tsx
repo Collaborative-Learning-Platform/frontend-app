@@ -260,9 +260,8 @@ export default function CreateQuizPage() {
       console.error(error);
     }
   };
-
   // Transform quiz from CreateQuiz format to QuizAttempt format
-  const transformQuizForPreview = (createQuiz: Quiz) => {
+  const transformQuizForPreview = (createQuiz: Quiz): any => {
     return {
       quizId: 'preview',
       title: createQuiz.title,

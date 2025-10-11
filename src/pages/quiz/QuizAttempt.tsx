@@ -46,7 +46,7 @@ interface Question {
     | string;
   correct_answer: string;
   quizId: string;
-  points?: number; 
+  points?: number;
 }
 
 interface Quiz {
@@ -60,7 +60,7 @@ interface Quiz {
 }
 
 interface Answer {
-  questionId: number; 
+  questionId: number;
   answer: string | number;
 }
 
@@ -228,7 +228,7 @@ export default function QuizAttempt({
   };
   const handleSubmit = (autoSubmit = false) => {
     if (!quiz) return;
-    
+
     const unansweredQuestions = quiz.questions.filter(
       (q) => !answers.find((a) => a.questionId === q.question_no)
     );
@@ -541,7 +541,6 @@ export default function QuizAttempt({
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-     
       <Dialog
         open={showSubmitDialog}
         onClose={() => setShowSubmitDialog(false)}
@@ -722,7 +721,10 @@ export default function QuizAttempt({
                     </Typography>
                   )}{' '}
                   <RadioGroup
-                    value={getAnswer(question.question_no).toString()}
+                    value={(() => {
+                      const answer = getAnswer(question.question_no);
+                      return answer !== '' ? answer.toString() : '';
+                    })()}
                     onChange={(e) => {
                       console.log(
                         `Selecting option ${e.target.value} for question ${question.question_no}`
@@ -768,8 +770,12 @@ export default function QuizAttempt({
               {/* True/False */}
               {question.question_type === 'true_false' && (
                 <FormControl component="fieldset" fullWidth>
+                  {' '}
                   <RadioGroup
-                    value={getAnswer(question.question_no).toString()}
+                    value={(() => {
+                      const answer = getAnswer(question.question_no);
+                      return answer !== '' ? answer.toString() : '';
+                    })()}
                     onChange={(e) =>
                       handleAnswerChange(question.question_no, e.target.value)
                     }
@@ -806,7 +812,6 @@ export default function QuizAttempt({
                   </RadioGroup>
                 </FormControl>
               )}
-              
               {question.question_type === 'short_answer' && (
                 <TextField
                   fullWidth
