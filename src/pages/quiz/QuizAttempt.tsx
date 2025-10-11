@@ -34,7 +34,7 @@ import {
   Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 import axiosInstance from '../../api/axiosInstance';
-import type {
+import {
   Quiz,
   QuizQuestion,
   Answer,

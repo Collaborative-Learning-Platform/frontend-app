@@ -39,7 +39,7 @@ import {
 import QuizAttempt from './QuizAttempt';
 import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../contexts/Authcontext';
-import type { CreateQuestion, CreateQuiz, Quiz } from './types';
+import { CreateQuestion, CreateQuiz, Quiz } from './types';
 
 const INITIAL_QUESTION: CreateQuestion = {
   id: '',
