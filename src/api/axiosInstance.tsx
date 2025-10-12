@@ -1,44 +1,86 @@
-import axios from 'axios'
-
+import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASEURL,
   timeout: 5000,
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-    // Authorization will be set dynamically in interceptor
+    "Content-Type": "application/json",
   },
-})
+});
 
-// Helper to get cookie value by name
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
-  return match ? decodeURIComponent(match[2]) : null
+// Refresh lock state
+let isRefreshing = false;
+let refreshSubscribers: ((tokenRefreshed: boolean) => void)[] = [];
+
+// Helper to notify queued requests after refresh
+function subscribeTokenRefresh(cb: (tokenRefreshed: boolean) => void) {
+  refreshSubscribers.push(cb);
 }
 
-// Request interceptor to add token dynamically from cookies
+function onRefreshed(success: boolean) {
+  refreshSubscribers.forEach((cb) => cb(success));
+  refreshSubscribers = [];
+}
+
+// --- Request interceptor  ---
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = getCookie('auth_token')
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
-    }
-    return config
+    return config;
   },
   (error) => Promise.reject(error)
-)
+);
 
-// Response interceptor for error handling and token refresh (example)
+// --- Response interceptor ---
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Example: handle 401 Unauthorized, refresh token logic placeholder
-    if (error.response && error.response.status === 401) {
-      // Optionally, implement token refresh logic here
-      // Redirect to login or show message
+    const originalRequest = error.config;
+
+    // If 403 (forbidden / expired token), try refresh flow
+    if (
+      error.response?.status === 403 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/refresh-token")
+    ) {
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          await axiosInstance.get("/auth/refresh-token");
+          console.log("✅ Token refreshed successfully");
+          isRefreshing = false;
+          onRefreshed(true);
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
+          console.error("Refresh failed");
+          isRefreshing = false;
+          onRefreshed(false);
+
+          
+          alert("Your session has expired. Please log in again.");
+
+          localStorage.removeItem("user_id");
+          window.location.href = "/login";
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // Queue requests until refresh finishes
+        return new Promise((resolve, reject) => {
+          subscribeTokenRefresh((success) => {
+            if (success) {
+              resolve(axiosInstance(originalRequest));
+            } else {
+              reject(error);
+            }
+          });
+        });
+      }
     }
-    return Promise.reject(error)
+
+    return Promise.reject(error);
   }
-)
+);
 
 export default axiosInstance;

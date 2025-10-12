@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Drawer,
@@ -10,95 +10,223 @@ import {
   Typography,
   Divider,
   Badge,
-  Collapse,
   useTheme,
   alpha,
   useMediaQuery,
+  Avatar,
 } from "@mui/material";
 import {
   Dashboard,
   School,
-  Forum,
-  CalendarMonth,
-  Analytics,
   Settings,
-  ExpandLess,
-  ExpandMore,
-  Book,
+  Assignment,
   Quiz,
-  VideoLibrary,
+  Analytics,
   Group,
+  Tune,
 } from "@mui/icons-material";
 import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import FileCopyIcon from "@mui/icons-material/FileCopy";
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/Authcontext";
+import axiosInstance from "../api/axiosInstance";
 
 const drawerWidth = 280;
 
-const navigationItems = [
+type Role = "user" | "tutor" | "admin";
+
+interface NavItem {
+  id?: string;
+  text: string;
+  icon: React.ReactNode;
+  path?: string;
+  pathByRole?: Partial<Record<Role, string>>;
+  roles?: Role[];
+  badgeKey?: string;
+  urgent?: boolean;
+  section?: "main" | "bottom";
+}
+
+const navConfig: NavItem[] = [
   {
     text: "Dashboard",
     icon: <Dashboard />,
-    path: "/dashboard",
-    active: true,
+    pathByRole: {
+      user: "/user-dashboard",
+      tutor: "/tutor-dashboard",
+      admin: "/admin-dashboard",
+    },
+    roles: ["user", "tutor", "admin"],
+    section: "main",
   },
   {
     text: "Workspaces",
     icon: <WorkspacesOutlineIcon />,
-    path: "/workspaces",
-    badge: 2,
+    path: "/user-workspaces",
+    roles: ["user", "tutor"],
+    badgeKey: "workspaces",
     urgent: true,
+    section: "main",
   },
   {
-    text: "Study Groups",
+    text: "Study Plans",
+    icon: <Assignment />,
+    path: "/study-plans",
+    roles: ["user"],
+    section: "main",
+  },
+  {
+    text: "Flashcards",
+    icon: <Quiz />,
+    path: "/flashcard-library",
+    roles: ["user"],
+    section: "main",
+  },
+  {
+    text: "Documents",
+    icon: <FileCopyIcon />,
+    path: "/user-documents",
+    roles: ["user", "tutor"],
+    section: "main",
+  },
+  {
+    text: "Create Quiz",
+    icon: <Quiz />,
+    path: "/quiz",
+    roles: ["tutor"],
+    section: "main",
+  },
+  {
+    text: "Quiz Analytics",
+    icon: <Analytics />,
+    path: "/tutor-analytics",
+    roles: ["tutor"],
+    section: "main",
+  },
+  {
+    text: "User Management",
     icon: <Group />,
-    path: "/study-groups",
+    path: "/admin-users",
+    roles: ["admin"],
+    section: "main",
   },
   {
-    text: "Discussion Forums",
-    icon: <Forum />,
-    path: "/forums",
+    text: "Workspace Management",
+    icon: <WorkspacesOutlineIcon />,
+    path: "/admin-workspaces",
+    badgeKey: "adminWorkspaces",
+    urgent: true,
+    roles: ["admin"],
+    section: "main",
+  },
+  {
+    text: "Analytics",
+    icon: <Analytics />,
+    path: "/admin-analytics",
+    roles: ["admin"],
+    section: "main",
   },
 
   {
-    text: "Calendar",
-    icon: <CalendarMonth />,
-    path: "/calendar",
+    text: "Settings",
+    icon: <Settings />,
+    path: "/settings",
+    roles: ["user", "tutor"],
+    section: "bottom",
   },
   {
-    text: "Resources",
-    icon: <VideoLibrary />,
-    path: "/resources",
-    subItems: [
-      { text: "Video Library", icon: <VideoLibrary /> },
-      { text: "Documents", icon: <Book /> },
-      { text: "Practice Tests", icon: <Quiz /> },
-    ],
+    text: "System Settings",
+    icon: <Tune />,
+    path: "/admin-settings",
+    roles: ["admin"],
+    section: "bottom",
   },
 ];
 
-const bottomItems = [
-  { text: "Analytics", icon: <Analytics />, path: "/analytics" },
-  { text: "Profile", icon: <AccountCircleIcon />, path: "/profile" },
-  { text: "Settings", icon: <Settings />, path: "/settings" },
-];
+function resolveNavItems(
+  config: NavItem[],
+  role?: string | null,
+  badgeCounts: Record<string, number> = {}
+) {
+  const roleTyped = (role as Role) || undefined;
+  return config
+    .filter(
+      (item) =>
+        !item.roles || (roleTyped ? item.roles.includes(roleTyped) : true)
+    )
+    .map((item) => ({
+      ...item,
+      path:
+        item.path ?? item.pathByRole?.[roleTyped as Role] ?? item.path ?? "/",
+      badge: item.badgeKey ? badgeCounts[item.badgeKey] ?? 0 : undefined,
+    }));
+}
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onToggle?: () => void;
+  isMobile?: boolean;
+}
+
+export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobileProp }: SidebarProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [expandedItems, setExpandedItems] = useState<string[]>(["My Courses"]);
+  const { role, user_id, name } = useAuth();
+  const [s3ProfilePictureDownloadUrl, setS3ProfilePictureDownloadURL] = useState<string | null>(null);
+  const isMobileDefault = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = isMobileProp !== undefined ? isMobileProp : isMobileDefault;
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [isMobileOpen, setMobileOpen] = useState(false);
+  const fetchProfilePicture = async () => {
+    if (!user_id) return;
+    
+    try {
+      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url', { userId: user_id });
+      if (response.data?.downloadUrl) {
+        setS3ProfilePictureDownloadURL(response.data.downloadUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);
+      // Don't set error state, just keep the default avatar
+    }
+  };
+
+  // Fetch profile picture when user_id changes
+  useEffect(() => {
+    if (user_id) {
+      fetchProfilePicture();
+    }
+  }, [user_id]);
+
+  // Fallback state for when component is used standalone
+  const [internalMobileOpen, setInternalMobileOpen] = useState(false);
+  const isMobileOpen = mobileOpen !== undefined ? mobileOpen : internalMobileOpen;
+
   const handleDrawerToggle = () => {
-    setMobileOpen((prev) => !prev);
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalMobileOpen((prev) => !prev);
+    }
   };
 
-  const handleExpandClick = (item: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
-    );
+  const handleItemClick = (item: any) => {
+    if (item.path) navigate(item.path);
   };
+
+  // badgeCounts: ideally from context or API; falling back to current hard-coded values
+  const badgeCounts: Record<string, number> = {
+    workspaces: 2,
+    adminWorkspaces: 3,
+  };
+
+  const resolved = resolveNavItems(navConfig, role, badgeCounts);
+  const filteredNavigationItems = resolved.filter(
+    (i) => i.section !== "bottom"
+  );
+  const filteredBottomItems = resolved.filter((i) => i.section === "bottom");
 
   const sidebarContent = (
     <Box
@@ -124,6 +252,7 @@ export default function Sidebar() {
             fontSize: { xs: 40, sm: 48 },
             mb: 1,
             opacity: 0.9,
+            color: theme.palette.primary.main,
           }}
         />
         <Typography
@@ -136,31 +265,92 @@ export default function Sidebar() {
 
       <Box sx={{ flex: 1, overflow: "auto", py: 1 }}>
         <List sx={{ px: 2 }}>
-          {navigationItems.map((item) => (
-            <Box key={item.text}>
-              <ListItem disablePadding sx={{ mb: 0.5 }}>
+          {filteredNavigationItems.map((item) => {
+            const isActive =
+              !!item.path && location.pathname.startsWith(item.path);
+            return (
+              <Box key={item.text}>
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton
+                    onClick={() => handleItemClick(item)}
+                    sx={{
+                      borderRadius: 2,
+                      minHeight: 48,
+                      bgcolor: isActive
+                        ? alpha(theme.palette.primary.main, 0.08)
+                        : "transparent",
+                      color: isActive ? "primary.main" : "text.primary",
+                      "&:hover": {
+                        bgcolor: isActive
+                          ? alpha(theme.palette.primary.main, 0.12)
+                          : alpha(theme.palette.action.hover, 0.04),
+                      },
+                      border: isActive
+                        ? `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                        : "1px solid transparent",
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        color: "inherit",
+                        minWidth: 40,
+                        "& .MuiSvgIcon-root": { fontSize: 22 },
+                      }}
+                    >
+                      {item.badge ? (
+                        <Badge
+                          badgeContent={item.badge}
+                          color={item.urgent ? "error" : "primary"}
+                          max={99}
+                        >
+                          {item.icon}
+                        </Badge>
+                      ) : (
+                        item.icon
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={{
+                        fontWeight: isActive ? 600 : 500,
+                        fontSize: "0.9rem",
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </Box>
+            );
+          })}
+        </List>
+      </Box>
+
+      <Box sx={{ mt: "auto" }}>
+        <Divider sx={{ mx: 2, my: 2 }} />
+
+        <List sx={{ px: 2 }}>
+          {filteredBottomItems.map((item) => {
+            const isActive =
+              !!item.path && location.pathname.startsWith(item.path);
+            return (
+              <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
-                  onClick={() => item.subItems && handleExpandClick(item.text)}
+                  onClick={() => item.path && navigate(item.path)}
                   sx={{
                     borderRadius: 2,
                     minHeight: 48,
-                    bgcolor: item.active
+                    bgcolor: isActive
                       ? alpha(theme.palette.primary.main, 0.08)
                       : "transparent",
-                    color: item.active ? "primary.main" : "text.primary",
                     "&:hover": {
-                      bgcolor: item.active
+                      bgcolor: isActive
                         ? alpha(theme.palette.primary.main, 0.12)
                         : alpha(theme.palette.action.hover, 0.04),
                     },
-                    border: item.active
-                      ? `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                      : "1px solid transparent",
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      color: "inherit",
+                      color: "text.secondary",
                       minWidth: 40,
                       "& .MuiSvgIcon-root": { fontSize: 22 },
                     }}
@@ -180,116 +370,77 @@ export default function Sidebar() {
                   <ListItemText
                     primary={item.text}
                     primaryTypographyProps={{
-                      fontWeight: item.active ? 600 : 500,
+                      fontWeight: 500,
                       fontSize: "0.9rem",
+                      color: "text.secondary",
                     }}
                   />
-                  {item.subItems &&
-                    (expandedItems.includes(item.text) ? (
-                      <ExpandLess sx={{ fontSize: 20 }} />
-                    ) : (
-                      <ExpandMore sx={{ fontSize: 20 }} />
-                    ))}
                 </ListItemButton>
               </ListItem>
-
-              {item.subItems && (
-                <Collapse
-                  in={expandedItems.includes(item.text)}
-                  timeout="auto"
-                  unmountOnExit
-                >
-                  <List disablePadding sx={{ pl: 2 }}>
-                    {item.subItems.map((subItem) => (
-                      <ListItem
-                        key={subItem.text}
-                        disablePadding
-                        sx={{ mb: 0.5 }}
-                      >
-                        <ListItemButton
-                          sx={{
-                            borderRadius: 2,
-                            minHeight: 40,
-                            pl: 2,
-                            "&:hover": {
-                              bgcolor: alpha(theme.palette.action.hover, 0.04),
-                            },
-                          }}
-                        >
-                          <ListItemIcon
-                            sx={{
-                              color: "text.secondary",
-                              minWidth: 36,
-                              "& .MuiSvgIcon-root": { fontSize: 18 },
-                            }}
-                          >
-                            {subItem.icon}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={subItem.text}
-                            primaryTypographyProps={{
-                              fontSize: "0.85rem",
-                              color: "text.secondary",
-                            }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                </Collapse>
-              )}
-            </Box>
-          ))}
+            );
+          })}
         </List>
 
-        <Divider sx={{ mx: 2, my: 2 }} />
-
-        {/* Bottom Navigation */}
-        <List sx={{ px: 2 }}>
-          {bottomItems.map((item) => (
-            <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                sx={{
-                  borderRadius: 2,
-                  minHeight: 48,
-                  "&:hover": {
-                    bgcolor: alpha(theme.palette.action.hover, 0.04),
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    color: "text.secondary",
-                    minWidth: 40,
-                    "& .MuiSvgIcon-root": { fontSize: 22 },
-                  }}
-                >
-                  {item.text === "Settings" ? (
-                    <Badge badgeContent={1} color="warning" variant="dot">
-                      {item.icon}
-                    </Badge>
-                  ) : (
-                    item.icon
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontWeight: 500,
-                    fontSize: "0.9rem",
-                    color: "text.secondary",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        {/* User Profile Section */}
+        <Box
+          sx={{
+            px: 2,
+            py: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            cursor: "pointer",
+            "&:hover": {
+              bgcolor: alpha(theme.palette.action.hover, 0.04),
+            },
+            borderRadius: 2,
+            mx: 2,
+            mt: 1,
+          }}
+          onClick={() => navigate("/user-profile")}
+        >
+          <Avatar
+            src={s3ProfilePictureDownloadUrl || undefined}
+            sx={{
+              width: 36,
+              height: 36,
+              bgcolor: theme.palette.primary.main,
+              fontSize: "0.9rem",
+              fontWeight: 600,
+            }}
+          >
+            {name ? name.charAt(0).toUpperCase() : "U"}
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: "text.primary",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {name || "User"}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                textTransform: "capitalize",
+              }}
+            >
+              {role === "user" ? "Student" : role || "Member"}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );
 
   return (
-    <>
+    <Box>
       {isMobile && (
         <IconButton onClick={handleDrawerToggle} sx={{ color: "text.primary" }}>
           <MenuIcon />
@@ -313,6 +464,6 @@ export default function Sidebar() {
       >
         {sidebarContent}
       </Drawer>
-    </>
+    </Box>
   );
 }

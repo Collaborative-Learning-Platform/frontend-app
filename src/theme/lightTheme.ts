@@ -1,69 +1,92 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from "@mui/material/styles";
 
-// Light theme configuration
 export const lightTheme = createTheme({
   palette: {
-    mode: 'light',
+    mode: "light",
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-      contrastText: '#ffffff',
+      main: "#6366f1",
+      light: "#818cf8",
+      dark: "#4f46e5",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: '#dc004e',
-      light: '#f50057',
-      dark: '#c51162',
-      contrastText: '#ffffff',
+      main: "#8b5cf6",
+      light: "#a78bfa",
+      dark: "#7c3aed",
+      contrastText: "#ffffff",
+    },
+    success: {
+      main: "#10b981",
+      dark: "#059669",
+      light: "#34d399",
+    },
+    grey: {
+      50: "#fafafa",
+      100: "#f5f5f5",
+      200: "#eeeeee",
+      300: "#e0e0e0",
+      400: "#bdbdbd", // Disabled background for light theme
+      500: "#9e9e9e",
+      600: "#757575",
+      700: "#616161",
+      800: "#424242",
+      900: "#212121",
     },
     background: {
-      default: '#fafafa',
-      paper: '#ffffff',
+      default: "#fafafa",
+      paper: "#ffffff",
     },
     text: {
-      primary: '#212121',
-      secondary: '#757575',
+      primary: "#212121",
+      secondary: "#757575",
+      disabled: "rgba(0, 0, 0, 0.38)",
     },
-    divider: '#e0e0e0',
+    divider: "#e0e0e0",
     action: {
-      hover: 'rgba(0, 0, 0, 0.04)',
-      selected: 'rgba(0, 0, 0, 0.08)',
-      disabled: 'rgba(0, 0, 0, 0.26)',
-      disabledBackground: 'rgba(0, 0, 0, 0.12)',
+      hover: "rgba(240, 228, 228, 0.04)",
+      selected: "rgba(0, 0, 0, 0.08)",
+      disabled: "rgba(0, 0, 0, 0.26)",
+      disabledBackground: "rgba(0, 0, 0, 0.12)",
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 700,
-      fontSize: '2.5rem',
+      fontSize: "2.5rem",
+      lineHeight: 1.2,
     },
     h2: {
       fontWeight: 600,
-      fontSize: '2rem',
+      fontSize: "2rem",
+      lineHeight: 1.25,
     },
     h3: {
       fontWeight: 600,
-      fontSize: '1.75rem',
+      fontSize: "1.75rem",
+      lineHeight: 1.3,
     },
     h4: {
-      fontWeight: 500,
-      fontSize: '1.5rem',
+      fontWeight: 700,
+      fontSize: "1.5rem",
+      lineHeight: 1.35,
     },
     h5: {
-      fontWeight: 500,
-      fontSize: '1.25rem',
+      fontWeight: 700,
+      fontSize: "1.25rem",
+      lineHeight: 1.4,
     },
     h6: {
-      fontWeight: 500,
-      fontSize: '1rem',
+      fontWeight: 700,
+      fontSize: "1rem",
+      lineHeight: 1.45,
     },
     body1: {
-      fontSize: '1rem',
+      fontSize: "1rem",
       lineHeight: 1.5,
     },
     body2: {
-      fontSize: '0.875rem',
+      fontSize: "0.875rem",
       lineHeight: 1.43,
     },
   },
@@ -71,13 +94,13 @@ export const lightTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
-          borderRadius: 8,
-          fontWeight: 500,
-          padding: '8px 16px',
-          boxShadow: 'none',
-          '&:hover': {
-            boxShadow: '0 2px 4px rgba(0,0,0,0.12)',
+          textTransform: "none",
+          borderRadius: 12,
+          fontWeight: 600,
+          padding: "8px 16px",
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "0 2px 4px rgba(0,0,0,0.12)",
           },
         },
       },
@@ -86,9 +109,10 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          '&:hover': {
-            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          "&:hover": {
+            boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
           },
         },
       },
@@ -96,20 +120,19 @@ export const lightTheme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 1,
         },
       },
     },
-    
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 12,
   },
 });
