@@ -12,7 +12,7 @@ interface WhiteboardProps {
 export default function Whiteboard({
   roomId,
   sessionId = `user-${Date.now()}`,
-  wsUrl = "ws://localhost:8080",
+  wsUrl = import.meta.env.VITE_WS_WHITEBOARD_URL || "ws://localhost:8080",
 }: WhiteboardProps) {
   const storeRef = useRef<ReturnType<typeof createTLStore> | null>(null);
   if (!storeRef.current) {
