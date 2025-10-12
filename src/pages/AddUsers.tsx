@@ -7,7 +7,6 @@ import {
   Typography,
   Button,
   Box,
-  Alert,
   CircularProgress,
   useTheme,
   alpha,
@@ -16,7 +15,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Stack,
   Chip,
   Paper,
   ListItemAvatar,
@@ -26,21 +24,20 @@ import {
   CloudUpload,
   Description,
   CheckCircle,
-  Error,
   Info,
   ArrowBack,
   FileUpload,
   Delete as DeleteIcon,
-  GroupAdd,
   People,
   PersonAdd,
   Warning,
   Email,
+  Error as ErrorIcon,
 } from "@mui/icons-material";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { visuallyHidden } from "@mui/utils";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
+import { useSnackbar } from "../contexts/SnackbarContext";
 
 interface FailedUser {
   email: string;
@@ -62,18 +59,28 @@ const AddUsers = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [response, setResponse] = useState<BulkUploadResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
   const theme = useTheme();
   const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      setError(null);
-      setResponse(null);
+      // Check file type
+      const allowedTypes = [".csv", ".xlsx", ".xls"];
+      const fileExtension = file.name
+        .toLowerCase()
+        .substr(file.name.lastIndexOf("."));
+
+      if (allowedTypes.includes(fileExtension)) {
+        setSelectedFile(file);
+        setResponse(null);
+        showSnackbar(`File "${file.name}" selected successfully`, "success");
+      } else {
+        showSnackbar("Please upload a valid file type: CSV or Excel (.xlsx, .xls)", "error");
+      }
     }
   };
 
@@ -105,22 +112,25 @@ const AddUsers = () => {
 
       if (allowedTypes.includes(fileExtension)) {
         setSelectedFile(file);
-        setError(null);
         setResponse(null);
+        showSnackbar(`File "${file.name}" selected successfully`, "success");
       } else {
-        setError("Please upload a valid file type: CSV or Excel (.xlsx, .xls)");
+        showSnackbar("Please upload a valid file type: CSV or Excel (.xlsx, .xls)", "error");
       }
     }
   };
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setError("Please select a file.");
+      showSnackbar("Please select a file.", "warning");
       return;
     }
+    
     setUploading(true);
-    setError(null);
     setResponse(null);
+    
+    // Show upload start message
+    showSnackbar("Starting file upload...", "info");
 
     const formData = new FormData();
     formData.append("file", selectedFile);
@@ -134,15 +144,16 @@ const AddUsers = () => {
       console.log(res);
       const data = res.data;
       if (!data.success) {
-        setError(data.error || "Bulk Addition failed");
+        const errorMessage = data.error || "Bulk Addition failed";
+        showSnackbar(errorMessage, "error");
       } else {
         setResponse(data);
+        const successMessage = `Upload completed! ${data.successCount || 0} users added successfully`;
+        showSnackbar(successMessage, "success");
       }
     } catch (err: any) {
-      setError(
-        err?.response?.data?.error?.message ||
-          "Network error. Please try again."
-      );
+      const errorMessage = err?.response?.data?.error?.message || "Network error. Please try again.";
+      showSnackbar(errorMessage, "error");
     } finally {
       setUploading(false);
     }
@@ -152,6 +163,7 @@ const AddUsers = () => {
     event.preventDefault();
     event.stopPropagation();
     setSelectedFile(null);
+    showSnackbar("File removed", "info");
   };
 
   const handleUploadAreaClick = (event: React.MouseEvent) => {
@@ -167,6 +179,41 @@ const AddUsers = () => {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const handleDownloadTemplate = () => {
+    // Create template data
+    const templateData = [
+      ["name", "email", "role", "password"],
+      ["John Doe", "john.doe@example.com", "user", "Abcd1234"],
+      ["Jane Smith", "jane.smith@example.com", "tutor", "Abcd1234"],
+      ["Admin User", "admin@example.com", "admin", "Abcd1234"]
+    ];
+
+    // Convert to CSV format
+    const csvContent = templateData
+      .map(row => row.map(field => `"${field}"`).join(","))
+      .join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "bulk_user_upload_template.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      // Show success message
+      showSnackbar("Template file downloaded successfully", "success");
+    } else {
+      showSnackbar("Download not supported in this browser", "error");
+    }
   };
 
   return (
@@ -273,6 +320,7 @@ const AddUsers = () => {
                   variant="outlined"
                   size="small"
                   startIcon={<Description />}
+                  onClick={handleDownloadTemplate}
                   sx={{
                     borderRadius: 2,
                     textTransform: "none",
@@ -317,7 +365,7 @@ const AddUsers = () => {
                         : selectedFile
                         ? theme.palette.success.main
                         : theme.palette.grey[300],
-                      borderRadius: theme.shape.borderRadius,
+                      borderRadius: 3,
                       p: theme.spacing(4),
                       textAlign: "center",
                       transition: theme.transitions.create(
@@ -424,85 +472,39 @@ const AddUsers = () => {
                     </Box>
                   </Box>
                 </label>
-              </CardContent>
-            </Card>
 
-            {/* Upload Settings Card */}
-            <Card sx={{ borderRadius: 2, boxShadow: theme.shadows[4] }}>
-              <CardHeader
-                avatar={<GroupAdd color="primary" />}
-                title="Upload Settings"
-                subheader="Configure your bulk upload preferences"
-                sx={{
-                  "& .MuiCardHeader-title": {
+                {/* Upload Button */}
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleUpload}
+                  disabled={uploading || !selectedFile}
+                  startIcon={
+                    uploading ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      <CloudUpload />
+                    )
+                  }
+                  sx={{
+                    mt: 3,
+                    py: 1.5,
+                    borderRadius: 2,
                     fontWeight: "bold",
-                  },
-                }}
-              />
-              <CardContent>
-                <Stack gap={3}>
-                  {/* Status Messages */}
-                  <Fade in={!!error} timeout={300}>
-                    <Box>
-                      {error && (
-                        <Alert
-                          severity="error"
-                          icon={<Error />}
-                          onClose={() => setError(null)}
-                          sx={{ borderRadius: 2 }}
-                        >
-                          {error}
-                        </Alert>
-                      )}
-                    </Box>
-                  </Fade>
-
-                  <Fade in={!!response} timeout={300}>
-                    <Box>
-                      {response && (
-                        <Alert
-                          severity="success"
-                          icon={<CheckCircle />}
-                          sx={{ borderRadius: 2 }}
-                        >
-                          {response.message}
-                        </Alert>
-                      )}
-                    </Box>
-                  </Fade>
-
-                  {/* Upload Button */}
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleUpload}
-                    disabled={uploading || !selectedFile}
-                    startIcon={
-                      uploading ? (
-                        <CircularProgress size={20} color="inherit" />
-                      ) : (
-                        <CloudUpload />
-                      )
-                    }
-                    sx={{
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontWeight: "bold",
-                      textTransform: "none",
-                      backgroundColor: theme.palette.primary.main,
-                      "&:hover": {
-                        backgroundColor: theme.palette.primary.dark,
-                        transform: "translateY(-1px)",
-                      },
-                      "&:disabled": {
-                        backgroundColor:
-                          theme.palette.action.disabledBackground,
-                      },
-                    }}
-                  >
-                    {uploading ? "Uploading Users..." : "Upload Users"}
-                  </Button>
-                </Stack>
+                    textTransform: "none",
+                    backgroundColor: theme.palette.primary.main,
+                    "&:hover": {
+                      backgroundColor: theme.palette.primary.dark,
+                      transform: "translateY(-1px)",
+                    },
+                    "&:disabled": {
+                      backgroundColor:
+                        theme.palette.action.disabledBackground,
+                    },
+                  }}
+                >
+                  {uploading ? "Uploading Users..." : "Upload Users"}
+                </Button>
               </CardContent>
             </Card>
 
@@ -554,7 +556,7 @@ const AddUsers = () => {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <Error sx={{ color: 'error.main', mr: 1 }} />
+                          <ErrorIcon sx={{ color: 'error.main', mr: 1 }} />
                           <Typography variant="h6" color="error.main" fontWeight="bold">
                             Failed
                           </Typography>
@@ -593,82 +595,7 @@ const AddUsers = () => {
                     </Box>
                   </Box>
 
-                        {/* Charts Section */}
-                        {(actualSuccessCount + actualFailedCount + actualExistingCount) > 0 && (
-                    <Box sx={{ display: 'flex', gap: 3, mb: 3, flexDirection: { xs: 'column', md: 'row' } }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Card sx={{ borderRadius: 2, height: '100%' }}>
-                          <CardHeader
-                            title="Upload Results Distribution"
-                            subheader="Visual breakdown of upload results"
-                          />
-                          <CardContent>
-                            <ResponsiveContainer width="100%" height={300}>
-                              <PieChart>
-                                <Pie
-                                  data={[
-                                    { name: 'Successful', value: actualSuccessCount, color: theme.palette.success.main },
-                                    { name: 'Failed', value: actualFailedCount, color: theme.palette.error.main },
-                                    { name: 'Existing', value: actualExistingCount, color: theme.palette.warning.main }
-                                  ].filter(item => item.value > 0)}
-                                  cx="50%"
-                                  cy="50%"
-                                  innerRadius={60}
-                                  outerRadius={120}
-                                  paddingAngle={5}
-                                  dataKey="value"
-                                >
-                                  {[
-                                    { name: 'Successful', value: actualSuccessCount, color: theme.palette.success.main },
-                                    { name: 'Failed', value: actualFailedCount, color: theme.palette.error.main },
-                                    { name: 'Existing', value: actualExistingCount, color: theme.palette.warning.main }
-                                  ].filter(item => item.value > 0).map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                  ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend />
-                              </PieChart>
-                            </ResponsiveContainer>
-                          </CardContent>
-                        </Card>
-                      </Box>
-
-                    <Box sx={{ flex: 1 }}>
-                      <Card sx={{ borderRadius: 2, height: '100%' }}>
-                        <CardHeader
-                          title="Results Summary"
-                          subheader="Detailed statistics comparison"
-                        />
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <BarChart
-                              data={[
-                                { category: 'Successful', count: actualSuccessCount, color: theme.palette.success.main },
-                                { category: 'Failed', count: actualFailedCount, color: theme.palette.error.main },
-                                { category: 'Existing', count: actualExistingCount, color: theme.palette.warning.main }
-                              ]}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="category" />
-                              <YAxis />
-                              <Tooltip />
-                              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                {[
-                                  { category: 'Successful', count: actualSuccessCount, color: theme.palette.success.main },
-                                  { category: 'Failed', count: actualFailedCount, color: theme.palette.error.main },
-                                  { category: 'Existing', count: actualExistingCount, color: theme.palette.warning.main }
-                                ].map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
-                    </Box>
-                  </Box>
-                  )}
+                      
 
                   {/* User Lists Section */}
                   <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', lg: 'row' } }}>
@@ -717,7 +644,7 @@ const AddUsers = () => {
                       <Box sx={{ flex: 1, minWidth: '300px' }}>
                         <Card sx={{ borderRadius: 2, height: '100%' }}>
                           <CardHeader
-                            avatar={<Error color="error" />}
+                            avatar={<ErrorIcon color="error" />}
                             title="Failed to Add Users"
                             subheader={`${response.failedUsers.length} users`}
                             action={

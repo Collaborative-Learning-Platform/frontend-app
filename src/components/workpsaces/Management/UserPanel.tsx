@@ -14,6 +14,7 @@ import {
   Typography,
   Alert,
   Snackbar,
+  Skeleton,
 } from "@mui/material";
 import { Clear, Delete, UploadFile } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
@@ -43,9 +44,10 @@ interface Props {
   workspaceId: string;
   users: User[];
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+  loading?: boolean;
 }
 
-export default function UsersPanel({ workspaceId, users, setUsers }: Props) {
+export default function UsersPanel({ workspaceId, users, setUsers, loading = false }: Props) {
   const theme = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -275,30 +277,79 @@ export default function UsersPanel({ workspaceId, users, setUsers }: Props) {
         Users
       </Typography>
       <List>
-        {users.map((user) => (
-          <ListItem
-            key={user.userId}
-            secondaryAction={
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                onClick={() => handleDeleteUser(user.userId)}
-              >
-                <Delete />
-              </IconButton>
-            }
-          >
-            <ListItemAvatar>
-              <Avatar src={user.avatar}>{user.name.charAt(0)}</Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              primary={`${user.name} (${user.role})`}
-              secondary={`${user.email} - Joined: ${new Date(
-                user.joinedAt
-              ).toLocaleDateString()}`}
-            />
-          </ListItem>
-        ))}
+        {loading ? (
+          // Loading skeleton for users
+          Array.from({ length: 5 }).map((_, index) => (
+            <ListItem 
+              key={index}
+              secondaryAction={
+                <IconButton edge="end" disabled>
+                  <Skeleton variant="circular" width={24} height={24} />
+                </IconButton>
+              }
+              sx={{
+                py: 1.5,
+                border: `1px solid transparent`,
+                borderRadius: 2,
+                mb: 1,
+                background: `${theme.palette.background.paper}`,
+              }}
+            >
+              <ListItemAvatar>
+                <Skeleton 
+                  variant="circular" 
+                  width={40} 
+                  height={40}
+                  animation="wave"
+                />
+              </ListItemAvatar>
+              <ListItemText
+                primary={
+                  <Skeleton 
+                    variant="text" 
+                    width={`${Math.random() * 30 + 40}%`} 
+                    height={24} 
+                    sx={{ mb: 0.5 }}
+                    animation="wave"
+                  />
+                }
+                secondary={
+                  <Skeleton 
+                    variant="text" 
+                    width={`${Math.random() * 40 + 50}%`} 
+                    height={20}
+                    animation="wave"
+                  />
+                }
+              />
+            </ListItem>
+          ))
+        ) : (
+          users.map((user) => (
+            <ListItem
+              key={user.userId}
+              secondaryAction={
+                <IconButton
+                  edge="end"
+                  aria-label="delete"
+                  onClick={() => handleDeleteUser(user.userId)}
+                >
+                  <Delete />
+                </IconButton>
+              }
+            >
+              <ListItemAvatar>
+                <Avatar src={user.avatar}>{user.name.charAt(0)}</Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={`${user.name} (${user.role})`}
+                secondary={`${user.email} - Joined: ${new Date(
+                  user.joinedAt
+                ).toLocaleDateString()}`}
+              />
+            </ListItem>
+          ))
+        )}
       </List>
 
       {/* Snackbar for Success */}

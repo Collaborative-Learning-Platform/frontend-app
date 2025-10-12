@@ -1,5 +1,5 @@
 import { Box, Paper, Typography } from "@mui/material";
-import SignInPage from "./SignInPage";
+import SignInForm from "../../components/signIn/SignInForm";
 import LoginIllustration from "../../assets/login_illustration.png";
 
 export default function SignInLayout() {
@@ -61,7 +61,7 @@ export default function SignInLayout() {
             Continue your learning journey
           </Typography>
 
-          <SignInPage />
+          <SignInForm />
         </Paper>
       </Box>
     </Box>

@@ -56,18 +56,26 @@ export default function WorkspaceManagementPage() {
   const [tabValue, setTabValue] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [loadingGroups, setLoadingGroups] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   useEffect(() => {
     const fetchWorkspace = async () => {
       try {
         if (!workspaceId) return;
 
+        // Fetch workspace details
         const wsRes = await axiosInstance.get(`/workspace/getWorkspace/${workspaceId}`);
         if (wsRes.data.success) setWorkspace(wsRes.data.data);
 
+        // Fetch groups
+        setLoadingGroups(true);
         const groupsRes = await axiosInstance.get(`/workspace/groups/fetchGroups/${workspaceId}`);
         if (groupsRes.data.success) setGroups(groupsRes.data.data);
+        setLoadingGroups(false);
 
+        // Fetch users
+        setLoadingUsers(true);
         const usersRes = await axiosInstance.get(`/workspace/users/fetch/${workspaceId}`);
         if (usersRes.data.success) {
         const extractedUsers: User[] = usersRes.data.data.map((wu: UserWorkspace) => ({
@@ -79,9 +87,12 @@ export default function WorkspaceManagementPage() {
             avatar: wu.user.avatar || "",
         }));
           setUsers(extractedUsers);
-          
         }
+        setLoadingUsers(false);
+          
       } catch (err: any) {
+        setLoadingGroups(false);
+        setLoadingUsers(false);
         if(err?.response?.data?.message === "Failed to fetch user details from Auth Service"){
           setError("Failed to load users: Auth Service is unreachable");
           return;
@@ -125,6 +136,7 @@ export default function WorkspaceManagementPage() {
           setGroups={setGroups}
           setError={setError}
           setSuccess={setSuccess}
+          loading={loadingGroups}
         />
       )}
 
@@ -133,8 +145,7 @@ export default function WorkspaceManagementPage() {
           workspaceId={workspaceId!}
           users={users}
           setUsers={setUsers}
-          
-          
+          loading={loadingUsers}
         />
       )}
     </Container>

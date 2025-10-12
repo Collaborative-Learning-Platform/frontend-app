@@ -18,6 +18,7 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -43,6 +44,7 @@ interface Props {
   setGroups: React.Dispatch<React.SetStateAction<Group[]>>;
   setError: (msg: string | null) => void;
   setSuccess: (msg: string | null) => void;
+  loading?: boolean;
 }
 
 export default function GroupsPanel({
@@ -51,6 +53,7 @@ export default function GroupsPanel({
   setGroups,
   setError,
   setSuccess,
+  loading = false,
 }: Props) {
   const [newGroup, setNewGroup] = useState({ name: "", description: "" });
   const [openAddMembers, setOpenAddMembers] = useState(false);
@@ -251,7 +254,89 @@ export default function GroupsPanel({
           />
         </Stack>
         
-        {mainGroups.length === 0 ? (
+        {loading ? (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(auto-fill, minmax(320px, 1fr))",
+                lg: "repeat(auto-fill, minmax(350px, 1fr))",
+              },
+              gap: 3,
+            }}
+          >
+            {[1, 2, 3].map((item) => (
+              <Card
+                key={item}
+                elevation={0}
+                sx={{
+                  position: "relative",
+                  borderRadius: 3,
+                  border: `1px solid ${theme.palette.divider}`,
+                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}06 100%)`,
+                  overflow: "hidden",
+                  minHeight: 220,
+                }}
+              >
+                <CardContent sx={{ p: 3, display: "flex", flexDirection: "column", height: "100%" }}>
+                  {/* Header with avatar and title */}
+                  <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 3 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+                      <Skeleton 
+                        variant="circular" 
+                        width={48} 
+                        height={48} 
+                        sx={{ mr: 2 }}
+                        animation="wave"
+                      />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Skeleton 
+                          variant="text" 
+                          width="75%" 
+                          height={32} 
+                          sx={{ mb: 0.5 }} 
+                          animation="wave"
+                        />
+                        <Skeleton 
+                          variant="rectangular" 
+                          width={90} 
+                          height={24} 
+                          sx={{ borderRadius: 1.5 }} 
+                          animation="wave"
+                        />
+                      </Box>
+                    </Box>
+                    <Skeleton 
+                      variant="circular" 
+                      width={32} 
+                      height={32}
+                      animation="wave"
+                    />
+                  </Box>
+
+                  {/* Description */}
+                  <Box sx={{ flexGrow: 1, mb: 3 }}>
+                    <Skeleton variant="text" width="100%" height={20} sx={{ mb: 0.5 }} animation="wave" />
+                    <Skeleton variant="text" width="85%" height={20} sx={{ mb: 0.5 }} animation="wave" />
+                    <Skeleton variant="text" width="70%" height={20} animation="wave" />
+                  </Box>
+
+                  {/* Footer */}
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Skeleton variant="text" width="45%" height={20} />
+                    <Skeleton 
+                      variant="rectangular" 
+                      width={70} 
+                      height={36} 
+                      sx={{ borderRadius: 1 }} 
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        ) : mainGroups.length === 0 ? (
           <Card
             elevation={0}
             sx={{
@@ -429,7 +514,7 @@ export default function GroupsPanel({
       </Box>
 
       {/* Student Created Custom Groups */}
-      {customGroups.length > 0 && (
+      {(loading || customGroups.length > 0) && (
         <Box sx={{ mt: 6 }}>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
             <Typography variant="h5" fontWeight={600}>
@@ -446,18 +531,97 @@ export default function GroupsPanel({
             />
           </Stack>
           
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(auto-fill, minmax(320px, 1fr))",
-                lg: "repeat(auto-fill, minmax(350px, 1fr))",
-              },
-              gap: 3,
-            }}
-          >
-            {customGroups.map((group) => (
+          {loading ? (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(auto-fill, minmax(320px, 1fr))",
+                  lg: "repeat(auto-fill, minmax(350px, 1fr))",
+                },
+                gap: 3,
+              }}
+            >
+              {[1, 2].map((item) => (
+                <Card
+                  key={item}
+                  elevation={0}
+                  sx={{
+                    position: "relative",
+                    borderRadius: 3,
+                    border: `1px solid ${theme.palette.divider}`,
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.secondary.main}06 100%)`,
+                    overflow: "hidden",
+                    minHeight: 220,
+                  }}
+                >
+                  <CardContent sx={{ p: 3, display: "flex", flexDirection: "column", height: "100%" }}>
+                    {/* Header with avatar and title */}
+                    <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 3 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+                        <Skeleton 
+                          variant="circular" 
+                          width={48} 
+                          height={48} 
+                          sx={{ mr: 2 }}
+                          animation="wave"
+                        />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Skeleton 
+                            variant="text" 
+                            width="70%" 
+                            height={32} 
+                            sx={{ mb: 0.5 }} 
+                          />
+                          <Skeleton 
+                            variant="rectangular" 
+                            width={110} 
+                            height={24} 
+                            sx={{ borderRadius: 1.5 }} 
+                          />
+                        </Box>
+                      </Box>
+                      <Skeleton 
+                        variant="circular" 
+                        width={32} 
+                        height={32}
+                      />
+                    </Box>
+
+                    {/* Description */}
+                    <Box sx={{ flexGrow: 1, mb: 3 }}>
+                      <Skeleton variant="text" width="95%" height={20} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="text" width="80%" height={20} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="text" width="65%" height={20} />
+                    </Box>
+
+                    {/* Footer */}
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <Skeleton variant="text" width="50%" height={20} />
+                      <Skeleton 
+                        variant="circular" 
+                        width={32} 
+                        height={32}
+                      />
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(auto-fill, minmax(320px, 1fr))",
+                  lg: "repeat(auto-fill, minmax(350px, 1fr))",
+                },
+                gap: 3,
+              }}
+            >
+              {customGroups.map((group) => (
               <Card
                 key={group.groupId}
                 elevation={0}
@@ -560,7 +724,8 @@ export default function GroupsPanel({
                 </CardContent>
               </Card>
             ))}
-          </Box>
+            </Box>
+          )}
         </Box>
       )}
       <AddMembersDialog

@@ -33,7 +33,7 @@ const validatePassword = (password: string) => {
   return "";
 };
 
-export default function SignInPage() {
+export default function SignInForm() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const [touched, setTouched] = useState({ email: false, password: false });
