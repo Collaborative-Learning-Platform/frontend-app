@@ -28,23 +28,29 @@ interface GroupData {
   name: string;
   description: string;
   memberCount: number;
-  members: Array<{ userId: string; name: string; email: string; role: string; avatar: string }>;
+  members: Array<{
+    userId: string;
+    name: string;
+    email: string;
+    role: string;
+    avatar: string;
+  }>;
   recentActivity: string;
-  type?: "Main" | "Custom";
+  type?: 'Main' | 'Custom';
 }
 
 const GroupPage = () => {
-  const { workspaceId, groupId } = useParams<{ workspaceId: string; groupId: string }>();
-  const { name,user_id } = useAuth();
+  const { workspaceId, groupId } = useParams<{
+    workspaceId: string;
+    groupId: string;
+  }>();
+  const { name, user_id } = useAuth();
   const [workspaceName, setWorkspaceName] = useState<string>('');
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState<GroupData | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
   const [addMembersOpen, setAddMembersOpen] = useState(false);
   const { showSnackbar } = useSnackbar();
-
-  
-
 
   useEffect(() => {
     if (!workspaceId) {
@@ -53,65 +59,85 @@ const GroupPage = () => {
     }
 
     const fetchWorkspaceData = async (workspaceId: string) => {
-    try {
-      const response = await axiosInstance.get(`/workspace/getWorkspace/${workspaceId}`);
-      if (response.data.success) {
-        setWorkspaceName(response.data.data.name);
-        
+      try {
+        const response = await axiosInstance.get(
+          `/workspace/getWorkspace/${workspaceId}`
+        );
+        if (response.data.success) {
+          setWorkspaceName(response.data.data.name);
+        }
+      } catch (error) {
+        console.error('Error fetching workspace data:', error);
       }
-    } catch (error) {
-      console.error("Error fetching workspace data:", error);
-    }
-   };
-   fetchWorkspaceData(workspaceId!);
-
+    };
+    fetchWorkspaceData(workspaceId!);
   }, [workspaceId]);
 
-
-
-
   useEffect(() => {
-    if (!groupId){
+    if (!groupId) {
       navigate(-1);
       return;
-    } ;
+    }
 
     const fetchGroupData = async (groupId: string) => {
-      try{
-        const response = await axiosInstance.get(`/workspace/groups/${groupId}/fetchDetails`);
-        console.log("Fetched group data:", response.data);
+      try {
+        const response = await axiosInstance.get(
+          `/workspace/groups/${groupId}/fetchDetails`
+        );
+        console.log('Fetched group data:', response.data);
         setGroupData({
-        id: response.data.data.id || '',
-        name: `${response.data.data.name}` || 'Group Name',
-        description:
-          response.data.data.description || 'No description available',
-        memberCount: response.data.data.memberCount || 0,
-        members: response.data.data.members || [],
-        recentActivity: response.data.data.recentActivity || 'No recent activity',
-        type: response.data.data.type || "Custom",
-      });
+          id: response.data.data.id || '',
+          name: `${response.data.data.name}` || 'Group Name',
+          description:
+            response.data.data.description || 'No description available',
+          memberCount: response.data.data.memberCount || 0,
+          members: response.data.data.members || [],
+          recentActivity:
+            response.data.data.recentActivity || 'No recent activity',
+          type: response.data.data.type || 'Custom',
+        });
       } catch (error) {
-        console.error("Error fetching group data:", error);
+        console.error('Error fetching group data:', error);
       }
-    }
+    };
     fetchGroupData(groupId!);
-  }, [groupId,workspaceName]);
+  }, [groupId, workspaceName]);
 
-
-  const handleTabChange = (_: any, newValue: number) => {
+  const handleTabChange = async (_: any, newValue: number) => {
     setTabIndex(newValue);
   };
 
-  const handleNavigateToWhiteboard = () => navigate(`/whiteboard/${groupId}`);
+  const handleNavigateToWhiteboard = async () => {
+    // API call to Log the whiteboard join activity
+    try {
+      await axiosInstance.post('/analytics/log-activity', {
+        category: 'COLLABORATION',
+        activity_type: 'JOINED_WHITEBOARD',
+        metadata: {
+          groupId,
+          workspaceId,
+          groupName: groupData?.name,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to log whiteboard join activity:', error);
+    }
+
+    navigate(`/whiteboard/${groupId}`);
+  };
+
   const handleNavigateToEditor = () => navigate(`/document-editor/${groupId}`);
   const handleAddUsers = () => setAddMembersOpen(true);
-
 
   if (!groupData) {
     return (
       <Box sx={{ py: 4, px: 2 }}>
         <Skeleton variant="text" width="40%" height={40} />
-        <Skeleton variant="rectangular" height={250} sx={{ mt: 2, borderRadius: 2 }} />
+        <Skeleton
+          variant="rectangular"
+          height={250}
+          sx={{ mt: 2, borderRadius: 2 }}
+        />
       </Box>
     );
   }
@@ -121,10 +147,10 @@ const GroupPage = () => {
       sx={{
         py: { xs: 1, sm: 2, md: 3 },
         px: { xs: 1, sm: 2, md: 3 },
-        width: "100%",
+        width: '100%',
         flexGrow: 1,
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
         mx: 'auto',
       }}
     >
@@ -145,7 +171,9 @@ const GroupPage = () => {
           }}
         >
           <Dashboard sx={{ mr: 0.5 }} />
-          <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>{workspaceName}</Typography>
+          <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>
+            {workspaceName}
+          </Typography>
         </Link>
 
         <Typography
@@ -153,7 +181,7 @@ const GroupPage = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            
+
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             maxWidth: '200px',
@@ -196,6 +224,7 @@ const GroupPage = () => {
           {tabIndex === 2 && <ResourceSection groupId={groupId || ''} />}
           {tabIndex === 3 && (
             <GroupChat
+              groupName={groupData.name}
               groupId={groupId || ''}
               currentUserName={name || 'Anonymous'}
               currentUserId={user_id || ''}
