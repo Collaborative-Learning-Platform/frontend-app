@@ -43,7 +43,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
   const theme = useTheme();
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { role, user_id } = useAuth();
+  const { role } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -133,7 +133,6 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
     try {
       // Log the quiz start activity
       await axiosInstance.post('/analytics/log-activity', {
-        userId: user_id,
         category: 'QUIZ',
         activity_type: 'STARTED_QUIZ',
         metadata: {

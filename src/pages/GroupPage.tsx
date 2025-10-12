@@ -111,7 +111,6 @@ const GroupPage = () => {
     // API call to Log the whiteboard join activity
     try {
       await axiosInstance.post('/analytics/log-activity', {
-        userId: user_id,
         category: 'COLLABORATION',
         activity_type: 'JOINED_WHITEBOARD',
         metadata: {
@@ -225,6 +224,7 @@ const GroupPage = () => {
           {tabIndex === 2 && <ResourceSection groupId={groupId || ''} />}
           {tabIndex === 3 && (
             <GroupChat
+              groupName={groupData.name}
               groupId={groupId || ''}
               currentUserName={name || 'Anonymous'}
               currentUserId={user_id || ''}
