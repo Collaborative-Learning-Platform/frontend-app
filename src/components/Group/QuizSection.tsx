@@ -129,6 +129,28 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
 
   const visibleQuizzes = getVisibleQuizzes();
 
+  const handleStartQuiz = async (quiz: QuizItem) => {
+    try {
+      // Log the quiz start activity
+      await axiosInstance.post('/analytics/log-activity', {
+        category: 'QUIZ',
+        activity_type: 'STARTED_QUIZ',
+        metadata: {
+          quizId: quiz.quizId,
+          quizTitle: quiz.title,
+          groupId: groupId,
+          description: quiz.description,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to log quiz start activity:', error);
+      // Continue anyway - don't block quiz start if logging fails
+    }
+
+    // Navigate to quiz (existing logic)
+    navigate(`/quiz/attempt/${quiz.quizId}`);
+  };
+
   return (
     <Card id="quiz-section" sx={{ bgcolor: theme.palette.background.paper }}>
       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
@@ -335,9 +357,7 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
                           }
                           size="small"
                           disabled={isExpired || isUnpublished}
-                          onClick={() =>
-                            navigate(`/quiz/attempt/${quiz.quizId}`)
-                          }
+                          onClick={() => handleStartQuiz(quiz)}
                           sx={{
                             minWidth: 100,
                             bgcolor: quiz.completed

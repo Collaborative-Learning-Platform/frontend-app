@@ -237,6 +237,20 @@ export default function CreateQuizPage() {
       };
       const response = await axiosInstance.post('/quiz/create', payload);
       console.log('Response:', response.data);
+
+      //Log the successful Quiz creation event:
+      await axiosInstance.post('/analytics/log-activity', {
+        category: 'QUIZ',
+        activity_type: 'CREATED_QUIZ',
+        metadata: {
+          quizId: response.data.quizId,
+          quizTitle: response.data.title,
+          groupName: quiz.group,
+          groupId: response.data.groupId,
+          dueDate: response.data.dueDate,
+        },
+      });
+
       setTimeout(() => navigate('/tutor-dashboard'), 1500);
     } catch (error) {
       console.error(error);
