@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import { Send, MoreVert, Circle } from '@mui/icons-material';
 import { io, Socket } from 'socket.io-client';
-import { useAuth } from '../../contexts/Authcontext';
 import axiosInstance from '../../api/axiosInstance';
 
 interface Message {
