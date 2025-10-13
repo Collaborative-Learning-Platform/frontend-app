@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogActions,
   Avatar,
+  CircularProgress,
 } from '@mui/material';
 import {
   AccessTime as AccessTimeIcon,
@@ -42,13 +43,14 @@ import {
   QuizResult,
   QuizAttemptProps,
 } from './types';
-
+import { useAuth } from '../../contexts/Authcontext';
 export default function QuizAttempt({
   quiz: propQuiz,
   isPreview = false,
 }: QuizAttemptProps) {
   const navigate = useNavigate();
   const { quizId } = useParams();
+  const {user_id} = useAuth();
 
   const [quiz, setQuiz] = useState<Quiz | null>(propQuiz || null);
   const [answers, setAnswers] = useState<Answer[]>([]);
@@ -58,6 +60,7 @@ export default function QuizAttempt({
   const [showResults, setShowResults] = useState(false);
   const [quizResults, setQuizResults] = useState<QuizResult | null>(null);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [alert, setAlert] = useState<{
     type: 'error' | 'success' | 'warning';
     message: string;
@@ -163,27 +166,29 @@ export default function QuizAttempt({
   ) => {
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 3000);
-  };
-  const handleAnswerChange = (questionNo: number, answer: string | number) => {
-    console.log(`Answer change: Question ${questionNo}, Answer: ${answer}`);
+  };  const handleAnswerChange = useCallback((questionNo: number, answer: string | number) => {
+    if (import.meta.env.DEV) {
+      console.log(`Answer change: Question ${questionNo}, Answer: ${answer}`);
+    }
+    
     setAnswers((prev) => {
       const existingIndex = prev.findIndex((a) => a.questionId === questionNo);
+      const newAnswer = { questionId: questionNo, answer };
+      
       if (existingIndex >= 0) {
+        // Update existing answer
         const newAnswers = [...prev];
-        newAnswers[existingIndex] = { questionId: questionNo, answer };
-        console.log('Updated answers:', newAnswers);
+        newAnswers[existingIndex] = newAnswer;
         return newAnswers;
       } else {
-        const newAnswers = [...prev, { questionId: questionNo, answer }];
-        console.log('Added new answer:', newAnswers);
-        return newAnswers;
+        // Add new answer
+        return [...prev, newAnswer];
       }
     });
-  };
-  const getAnswer = (questionNo: number): string | number => {
-    const answer = answers.find((a) => a.questionId === questionNo);
-    return answer?.answer ?? '';
-  };
+  }, []);const getAnswer = useMemo(() => {
+    const answerMap = new Map(answers.map(answer => [answer.questionId, answer.answer]));
+    return (questionNo: number): string | number => answerMap.get(questionNo) ?? '';
+  }, [answers]);
   const handleSubmit = (autoSubmit = false) => {
     if (!quiz) return;
 
@@ -215,9 +220,9 @@ export default function QuizAttempt({
 
     calculateResults();
   };
-  const calculateResults = () => {
+  const calculateResults = async () => {
     if (!quiz) return;
-
+    setIsSubmitting(true);
     const timeSpent = Math.round((Date.now() - startTime) / 1000);
     let totalScore = 0;
     const questionResults: QuestionResult[] = [];
@@ -246,9 +251,41 @@ export default function QuizAttempt({
       timeSpent,
       questionResults,
     };
+    const answersObject = answers.reduce((acc, answer) => {
+      acc[answer.questionId] = answer.answer;
+      return acc;
+    }, {} as Record<number, string | number>);
+    const quizAttemptData = {
+      quizId: quiz.quizId!,
+      userId: user_id, 
+      attempt_no: 1, 
+      score: totalScore,
+      time_taken: timeSpent,
+      submitted_at: new Date(),
+      answers: answersObject,
+    };
+    try {
+      const response = await axiosInstance.post(
+        '/quiz/attempt/create',
+        quizAttemptData
+      );
+      console.log('Quiz attempt submitted:', response.data);
 
+      if (response.data.success) {
+        showAlert('success', 'Quiz submitted successfully!');
+      } else {
+        showAlert('error', 'Failed to submit quiz. Please try again.');
+        return;
+      }
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+      showAlert('error', 'Failed to submit quiz. Please try again.');
+      return;
+    } finally{
+      setIsSubmitting(false);
+    }
     setQuizResults(results);
-    setShowResults(true);
+    setShowResults(true)
   };
   const checkAnswer = (
     question: QuizQuestion,
@@ -527,7 +564,7 @@ export default function QuizAttempt({
           {alert.message}
         </Alert>
       )}
-      {/* Quiz Header */}
+
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Box
@@ -614,8 +651,8 @@ export default function QuizAttempt({
             </Box>
           )}
         </CardContent>
-      </Card>{' '}
-      {/* Questions */}
+      </Card>
+
       <Box sx={{ mb: 4 }}>
         {quiz.questions.map((question, index) => (
           <Card
@@ -661,39 +698,43 @@ export default function QuizAttempt({
                 {typeof question.question === 'string'
                   ? question.question
                   : question.question.text}
-              </Typography>{' '}
-              {/* Multiple Choice */}
-              {question.question_type === 'MCQ' && (
+              </Typography>              {question.question_type === 'MCQ' && (
                 <FormControl component="fieldset" fullWidth>
-                  {/* Debug: Show question structure */}
                   {import.meta.env.DEV && (
-                    <Typography variant="caption" color="text.secondary">
-                      Debug - Question type: {typeof question.question}, Has
-                      options:{' '}
-                      {typeof question.question === 'object' &&
-                      question.question.options
-                        ? 'Yes'
-                        : 'No'}
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+                      Debug - Question type: {typeof question.question}, Has options: {
+                        typeof question.question === 'object' && question.question.options ? 'Yes' : 'No'
+                      }
                     </Typography>
-                  )}{' '}
+                  )}
                   <RadioGroup
-                    value={(() => {
-                      const answer = getAnswer(question.question_no);
-                      return answer !== '' ? answer.toString() : '';
-                    })()}
+                    value={getAnswer(question.question_no).toString()}
                     onChange={(e) => {
-                      console.log(
-                        `Selecting option ${e.target.value} for question ${question.question_no}`
-                      );
-                      handleAnswerChange(
-                        question.question_no,
-                        parseInt(e.target.value)
-                      );
+                      if (import.meta.env.DEV) {
+                        console.log(`Selecting option ${e.target.value} for question ${question.question_no}`);
+                      }
+                      handleAnswerChange(question.question_no, parseInt(e.target.value));
                     }}
                   >
-                    {typeof question.question === 'object' &&
-                    question.question.options ? (
-                      question.question.options.map((option, optionIndex) => (
+                    {(() => {
+                      // Extract options with proper type checking
+                      const options = typeof question.question === 'object' && question.question.options 
+                        ? question.question.options 
+                        : null;
+
+                      if (!options) {
+                        return (
+                          <Typography color="error" variant="body2" sx={{ p: 2, bgcolor: 'error.50', borderRadius: 1 }}>
+                            MCQ question missing options. Question: {
+                              typeof question.question === 'string' 
+                                ? question.question 
+                                : question.question.text
+                            }
+                          </Typography>
+                        );
+                      }
+
+                      return options.map((option, optionIndex) => (
                         <FormControlLabel
                           key={optionIndex}
                           value={optionIndex.toString()}
@@ -705,25 +746,19 @@ export default function QuizAttempt({
                             px: 2,
                             borderRadius: 1,
                             border: '1px solid transparent',
+                            transition: 'all 0.2s ease',
                             '&:hover': {
                               bgcolor: 'action.hover',
+                              borderColor: 'primary.main',
                             },
                           }}
                         />
-                      ))
-                    ) : (
-                      // Question doesn't have options - provide default ones or show error
-                      <Typography color="error" variant="body2">
-                        MCQ question missing options. Question:{' '}
-                        {typeof question.question === 'string'
-                          ? question.question
-                          : question.question.text}
-                      </Typography>
-                    )}
+                      ));
+                    })()}
                   </RadioGroup>
                 </FormControl>
               )}
-              {/* True/False */}
+              
               {question.question_type === 'true_false' && (
                 <FormControl component="fieldset" fullWidth>
                   {' '}
@@ -811,11 +846,18 @@ export default function QuizAttempt({
 
           <Button
             variant="contained"
-            startIcon={<SendIcon />}
+            startIcon={
+              isSubmitting ? <CircularProgress size={20} /> : <SendIcon />
+            }
             onClick={() => handleSubmit()}
             color={isPreview ? 'info' : 'primary'}
+            disabled={isSubmitting}
           >
-            {isPreview ? 'Finish Preview' : 'Submit Quiz'}
+            {isSubmitting
+              ? 'Submitting...'
+              : isPreview
+              ? 'Finish Preview'
+              : 'Submit Quiz'}
           </Button>
         </Stack>
 
