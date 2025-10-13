@@ -50,9 +50,25 @@ export const FlashCardGenerator = () => {
 
   const handleChangeResource = (event: SelectChangeEvent) => {
     const resourceId = event.target.value;
-    const resource = resources.find((r) => r.resourceId === resourceId);
+    const resource = filteredResources.find((r) => r.resourceId === resourceId);
     setSelectedResource(resource || null);
   };
+
+  // Check if the file type is supported by Gemini
+  const supportedMimeTypes = [
+    'application/pdf',
+    'text/plain',
+    'image/png',
+    'image/jpeg',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+  ];
+
+  // Filter resources to only show supported MIME types
+  const filteredResources = resources.filter((resource) =>
+    supportedMimeTypes.includes(resource.contentType)
+  );
 
   // Generate flashcards function
   const handleGenerateFlashcards = async () => {
@@ -215,16 +231,16 @@ export const FlashCardGenerator = () => {
                       onChange={handleChangeResource}
                       displayEmpty
                       inputProps={{ 'aria-label': 'Resource' }}
-                      disabled={loading || resources.length === 0}
+                      disabled={loading || filteredResources.length === 0}
                     >
                       <MenuItem value="" disableRipple>
                         {loading
                           ? 'Loading resources...'
-                          : resources.length === 0
-                          ? 'No resources available'
+                          : filteredResources.length === 0
+                          ? 'No supported resources available'
                           : 'Select a resource'}
                       </MenuItem>
-                      {resources.map((resource) => (
+                      {filteredResources.map((resource) => (
                         <MenuItem
                           key={resource.resourceId}
                           value={resource.resourceId}
