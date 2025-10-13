@@ -6,127 +6,160 @@ import {
   Card,
   CardHeader,
   CardContent,
-  Stack,
   MenuItem,
   FormControl,
   Select,
   FormHelperText,
-  IconButton,
-} from "@mui/material";
-import type { SelectChangeEvent } from "@mui/material";
-import { visuallyHidden } from "@mui/utils";
-import FileUploadIcon from "@mui/icons-material/FileUpload";
-import DescriptionIcon from "@mui/icons-material/Description";
-import SettingsSuggestIcon from "@mui/icons-material/SettingsSuggest";
-import AddIcon from "@mui/icons-material/Add";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useState } from "react";
+} from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material';
+import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import AddIcon from '@mui/icons-material/Add';
+import { useState, useEffect } from 'react';
+import axiosInstance from '../api/axiosInstance';
+import { useAuth } from '../contexts/Authcontext';
+import { useSnackbar } from '../contexts/SnackbarContext';
+
+// Define Resource interface based on DTO requirements
+interface Resource {
+  resourceId: string;
+  fileName: string;
+  contentType: string;
+  description: string;
+}
 
 export const FlashCardGenerator = () => {
+  const Snackbar = useSnackbar();
+  const { user_id } = useAuth();
   const theme = useTheme();
-  const numberOfCardsOptions = ["Five", "Ten", "Twenty"];
-  const [numberOfCards, SetNumberOfCards] = useState("Ten");
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log("File uploaded:", file.name);
-      setUploadedFile(file);
-    }
-  };
-
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragOver(false);
-
-    const files = event.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      // Check file type
-      const allowedTypes = [".pdf", ".doc", ".docx", ".txt", ".md"];
-      const fileExtension = file.name
-        .toLowerCase()
-        .substr(file.name.lastIndexOf("."));
-
-      if (allowedTypes.includes(fileExtension)) {
-        console.log("File dropped:", file.name);
-        setUploadedFile(file);
-      } else {
-        alert("Please upload a valid file type: PDF, DOC, DOCX, TXT, or MD");
-      }
-    }
-  };
+  const numberOfCardsOptions = [
+    { value: 5, text: 'Five' },
+    { value: 10, text: 'Ten' },
+  ];
+  const [numberOfCards, SetNumberOfCards] = useState(10);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(
+    null
+  );
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const handleChangeCardNumber = (event: SelectChangeEvent) => {
-    const newCardNumber = event.target.value;
+    const newCardNumber = Number(event.target.value);
     SetNumberOfCards(newCardNumber);
   };
 
-  const handleSubmit = async () => {
-    if (!uploadedFile) {
-      alert("Please upload a file first!");
-      return;
-    }
+  const handleChangeResource = (event: SelectChangeEvent) => {
+    const resourceId = event.target.value;
+    const resource = filteredResources.find((r) => r.resourceId === resourceId);
+    setSelectedResource(resource || null);
+  };
 
-    const formData = new FormData();
-    formData.append("file", uploadedFile);
-    formData.append("numberOfCards", numberOfCards);
+  // Check if the file type is supported by Gemini
+  const supportedMimeTypes = [
+    'application/pdf',
+    'text/plain',
+    'image/png',
+    'image/jpeg',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+  ];
+
+  // Filter resources to only show supported MIME types
+  const filteredResources = resources.filter((resource) =>
+    supportedMimeTypes.includes(resource.contentType)
+  );
+
+  // Generate flashcards function
+  const handleGenerateFlashcards = async () => {
+    if (!selectedResource) return;
 
     try {
-      // Dummy API call - replace with actual backend endpoint
-      console.log("Submitting to backend:", {
-        file: uploadedFile.name,
-        numberOfCards: numberOfCards,
-      });
+      setGenerating(true);
 
-      // const response = await fetch('/api/generate-flashcards', {
-      //   method: 'POST',
-      //   body: formData
-      // });
+      const requestData = {
+        resourceId: selectedResource.resourceId,
+        fileName: selectedResource.fileName,
+        contentType: selectedResource.contentType,
+        description:
+          selectedResource.description ||
+          'Educational resource for flashcard generation',
+        number: numberOfCards,
+      };
 
-      alert(`Generating ${numberOfCards} flashcards from ${uploadedFile.name}`);
+      console.log('Generating flashcards with data:', requestData);
+
+      const response = await axiosInstance.post(
+        '/aiservice/generate-flashcards',
+        requestData,
+        {
+          timeout: 120000, // 2 minutes specifically for flashcard generation
+        }
+      );
+
+      console.log('Flashcards generated successfully:', response.data);
+
+      // Handle success
+      if (response.data.success) {
+        Snackbar.showSnackbar(
+          'Flashcards generated successfully! Check Flashcard Library :)!'
+        );
+      }
     } catch (error) {
-      console.error("Error generating flashcards:", error);
-      alert("Error generating flashcards. Please try again.");
+      console.error('Error generating flashcards:', error);
+      Snackbar.showSnackbar('Failed to generate flashcards. Please try again.');
+    } finally {
+      setGenerating(false);
     }
   };
 
-  const handleRemoveFile = (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setUploadedFile(null);
-  };
+  // Fetch user groups and their resources
+  useEffect(() => {
+    const fetchResources = async () => {
+      if (!user_id) return;
 
-  const handleUploadAreaClick = (event: React.MouseEvent) => {
-    if (uploadedFile) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
+      try {
+        setLoading(true);
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
+        // Get user's groups
+        const groupsResponse = await getGroupsByUser(user_id);
+        if (groupsResponse.success && groupsResponse.data.length > 0) {
+          console.log(groupsResponse.data);
+          const groupIds = groupsResponse.data.map(
+            (group: any) => group.groupId
+          );
+
+          // Get resources for those groups
+          const resourcesResponse = await getResourcesByGroupIds(groupIds);
+          if (resourcesResponse.success && resourcesResponse.data) {
+            console.log(resourcesResponse.data);
+            setResources(resourcesResponse.data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResources();
+  }, [user_id]);
+
+  async function getGroupsByUser(userId: string) {
+    const response = await axiosInstance.post('/workspace/groups/by-user', {
+      userId,
+    });
+    return response.data;
+  }
+
+  async function getResourcesByGroupIds(groups: string[]) {
+    const response = await axiosInstance.post(
+      '/storage/resources/by-group-ids',
+      { groups }
+    );
+    return response.data;
+  }
 
   return (
     <Box>
@@ -138,126 +171,6 @@ export const FlashCardGenerator = () => {
           Transform your study materials into flashcards!
         </Typography>
       </Box>
-      <Card>
-        <CardHeader
-          avatar={<FileUploadIcon />}
-          title="Upload Study Material"
-          subheader="Upload the files you want us to generate the flashcards for"
-        />
-        <CardContent>
-          <label
-            htmlFor={uploadedFile ? undefined : "file-upload"}
-            style={{
-              display: "block",
-              cursor: uploadedFile ? "default" : "pointer",
-            }}
-            onClick={handleUploadAreaClick}
-          >
-            <Box
-              sx={{
-                border: `2px dashed`,
-                borderColor: isDragOver
-                  ? theme.palette.primary.main
-                  : theme.palette.grey[300],
-                borderRadius: theme.shape.borderRadius,
-                p: theme.spacing(6), // Increased from 4 to 6 for more height
-                py: theme.spacing(8), // Extra vertical padding for more height
-                minHeight: "200px", // Added minimum height for better proportions
-                textAlign: "center",
-                transition: theme.transitions.create(
-                  ["border-color", "background-color"],
-                  {
-                    duration: theme.transitions.duration.short,
-                  }
-                ),
-                width: "100%",
-                boxSizing: "border-box",
-                display: "block",
-                backgroundColor: isDragOver
-                  ? theme.palette.primary.light
-                  : "transparent",
-                "&:hover": {
-                  borderColor: theme.palette.primary.main,
-                  backgroundColor: theme.palette.background.paper,
-                },
-              }}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              <input
-                type="file"
-                id="file-upload"
-                onChange={handleFileUpload}
-                style={visuallyHidden}
-                accept=".pdf,.doc,.docx,.txt,.md"
-              />
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center", // Added to center content vertically
-                  gap: theme.spacing(3), // Increased from 2 to 3 for more spacing
-                  height: "100%", // Take full height of parent
-                }}
-              >
-                {uploadedFile ? (
-                  // Show uploaded file details
-                  <Box>
-                    <CheckCircleIcon
-                      sx={{
-                        fontSize: theme.spacing(6), // 48px equivalent
-                        color: "success.main",
-                      }}
-                    />
-                    <Box sx={{ textAlign: "center" }}>
-                      <Typography
-                        variant="body2"
-                        fontWeight="medium"
-                        color="success.main"
-                      >
-                        File uploaded successfully!
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: theme.spacing(1) }}>
-                        {uploadedFile.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatFileSize(uploadedFile.size)}
-                      </Typography>
-                    </Box>
-                    <IconButton
-                      onClick={handleRemoveFile}
-                      color="error"
-                      sx={{ mt: theme.spacing(1) }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                ) : (
-                  // Show upload prompt
-                  <Box>
-                    <DescriptionIcon
-                      sx={{
-                        fontSize: theme.spacing(6), // 48px equivalent
-                        color: "text.secondary",
-                      }}
-                    />
-                    <Box>
-                      <Typography variant="body2" fontWeight="medium">
-                        Click to upload or drag and drop
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        PDF, DOC, DOCX, TXT, MD (max 50MB)
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
-              </Box>
-            </Box>
-          </label>
-        </CardContent>
-      </Card>
       <Card sx={{ mt: theme.spacing(3) }}>
         <CardHeader
           avatar={<SettingsSuggestIcon />}
@@ -268,49 +181,150 @@ export const FlashCardGenerator = () => {
           <CardContent>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: theme.spacing(2),
-                mb: theme.spacing(2),
+                display: 'flex',
+                flexDirection: 'column',
+                gap: theme.spacing(3),
+                alignItems: 'flex-start',
               }}
             >
-              <Stack gap={2}>
-                <FormControl sx={{ minWidth: 120 }}>
-                  <Select
-                    value={numberOfCards}
-                    onChange={handleChangeCardNumber}
-                    displayEmpty
-                    inputProps={{ "aria-label": "Card Number" }}
-                  >
-                    {numberOfCardsOptions.map((cardNumber, index) => (
-                      <MenuItem key={index} value={cardNumber}>
-                        {cardNumber}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>Select the number of Cards</FormHelperText>
-                </FormControl>
-
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={handleSubmit}
-                  disabled={!uploadedFile}
+              {/* Horizontal row for both dropdowns and button */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: theme.spacing(3),
+                  alignItems: 'flex-start',
+                  flexWrap: 'wrap',
+                  justifyContent: 'flex-start',
+                }}
+              >
+                {/* Resource dropdown with its own container for mobile alignment */}
+                <Box
                   sx={{
-                    backgroundColor: theme.palette.primary.main,
-                    color: theme.palette.common.white,
-                    "&:hover": {
-                      backgroundColor: theme.palette.primary.dark,
-                    },
-                    "&:disabled": {
-                      backgroundColor: theme.palette.action.disabledBackground,
-                      color: theme.palette.text.disabled,
-                    },
+                    paddingLeft: theme.spacing(4), // Left padding only
+                    order: { xs: 1, sm: 0 }, // First on mobile
                   }}
                 >
-                  Generate Flashcards
-                </Button>
-              </Stack>
+                  <FormControl
+                    sx={{
+                      width: 350,
+                      maxWidth: 350,
+                      minWidth: 350,
+                      '& .MuiSelect-select': {
+                        overflow: 'hidden !important',
+                        textOverflow: 'ellipsis !important',
+                        whiteSpace: 'nowrap !important',
+                        paddingRight: '40px !important',
+                        maxWidth: '310px !important', // Account for padding and arrow space
+                      },
+                      '& .MuiInputBase-root': {
+                        overflow: 'hidden',
+                      },
+                      '& .MuiInputBase-input': {
+                        overflow: 'hidden !important',
+                        textOverflow: 'ellipsis !important',
+                        whiteSpace: 'nowrap !important',
+                      },
+                    }}
+                  >
+                    <Select
+                      value={selectedResource?.resourceId || ''}
+                      onChange={handleChangeResource}
+                      displayEmpty
+                      inputProps={{ 'aria-label': 'Resource' }}
+                      disabled={loading || filteredResources.length === 0}
+                    >
+                      <MenuItem value="" disableRipple>
+                        {loading
+                          ? 'Loading resources...'
+                          : filteredResources.length === 0
+                          ? 'No supported resources available'
+                          : 'Select a resource'}
+                      </MenuItem>
+                      {filteredResources.map((resource) => (
+                        <MenuItem
+                          key={resource.resourceId}
+                          value={resource.resourceId}
+                          disableRipple
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {resource.fileName ||
+                            `Resource ${resource.resourceId}`}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>
+                      Select the resource for flashcard generation
+                    </FormHelperText>
+                  </FormControl>
+                </Box>
+
+                {/* Number of cards dropdown with container for mobile alignment */}
+                <Box
+                  sx={{
+                    paddingLeft: theme.spacing(4), // Match resource dropdown container padding
+                    order: { xs: 2, sm: 0 }, // Second on mobile
+                  }}
+                >
+                  <FormControl
+                    sx={{
+                      width: 200,
+                    }}
+                  >
+                    <Select
+                      value={numberOfCards.toString()}
+                      onChange={handleChangeCardNumber}
+                      displayEmpty
+                      inputProps={{ 'aria-label': 'Card Number' }}
+                    >
+                      {numberOfCardsOptions.map((cardNumber, index) => (
+                        <MenuItem
+                          key={index}
+                          value={cardNumber.value}
+                          disableRipple
+                        >
+                          {cardNumber.text}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>Select the number of Cards</FormHelperText>
+                  </FormControl>
+                </Box>
+
+                {/* Button with container for mobile alignment */}
+                <Box
+                  sx={{
+                    paddingLeft: theme.spacing(4), // Match resource dropdown container padding
+                    order: { xs: 3, sm: 0 }, // Third on mobile
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    disabled={!selectedResource || generating}
+                    onClick={handleGenerateFlashcards}
+                    sx={{
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.common.white,
+                      height: '56px', // Match the height of the select inputs
+                      width: { xs: '350px', sm: 'auto' }, // Match resource dropdown width on mobile
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.dark,
+                      },
+                      '&:disabled': {
+                        backgroundColor:
+                          theme.palette.action.disabledBackground,
+                        color: theme.palette.text.disabled,
+                      },
+                    }}
+                  >
+                    {generating ? 'Generating...' : 'Generate Flashcards'}
+                  </Button>
+                </Box>
+              </Box>
             </Box>
           </CardContent>
         </Box>

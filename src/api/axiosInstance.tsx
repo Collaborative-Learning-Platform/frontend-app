@@ -1,11 +1,11 @@
-import axios from "axios";
+import axios from 'axios';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASEURL,
-  timeout: 5000,
+  timeout: 60000, // Increased to 60 seconds for AI operations
   withCredentials: true,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
@@ -41,28 +41,27 @@ axiosInstance.interceptors.response.use(
     if (
       error.response?.status === 403 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/refresh-token")
+      !originalRequest.url.includes('/auth/refresh-token')
     ) {
       originalRequest._retry = true;
 
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          await axiosInstance.get("/auth/refresh-token");
-          console.log("✅ Token refreshed successfully");
+          await axiosInstance.get('/auth/refresh-token');
+          console.log('✅ Token refreshed successfully');
           isRefreshing = false;
           onRefreshed(true);
           return axiosInstance(originalRequest);
         } catch (refreshError) {
-          console.error("Refresh failed");
+          console.error('Refresh failed');
           isRefreshing = false;
           onRefreshed(false);
 
-          
-          alert("Your session has expired. Please log in again.");
+          alert('Your session has expired. Please log in again.');
 
-          localStorage.removeItem("user_id");
-          window.location.href = "/login";
+          localStorage.removeItem('user_id');
+          window.location.href = '/login';
           return Promise.reject(refreshError);
         }
       } else {

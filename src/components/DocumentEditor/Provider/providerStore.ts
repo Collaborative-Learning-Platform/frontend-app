@@ -17,7 +17,7 @@ export function getProvider(room: string): ProviderWrapper {
     let isConnected = false;
 
     const provider = new HocuspocusProvider({
-      url: import.meta.env.VITE_WS_DOCUMENT_URL || 'ws://localhost:1234', // or your server URL
+      url: `${import.meta.env.VITE_WS_DOCUMENT_URL}/` || 'ws://localhost:1234', // or your server URL
       name: room,
       document: ydoc,
 
