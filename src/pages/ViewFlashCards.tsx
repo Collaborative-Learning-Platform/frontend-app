@@ -5,14 +5,14 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { FlashcardCarousel } from '../components/Flashcard/Flashcard Carousel/FlashcardCarousel';
 
 export default function ViewFlashCards() {
   const theme = useTheme();
   const location = useLocation();
-  const { flashcardId } = useParams();
+  // const { flashcardId } = useParams();
 
   // Get flashcard data from navigation state
   const [cards, setCards] = useState([]);
