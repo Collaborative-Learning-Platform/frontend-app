@@ -18,7 +18,6 @@ import { AdminOverview } from './components/AdminDashboard/AdminOverview';
 import { SystemSettings } from './components/AdminDashboard/SystemSettings';
 import ProfilePage from './pages/ProfilePage';
 import WhiteboardPage from './pages/Whiteboard';
-// import { DocumentEditor } from "./pages/DocumentEditor";
 import { FlashCardGenerator } from './pages/FlashCardGenerator';
 import { FlashCardLibrary } from './pages/FlashCardLibrary';
 import { FlashCardLayout } from './pages/FlashCardLayout';
@@ -59,8 +58,7 @@ function App() {
           <Route path="/quiz" element={<CreateQuizPage />} />
           <Route path="/tutor-analytics" element={<TutorAnalytics />} />
         </Route>
-        
-        
+
         {/* All authenticated users */}
         <Route
           element={<ProtectedRoute allowedRoles={['user', 'admin', 'tutor']} />}
@@ -89,7 +87,10 @@ function App() {
           <Route path="/quiz/attempt/:quizId" element={<QuizAttempt />} />
           <Route path="/user-documents" element={<UserDocuments />} />
           <Route element={<FlashCardLayout />}>
-            <Route path="/flashcard/view" element={<ViewFlashCards />} />
+            <Route
+              path="/flashcard/view/:flashcardId"
+              element={<ViewFlashCards />}
+            />
             <Route
               path="/flashcard-generator"
               element={<FlashCardGenerator />}
