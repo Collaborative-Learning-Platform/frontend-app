@@ -24,39 +24,6 @@ interface FlashcardCarouselProps {
 }
 
 export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
-  //   const cards = [
-  //     {
-  //       id: 1,
-  //       front: 'What is the capital of France?',
-  //       back: 'Paris 🇫🇷',
-  //       category: 'Geography',
-  //     },
-  //     {
-  //       id: 2,
-  //       front: 'Who developed the theory of relativity?',
-  //       back: 'Albert Einstein 🧠',
-  //       category: 'Science',
-  //     },
-  //     {
-  //       id: 3,
-  //       front: 'What is 7 × 8?',
-  //       back: '56 ➕',
-  //       category: 'Math',
-  //     },
-  //     {
-  //       id: 4,
-  //       front: 'Which language runs in a web browser?',
-  //       back: 'JavaScript 🌐',
-  //       category: 'Programming',
-  //     },
-  //     {
-  //       id: 5,
-  //       front: 'Who painted the Mona Lisa?',
-  //       back: 'Leonardo da Vinci 🎨',
-  //       category: 'Art',
-  //     },
-  //   ];
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const theme = useTheme();
 
@@ -95,18 +62,18 @@ export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
     <Box
       sx={{
         width: '100%',
-        maxWidth: '800px',
+        maxWidth: '600px', // Reduced from 800px
         mx: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: 4,
+        gap: 3, // Reduced from 4
       }}
     >
       {/* Card Display */}
       <Box
         sx={{
           position: 'relative',
-          height: { xs: 400, md: 500 },
+          height: { xs: 300, sm: 350, md: 400 }, // Reduced from 400/500
         }}
       >
         <Flashcard
@@ -122,14 +89,14 @@ export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        spacing={2}
+        spacing={1.5} // Reduced from 2
       >
         <IconButton
           onClick={goToPrevious}
           disabled={cards.length <= 1}
           sx={{
-            width: 56,
-            height: 56,
+            width: 48, // Reduced from 56
+            height: 48, // Reduced from 56
             border: '1px solid',
             borderColor: 'divider',
             borderRadius: '50%',
@@ -143,7 +110,9 @@ export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
         </IconButton>
 
         {/* Progress Indicator */}
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          {' '}
+          {/* Reduced from 2 */}
           <Typography
             variant="body2"
             sx={{
@@ -153,16 +122,15 @@ export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
           >
             {currentIndex + 1} / {cards.length}
           </Typography>
-
           <Stack direction="row" spacing={1}>
             {cards.map((_, index) => (
               <Box
                 key={index}
                 onClick={() => goToCard(index)}
                 sx={{
-                  width: index === currentIndex ? 24 : 8,
-                  height: 8,
-                  borderRadius: '4px',
+                  width: index === currentIndex ? 20 : 6, // Reduced from 24 : 8
+                  height: 6, // Reduced from 8
+                  borderRadius: '3px', // Reduced from 4px
                   cursor: 'pointer',
                   transition: 'all 0.3s',
                   backgroundColor:
@@ -185,8 +153,8 @@ export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
           onClick={goToNext}
           disabled={cards.length <= 1}
           sx={{
-            width: 56,
-            height: 56,
+            width: 48, // Reduced from 56
+            height: 48, // Reduced from 56
             border: '1px solid',
             borderColor: 'divider',
             borderRadius: '50%',

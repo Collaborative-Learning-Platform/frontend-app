@@ -11,66 +11,77 @@ import {
   IconButton,
   Menu,
   MenuItem,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ShareIcon from "@mui/icons-material/Share";
-import BookIcon from "@mui/icons-material/Book";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import PeopleIcon from "@mui/icons-material/People";
-import { useState } from "react";
+  Tooltip,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ShareIcon from '@mui/icons-material/Share';
+import BookIcon from '@mui/icons-material/Book';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PeopleIcon from '@mui/icons-material/People';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/Authcontext';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
+
+interface FlashcardContent {
+  id: number;
+  front: string;
+  back: string;
+}
 
 interface FlashcardSet {
-  id: string;
+  flashcardId: string;
   title: string;
   subject: string;
   cardCount: number;
+  flashcardContent: FlashcardContent[];
+  resourceId: string;
   createdAt: string;
-  isShared: boolean;
 }
 
 export const FlashCardLibrary = () => {
+  const { user_id } = useAuth();
   const theme = useTheme();
-  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
+  const [flashcardSets, setFlashcardSets] = useState<FlashcardSet[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for flashcard library
-  const flashcardSets: FlashcardSet[] = [
-    {
-      id: "1",
-      title: "Biology Chapter 5: Cell Structure",
-      subject: "Biology",
-      cardCount: 15,
-      createdAt: "2024-01-15",
-      isShared: false,
-    },
-    {
-      id: "2",
-      title: "Spanish Vocabulary: Food & Dining",
-      subject: "Spanish",
-      cardCount: 20,
-      createdAt: "2024-01-12",
-      isShared: true,
-    },
-    {
-      id: "3",
-      title: "Physics: Newton's Laws",
-      subject: "Physics",
-      cardCount: 10,
-      createdAt: "2024-01-10",
-      isShared: false,
-    },
-    {
-      id: "4",
-      title: "World History: Renaissance",
-      subject: "History",
-      cardCount: 25,
-      createdAt: "2024-01-08",
-      isShared: true,
-    },
-  ];
+  // Fetch flashcards from the API
+  useEffect(() => {
+    const fetchFlashcards = async () => {
+      if (!user_id) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log('Fetching flashcards for user:', user_id);
+
+        const response = await axiosInstance.get('/aiservice/flashcards');
+
+        console.log('Flashcards API response:', response.data);
+
+        if (response.data.success) {
+          setFlashcardSets(response.data.data || []);
+        } else {
+          setError(response.data.message || 'Failed to fetch flashcards');
+        }
+      } catch (error) {
+        console.error('Error fetching flashcards:', error);
+        setError('Failed to load flashcards. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFlashcards();
+  }, [user_id]);
 
   const filteredSets = flashcardSets.filter(
     (set) =>
@@ -93,7 +104,14 @@ export const FlashCardLibrary = () => {
 
   const getSelectedSet = () => {
     if (!selectedSetId) return null;
-    return flashcardSets.find((set) => set.id === selectedSetId);
+    return flashcardSets.find((set) => set.flashcardId === selectedSetId);
+  };
+
+  // Navigate to view flashcards page
+  const handleCardClick = (flashcardSet: FlashcardSet) => {
+    navigate(`/flashcard/view/${flashcardSet.flashcardId}`, {
+      state: { flashcardSet },
+    });
   };
 
   const handleShareSet = () => {
@@ -116,12 +134,34 @@ export const FlashCardLibrary = () => {
     handleMenuClose();
   };
 
-  const handleDeleteSet = () => {
+  const handleDeleteSet = async () => {
     if (!selectedSetId) return;
     const selectedSet = getSelectedSet();
     if (selectedSet) {
-      console.log(`Deleting set: ${selectedSet.title}`);
-      // Implement delete logic here
+      try {
+        console.log(`Deleting set: ${selectedSet.title}`);
+
+        const response = await axiosInstance.delete(
+          `/aiservice/flashcards/${selectedSetId}`
+        );
+
+        if (response.data.success) {
+          // Remove the deleted flashcard from the local state
+          setFlashcardSets((prevSets) =>
+            prevSets.filter((set) => set.flashcardId !== selectedSetId)
+          );
+          console.log('Flashcard set deleted successfully');
+        } else {
+          console.error(
+            'Failed to delete flashcard set:',
+            response.data.message
+          );
+          alert('Failed to delete flashcard set. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting flashcard set:', error);
+        alert('Failed to delete flashcard set. Please try again.');
+      }
     }
     handleMenuClose();
   };
@@ -132,7 +172,7 @@ export const FlashCardLibrary = () => {
 
   return (
     <>
-      <Box sx={{ mb: theme.spacing(3), width: "100%" }}>
+      <Box sx={{ mb: theme.spacing(3), width: '100%' }}>
         <Typography variant="h5" fontWeight="bold">
           Flashcard Library
         </Typography>
@@ -164,94 +204,190 @@ export const FlashCardLibrary = () => {
         </CardContent>
       </Card>
 
-      <Box sx={{ mb: theme.spacing(3) }}>
-        <Typography variant="h6" sx={{ mb: theme.spacing(2) }}>
-          Your Collections ({filteredSets.length})
-        </Typography>
+      {/* Loading State */}
+      {loading && (
+        <Box sx={{ textAlign: 'center', py: theme.spacing(4) }}>
+          <Typography variant="body1" color="text.secondary">
+            Loading your flashcards...
+          </Typography>
+        </Box>
+      )}
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: theme.spacing(2),
-          }}
-        >
-          {filteredSets.map((set) => (
-            <Card
-              key={set.id}
-              sx={{
-                cursor: "pointer",
-                "&:hover": { boxShadow: theme.shadows[4] },
-              }}
-            >
-              <CardHeader
-                avatar={<LibraryBooksIcon />}
-                action={
-                  <IconButton onClick={(e) => handleMenuClick(e, set.id)}>
-                    <MoreVertIcon />
-                  </IconButton>
-                }
-                title={
-                  <Typography variant="subtitle1" fontWeight="medium" noWrap>
-                    {set.title}
-                  </Typography>
-                }
-                subheader={
+      {/* Error State */}
+      {error && (
+        <Box sx={{ textAlign: 'center', py: theme.spacing(4) }}>
+          <Typography variant="body1" color="error">
+            {error}
+          </Typography>
+        </Box>
+      )}
+
+      {/* No flashcards found */}
+      {!loading && !error && flashcardSets.length === 0 && (
+        <Box sx={{ textAlign: 'center', py: theme.spacing(4) }}>
+          <Typography variant="body1" color="text.secondary">
+            No flashcards found. Create your first flashcard set to get started!
+          </Typography>
+        </Box>
+      )}
+
+      {/* Results */}
+      {!loading && !error && flashcardSets.length > 0 && (
+        <Box sx={{ mb: theme.spacing(3) }}>
+          <Typography variant="h6" sx={{ mb: theme.spacing(2) }}>
+            Your Collections ({filteredSets.length})
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: theme.spacing(2),
+            }}
+          >
+            {filteredSets.map((set) => (
+              <Card
+                key={set.flashcardId}
+                onClick={() => handleCardClick(set)}
+                sx={{
+                  cursor: 'pointer',
+                  '&:hover': { boxShadow: theme.shadows[4] },
+                  height: 'fit-content',
+                }}
+              >
+                <CardHeader
+                  avatar={<LibraryBooksIcon />}
+                  action={
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click when clicking menu
+                        handleMenuClick(e, set.flashcardId);
+                      }}
+                      sx={{ p: 1 }}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  }
+                  title={
+                    <Tooltip title={set.title} arrow placement="top">
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="medium"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          pr: 1, // Add right padding to prevent overlap with action button
+                        }}
+                      >
+                        {set.title}
+                      </Typography>
+                    </Tooltip>
+                  }
+                  subheader={
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mt: 1,
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <Tooltip title={set.subject} arrow placement="top">
+                        <Chip
+                          label={set.subject}
+                          size="small"
+                          icon={<BookIcon />}
+                          variant="outlined"
+                          sx={{
+                            maxWidth: '150px',
+                            '& .MuiChip-label': {
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            },
+                          }}
+                        />
+                      </Tooltip>
+                      {set.resourceId && (
+                        <Chip
+                          label="Shared"
+                          size="small"
+                          icon={<PeopleIcon />}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  }
+                  sx={{
+                    pb: 1, // Reduce bottom padding of header
+                    '& .MuiCardHeader-content': {
+                      overflow: 'hidden',
+                      minWidth: 0, // Allow content to shrink
+                    },
+                  }}
+                />
+                <CardContent sx={{ pt: 0 }}>
                   <Box
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mt: 1,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 2,
                     }}
                   >
-                    <Chip
-                      label={set.subject}
-                      size="small"
-                      icon={<BookIcon />}
-                      variant="outlined"
-                    />
-                    {set.isShared && (
-                      <Chip
-                        label="Shared"
-                        size="small"
-                        icon={<PeopleIcon />}
-                        color="primary"
-                        variant="outlined"
-                      />
-                    )}
-                  </Box>
-                }
-              />
-              <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    color="primary.main"
-                    fontWeight="bold"
-                  >
-                    {set.cardCount} cards
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <AccessTimeIcon
-                      sx={{ fontSize: 16, color: "text.secondary" }}
-                    />
-                    <Typography variant="caption" color="text.secondary">
-                      {formatDate(set.createdAt)}
+                    <Typography
+                      variant="h6"
+                      color="primary.main"
+                      fontWeight="bold"
+                      sx={{ flexShrink: 0 }}
+                    >
+                      {set.cardCount} cards
                     </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        minWidth: 0, // Allow to shrink
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <AccessTimeIcon
+                        sx={{
+                          fontSize: 16,
+                          color: 'text.secondary',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Tooltip
+                        title={`Created on ${formatDate(set.createdAt)}`}
+                        arrow
+                        placement="top"
+                      >
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            cursor: 'help',
+                          }}
+                        >
+                          {formatDate(set.createdAt)}
+                        </Typography>
+                      </Tooltip>
+                    </Box>
                   </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
         </Box>
-      </Box>
+      )}
 
       <Menu
         anchorEl={anchorEl}
@@ -263,7 +399,7 @@ export const FlashCardLibrary = () => {
           Share
         </MenuItem>
         <MenuItem onClick={handleEditSet}>Edit</MenuItem>
-        <MenuItem onClick={handleDeleteSet} sx={{ color: "error.main" }}>
+        <MenuItem onClick={handleDeleteSet} sx={{ color: 'error.main' }}>
           Delete
         </MenuItem>
       </Menu>
