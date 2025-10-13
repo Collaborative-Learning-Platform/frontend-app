@@ -110,7 +110,9 @@ export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
         </IconButton>
 
         {/* Progress Indicator */}
-        <Stack direction="row" spacing={1.5} alignItems="center"> {/* Reduced from 2 */}
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          {' '}
+          {/* Reduced from 2 */}
           <Typography
             variant="body2"
             sx={{
@@ -120,7 +122,6 @@ export function FlashcardCarousel({ cards }: FlashcardCarouselProps) {
           >
             {currentIndex + 1} / {cards.length}
           </Typography>
-
           <Stack direction="row" spacing={1}>
             {cards.map((_, index) => (
               <Box
