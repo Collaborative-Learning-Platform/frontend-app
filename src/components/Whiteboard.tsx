@@ -19,7 +19,6 @@ export default function Whiteboard({
     storeRef.current = createTLStore({ shapeUtils: defaultShapeUtils });
   }
   const store = storeRef.current;
-  // const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const isUpdating = useRef(false);
   const mountedRef = useRef(true);
@@ -220,7 +219,6 @@ export default function Whiteboard({
     ws.addEventListener("open", setupStoreListener);
 
     return () => {
-      // console.log("Cleaning up WebSocket connection");
       mountedRef.current = false;
 
       if (storeListenerRef.current) {
@@ -236,26 +234,11 @@ export default function Whiteboard({
   }, []);
 
   return (
-    <div style={{ height: "100vh", width: "100vw", position: "relative" }}>
-      {/* <div
-        style={{
-          position: "absolute",
-          top: 10,
-          left: "50%",
-          zIndex: 1000,
-          background: isConnected ? "#22c55e" : "#ef4444",
-          color: "white",
-          padding: "8px 12px",
-          borderRadius: "6px",
-          fontSize: "14px",
-          fontWeight: "bold",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-        }}
-      >
-        {isConnected ? "🟢 Connected" : "🔴 Disconnected"}
-      </div> */}
-
-      <Tldraw store={store} />
+    <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
+      <Tldraw
+        store={store}
+        licenseKey= {import.meta.env.VITE_TLDRAW_LICENSE_KEY}
+      />
     </div>
   );
 }
