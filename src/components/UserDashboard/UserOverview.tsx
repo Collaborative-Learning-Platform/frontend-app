@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -7,15 +7,18 @@ import {
   Typography,
   List,
   ListItem,
-  ListItemSecondaryAction,
+  // ListItemSecondaryAction,
   ListItemIcon,
   ListItemText,
   Divider,
-  Chip,
+  // Chip,
   Skeleton,
-} from "@mui/material";
-import SummaryCard from "./SummaryCard";
-import QuizCard from "./QuizCard";
+} from '@mui/material';
+import MessageIcon from '@mui/icons-material/Message';
+import GroupWorkIcon from '@mui/icons-material/GroupWork';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import SummaryCard from './SummaryCard';
+import QuizCard from './QuizCard';
 import {
   MenuBook as BookOpenIcon,
   Group as GroupIcon,
@@ -23,74 +26,52 @@ import {
   TrendingUp as TrendingUpIcon,
   EmojiEvents as AwardIcon,
   Description as FileTextIcon,
-  Edit as PenToolIcon,
-} from "@mui/icons-material";
-import axiosInstance from "../../api/axiosInstance";
-import { useAuth } from "../../contexts/Authcontext";
+} from '@mui/icons-material';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import axiosInstance from '../../api/axiosInstance';
+import { useAuth } from '../../contexts/Authcontext';
 
-const mockRecentActivity = [
-  {
-    id: 1,
-    type: "quiz",
-    title: "Completed Algorithm Quiz",
-    time: "2 hours ago",
-    score: 85,
-  },
-  {
-    id: 2,
-    type: "group",
-    title: "Joined Study Group: React Basics",
-    time: "1 day ago",
-  },
-  {
-    id: 3,
-    type: "resource",
-    title: "Downloaded: Linear Algebra Notes",
-    time: "2 days ago",
-  },
-  {
-    id: 4,
-    type: "whiteboard",
-    title: "Collaborated on: Database Design",
-    time: "3 days ago",
-  }]
+interface RecentActivityLog {
+  id: string;
+  category: string;
+  activity_type: string;
+  description: string;
+  time: string;
+}
 
 const mockUpcomingQuizzes = [
   {
     id: 1,
-    title: "Data Structures Quiz",
-    workspace: "Computer Science 101",
-    dueDate: "2024-01-20",
-    duration: "45 min",
+    title: 'Data Structures Quiz',
+    workspace: 'Computer Science 101',
+    dueDate: '2024-01-20',
+    duration: '45 min',
   },
   {
     id: 2,
-    title: "Calculus Integration",
-    workspace: "Mathematics Advanced",
-    dueDate: "2024-01-22",
-    duration: "60 min",
+    title: 'Calculus Integration',
+    workspace: 'Mathematics Advanced',
+    dueDate: '2024-01-22',
+    duration: '60 min',
   },
   {
     id: 3,
     title: "Newton's Laws",
-    workspace: "Physics Fundamentals",
-    dueDate: "2024-01-25",
-    duration: "30 min",
+    workspace: 'Physics Fundamentals',
+    dueDate: '2024-01-25',
+    duration: '30 min',
   },
-]
-
-
-
+];
 
 export function UserOverview() {
   const { user_id } = useAuth();
-  
+
   const [dashboardData, setDashboardData] = useState<{
     workspaces: number;
     groups: number;
     quizzes: any[];
     studyStreak: number;
-    recentActivity: any[];
+    recentActivity: RecentActivityLog[];
   }>({
     workspaces: 0,
     groups: 0,
@@ -103,20 +84,38 @@ export function UserOverview() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await axiosInstance.get(`/dashboard/userStats/${user_id}`);
-        console.log(res.data);
-        if (res.data.success) {
-          const data = res.data.data;
+        //Fetch user Stats
+        const statsRes = await axiosInstance.get(
+          `/dashboard/userStats/${user_id}`
+        );
+
+        // Fetch recent activity
+        const activityRes = await axiosInstance.get(
+          `/dashboard/recentActivity/${user_id}`
+        );
+
+        if (statsRes.data.success && activityRes.data.success) {
+          const statsData = statsRes.data.data;
+          const activityData = activityRes.data.data;
+
+          console.log('Recieved stats: ', statsData);
+          // console.log('Received activity data:', activityData);
+
+          // Debug log for first activity
+          if (activityData?.length > 0) {
+            console.log('First activity object:', activityData[0]);
+          }
+
           setDashboardData({
-            workspaces: data.workspaces || 0,
-            groups: data.groups || 0,
-            quizzes: data.quizzes || mockUpcomingQuizzes,
-            studyStreak: data.studyStreak?.currentStreak || 0,
-            recentActivity: data.recentActivity || mockRecentActivity,
+            workspaces: statsData.workspaces || 0,
+            groups: statsData.groups || 0,
+            quizzes: statsData.quizzes || mockUpcomingQuizzes,
+            studyStreak: statsData.studyStreak || 0,
+            recentActivity: activityData,
           });
         }
       } catch (err) {
-        console.error("Failed to fetch dashboard data:", err);
+        console.error('Failed to fetch dashboard data:', err);
       } finally {
         setLoading(false);
       }
@@ -124,17 +123,28 @@ export function UserOverview() {
     fetchDashboard();
   }, [user_id]);
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "quiz":
+  const getActivityIcon = (category: string | undefined) => {
+    if (!category) {
+      console.log('Category is undefined for activity');
+      return <BookOpenIcon />;
+    }
+    console.log('Activity category:', category);
+
+    switch (category.toUpperCase()) {
+      case 'QUIZ':
         return <AwardIcon />;
-      case "group":
+      case 'GENERAL':
         return <GroupIcon />;
-      case "resource":
+      case 'RESOURCE':
         return <FileTextIcon />;
-      case "whiteboard":
-        return <PenToolIcon />;
+      case 'COLLABORATION':
+        return <GroupWorkIcon />;
+      case 'COMMUNICATION':
+        return <MessageIcon />;
+      case 'AI_LEARNING':
+        return <AutoAwesomeIcon />;
       default:
+        console.log('Falling back to default icon for category:', category);
         return <BookOpenIcon />;
     }
   };
@@ -142,8 +152,8 @@ export function UserOverview() {
   return (
     <Box>
       {/* Summary Cards */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 3 }}>
-        {["Workspaces", "Groups", "Quizzes", "Study Streak"].map(
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+        {['Workspaces', 'Groups', 'Quizzes', 'Study Streak'].map(
           (title, idx) => {
             const valueMap = [
               dashboardData.workspaces,
@@ -155,15 +165,15 @@ export function UserOverview() {
               <BookOpenIcon />,
               <GroupIcon />,
               <AwardIcon />,
-              <CalendarIcon />,
+              <LocalFireDepartmentIcon />,
             ];
             return (
               <Box
                 sx={{
                   flex: {
-                    xs: "1 1 100%",
-                    sm: "1 1 calc(50% - 8px)",
-                    md: "1 1 calc(25% - 12px)",
+                    xs: '1 1 100%',
+                    sm: '1 1 calc(50% - 8px)',
+                    md: '1 1 calc(25% - 12px)',
                   },
                 }}
                 key={title}
@@ -174,13 +184,13 @@ export function UserOverview() {
                   <SummaryCard
                     title={title}
                     description={
-                      title === "Quizzes"
-                        ? "Completed this month"
-                        : title === "Study Streak"
-                        ? "Days studying continuously"
-                        : title === "Workspaces"
-                        ? "Active enrollments"
-                        : "Total groups"
+                      title === 'Quizzes'
+                        ? 'Completed this month'
+                        : title === 'Study Streak'
+                        ? 'Days studying continuously'
+                        : title === 'Workspaces'
+                        ? 'Active enrollments'
+                        : 'Total groups'
                     }
                     value={valueMap[idx]}
                     icon={iconMap[idx]}
@@ -194,13 +204,15 @@ export function UserOverview() {
       </Box>
 
       {/* Quizzes and Recent Activity */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {/* Upcoming Quizzes */}
-        <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" } }}>
-          <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
+          <Card
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+          >
             <CardHeader
               title={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CalendarIcon />
                   <Typography variant="h6">Upcoming Quizzes</Typography>
                 </Box>
@@ -223,8 +235,8 @@ export function UserOverview() {
                       id={quiz.id}
                       title={quiz.title}
                       workspace={quiz.workspaceName || quiz.workspaceId}
-                      duration={quiz.duration || "N/A"}
-                      dueDate={quiz.dueDate || "N/A"}
+                      duration={quiz.duration || 'N/A'}
+                      dueDate={quiz.dueDate || 'N/A'}
                     />
                   ))}
             </CardContent>
@@ -232,11 +244,13 @@ export function UserOverview() {
         </Box>
 
         {/* Recent Activity */}
-        <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" } }}>
-          <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
+          <Card
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+          >
             <CardHeader
               title={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <TrendingUpIcon />
                   <Typography variant="h6">Recent Activity</Typography>
                 </Box>
@@ -258,18 +272,22 @@ export function UserOverview() {
                   {dashboardData.recentActivity.map((activity, index) => (
                     <React.Fragment key={activity.id}>
                       <ListItem>
-                        <ListItemIcon>{getActivityIcon(activity.type)}</ListItemIcon>
+                        <ListItemIcon>
+                          {getActivityIcon(activity.category)}
+                        </ListItemIcon>
                         <ListItemText
-                          primary={activity.title}
+                          primary={activity.description}
                           secondary={activity.time}
                         />
-                        {activity.score && (
+                        {/* {activity.score && (
                           <ListItemSecondaryAction>
                             <Chip label={`${activity.score}%`} size="small" />
                           </ListItemSecondaryAction>
-                        )}
+                        )} */}
                       </ListItem>
-                      {index < dashboardData.recentActivity.length - 1 && <Divider />}
+                      {index < dashboardData.recentActivity.length - 1 && (
+                        <Divider />
+                      )}
                     </React.Fragment>
                   ))}
                 </List>
