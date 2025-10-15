@@ -1,27 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
   Avatar,
-  Chip,
+  // Chip,
   Paper,
   useTheme,
   alpha,
-} from "@mui/material";
-import { useAuth } from "../contexts/Authcontext";
+} from '@mui/material';
+import { useAuth } from '../contexts/Authcontext';
 const mockUser = {
-  name: "user",
-  role: "Student",
+  name: 'user',
+  role: 'Student',
   studyStreak: 7,
 };
-import axiosInstance from "../api/axiosInstance";
-
+import axiosInstance from '../api/axiosInstance';
 
 export default function WelcomeHeader() {
-  const { name, role ,user_id} = useAuth();
+  const { name, role, user_id } = useAuth();
   const theme = useTheme();
-  const [profilePictureURL,setProfilePictureURL] = useState<string|null>(null);
-  const userRole = role === "user" ? "Student" : role;
+  const [profilePictureURL, setProfilePictureURL] = useState<string | null>(
+    null
+  );
+  const userRole = role === 'user' ? 'Student' : role;
   const user = {
     ...mockUser,
     name: name || mockUser.name,
@@ -30,7 +31,10 @@ export default function WelcomeHeader() {
 
   const setS3ProfilePictureDownloadURL = async (userId: string) => {
     try {
-      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url', { userId });
+      const response = await axiosInstance.post(
+        '/storage/generate-profile-pic-download-url',
+        { userId }
+      );
       if (response.data.success) {
         setProfilePictureURL(response.data.downloadUrl);
       }
@@ -41,9 +45,8 @@ export default function WelcomeHeader() {
 
   // Fetch profile picture on component mount
   useEffect(() => {
-    if(!user_id) return;
+    if (!user_id) return;
     setS3ProfilePictureDownloadURL(user_id);
-    
   }, [user_id]);
 
   return (
@@ -60,34 +63,35 @@ export default function WelcomeHeader() {
     >
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           gap: 2,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Avatar src={profilePictureURL || undefined}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Avatar
+            src={profilePictureURL || undefined}
             sx={{
               width: { xs: 48, sm: 56 },
               height: { xs: 48, sm: 56 },
               bgcolor: theme.palette.common.white,
               color: theme.palette.primary.main,
-              fontWeight: "bold",
+              fontWeight: 'bold',
               boxShadow: 2,
             }}
           >
             {user.name
-              .split(" ")
+              .split(' ')
               .map((n) => n[0].toUpperCase())
-              .join("")}
+              .join('')}
           </Avatar>
 
           <Box>
             <Typography
               variant="h6"
               fontWeight="bold"
-              sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }}
+              sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
             >
               Welcome back, {user.name} 👋
             </Typography>
@@ -95,7 +99,7 @@ export default function WelcomeHeader() {
               variant="body2"
               sx={{
                 color: alpha(theme.palette.common.white, 0.9),
-                fontSize: { xs: "0.85rem", sm: "0.9rem" },
+                fontSize: { xs: '0.85rem', sm: '0.9rem' },
               }}
             >
               {user.role}
@@ -103,7 +107,7 @@ export default function WelcomeHeader() {
           </Box>
         </Box>
 
-        {/* Right: Streak Badge */}
+        {/* Right: Streak Badge
         {role === "user" &&
         <Chip
           label={`${user.studyStreak} day study streak 🔥`}
@@ -114,7 +118,7 @@ export default function WelcomeHeader() {
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
             px: 1,
           }}
-        /> }
+        /> } */}
       </Box>
     </Paper>
   );
