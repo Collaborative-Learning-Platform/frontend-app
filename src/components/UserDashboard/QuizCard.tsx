@@ -8,9 +8,10 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { Schedule as ClockIcon } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 type QuizCardProps = {
-  id: number;
+  id: string;
   title: string;
   workspace: string;
   duration: string;
@@ -24,10 +25,13 @@ const QuizCard = ({
   workspace,
   duration,
   dueDate,
-  onStart,
 }: QuizCardProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
+  const handleStartQuiz = (quizId: string) => {
+    navigate(`/quiz/attempt/${quizId}`);
+  };
 
   return (
     <Paper
@@ -127,7 +131,7 @@ const QuizCard = ({
           <Button
             variant="contained"
             size={isMobile ? "small" : "small"}
-            onClick={() => onStart?.(id)}
+            onClick={() => handleStartQuiz(id)}
             sx={{
               minWidth: { xs: 80, sm: "100%" },
               fontSize: { xs: "0.75rem", sm: "0.8rem" },

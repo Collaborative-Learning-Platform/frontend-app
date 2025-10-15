@@ -7,11 +7,9 @@ import {
   Typography,
   List,
   ListItem,
-  // ListItemSecondaryAction,
   ListItemIcon,
   ListItemText,
   Divider,
-  // Chip,
   Skeleton,
 } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
@@ -28,8 +26,8 @@ import {
   Description as FileTextIcon,
 } from '@mui/icons-material';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../contexts/Authcontext';
+import axiosInstance from '../../api/axiosInstance';
 
 interface RecentActivityLog {
   id: string;
@@ -38,30 +36,6 @@ interface RecentActivityLog {
   description: string;
   time: string;
 }
-
-const mockUpcomingQuizzes = [
-  {
-    id: 1,
-    title: 'Data Structures Quiz',
-    workspace: 'Computer Science 101',
-    dueDate: '2024-01-20',
-    duration: '45 min',
-  },
-  {
-    id: 2,
-    title: 'Calculus Integration',
-    workspace: 'Mathematics Advanced',
-    dueDate: '2024-01-22',
-    duration: '60 min',
-  },
-  {
-    id: 3,
-    title: "Newton's Laws",
-    workspace: 'Physics Fundamentals',
-    dueDate: '2024-01-25',
-    duration: '30 min',
-  },
-];
 
 export function UserOverview() {
   const { user_id } = useAuth();
@@ -80,39 +54,52 @@ export function UserOverview() {
     recentActivity: [],
   });
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchDashboard = async () => {
+      if (!user_id || user_id === 'null' || user_id === null) {
+        console.error('Invalid user_id:', user_id);
+        setLoading(false);
+        return;
+      }
+
       try {
-        //Fetch user Stats
-        const statsRes = await axiosInstance.get(
-          `/dashboard/userStats/${user_id}`
-        );
+        // Fetch all data in parallel
+        const [quizzesRes, statsRes, activityRes] = await Promise.all([
+          axiosInstance.get(`/quiz/user-group/${user_id}`),
+          axiosInstance.get(`/dashboard/userStats/${user_id}`),
+          axiosInstance.get(`/dashboard/recentActivity/${user_id}`),
+        ]);
 
-        // Fetch recent activity
-        const activityRes = await axiosInstance.get(
-          `/dashboard/recentActivity/${user_id}`
-        );
+        let upcomingQuizzesData = [];
+        if (quizzesRes.data.success) {
+          upcomingQuizzesData = quizzesRes.data.data.quizzes || [];
+        }
 
-        if (statsRes.data.success && activityRes.data.success) {
-          const statsData = statsRes.data.data;
-          const activityData = activityRes.data.data;
-
-          console.log('Recieved stats: ', statsData);
-          // console.log('Received activity data:', activityData);
-
+        let activityData = [];
+        if (activityRes.data.success) {
+          activityData = activityRes.data.data;
           // Debug log for first activity
           if (activityData?.length > 0) {
             console.log('First activity object:', activityData[0]);
           }
+        }
+        if (statsRes.data.success) {
+          const statsData = statsRes.data.data;
+          console.log('Received stats: ', statsData);
 
           setDashboardData({
             workspaces: statsData.workspaces || 0,
             groups: statsData.groups || 0,
-            quizzes: statsData.quizzes || mockUpcomingQuizzes,
+            quizzes: upcomingQuizzesData,
             studyStreak: statsData.studyStreak || 0,
             recentActivity: activityData,
           });
+        } else {
+          setDashboardData((prev) => ({
+            ...prev,
+            quizzes: upcomingQuizzesData,
+            recentActivity: activityData,
+          }));
         }
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
@@ -120,6 +107,7 @@ export function UserOverview() {
         setLoading(false);
       }
     };
+
     fetchDashboard();
   }, [user_id]);
 
@@ -149,6 +137,13 @@ export function UserOverview() {
     }
   };
 
+  const sortedQuizzes = [...dashboardData.quizzes]
+    .filter((quiz) => quiz.deadline)
+    .sort(
+      (a, b) => new Date(b.deadline).getTime() - new Date(a.deadline).getTime()
+    )
+    .slice(0, 4);
+
   return (
     <Box>
       {/* Summary Cards */}
@@ -162,10 +157,10 @@ export function UserOverview() {
               dashboardData.studyStreak,
             ];
             const iconMap = [
-              <BookOpenIcon />,
-              <GroupIcon />,
-              <AwardIcon />,
-              <LocalFireDepartmentIcon />,
+              <BookOpenIcon key="workspaces" />,
+              <GroupIcon key="groups" />,
+              <AwardIcon key="quizzes" />,
+              <LocalFireDepartmentIcon key="streak" />,
             ];
             return (
               <Box
@@ -229,14 +224,22 @@ export function UserOverview() {
                       sx={{ mb: 2, borderRadius: 1 }}
                     />
                   ))
-                : dashboardData.quizzes.map((quiz) => (
+                : sortedQuizzes.map((quiz) => (
                     <QuizCard
-                      key={quiz.id}
-                      id={quiz.id}
+                      key={quiz.quizId}
+                      id={quiz.quizId}
                       title={quiz.title}
-                      workspace={quiz.workspaceName || quiz.workspaceId}
-                      duration={quiz.duration || 'N/A'}
-                      dueDate={quiz.dueDate || 'N/A'}
+                      workspace={
+                        quiz.groupName || quiz.groupId || 'Unknown Workspace'
+                      }
+                      duration={
+                        quiz.timeLimit ? `${quiz.timeLimit} min` : 'N/A'
+                      }
+                      dueDate={
+                        new Date(
+                          quiz.deadline || quiz.createdAt
+                        ).toLocaleDateString() || 'N/A'
+                      }
                     />
                   ))}
             </CardContent>
@@ -279,11 +282,6 @@ export function UserOverview() {
                           primary={activity.description}
                           secondary={activity.time}
                         />
-                        {/* {activity.score && (
-                          <ListItemSecondaryAction>
-                            <Chip label={`${activity.score}%`} size="small" />
-                          </ListItemSecondaryAction>
-                        )} */}
                       </ListItem>
                       {index < dashboardData.recentActivity.length - 1 && (
                         <Divider />
