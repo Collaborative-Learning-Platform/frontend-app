@@ -27,11 +27,6 @@ import { Link } from 'react-router-dom';
 import { ThemeToggle, useTheme as useAppTheme } from '../theme';
 
 
-
-
-
-
-
 const LandingPage = () => {
   const theme = useTheme();
   const { mode } = useAppTheme();
