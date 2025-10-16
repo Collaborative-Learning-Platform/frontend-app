@@ -28,6 +28,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { User } from '../Types/User';
 import { Titlebar } from '../Toolbars/Titlebar';
 import { useAuth } from '../../../contexts/Authcontext';
+import { useUserSettings } from '../../../contexts/SettingsContext';
 
 const colors = [
   '#958DF1',
@@ -70,23 +71,20 @@ interface documentData {
 interface TiptapProps {
   provider: any;
   ydoc: any;
-  fontSize: string;
   documentData: documentData | null;
   isConnected: boolean;
 }
 
-const Tiptap = ({
-  ydoc,
-  provider,
-  fontSize,
-  documentData,
-  isConnected,
-}: TiptapProps) => {
+const Tiptap = ({ ydoc, provider, documentData, isConnected }: TiptapProps) => {
   const theme = useTheme();
   const color = getRandomColor();
   const { name, loading, user_id } = useAuth();
   const [status, setStatus] = useState('connecting');
   const [users, setUsers] = useState<User[] | null>(null);
+  const userSettings = useUserSettings();
+
+  const fontSize = userSettings.settings?.fontSize?.toString() + 'px';
+  const lineHeight = userSettings.settings?.lineHeight.toString() || '1.5';
   const [currentUser, setCurrentUser] = useState({
     name: name || 'Anonymous',
     color: color,
@@ -135,6 +133,7 @@ const Tiptap = ({
           currentEditor.commands.setContent('');
         }
         currentEditor.commands.setFontSize(fontSize);
+        currentEditor.commands.setLineHeight(lineHeight);
       });
     },
     extensions: [
@@ -278,6 +277,22 @@ const Tiptap = ({
       unsetLink: () => editor?.chain().focus().unsetLink().run(),
       setFontFamily: (family: string) =>
         editor?.chain().focus().setFontFamily(family),
+      insertTable: () =>
+        editor
+          ?.chain()
+          .focus()
+          .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+          .run() || false,
+      addColumnBefore: () => editor.chain().focus().addColumnBefore().run(),
+      addColumnAfter: () => editor.chain().focus().addColumnAfter().run(),
+      deleteColumn: () => editor.chain().focus().deleteColumn().run(),
+      addRowBefore: () => editor.chain().focus().addRowBefore().run(),
+      addRowAfter: () => editor.chain().focus().addRowAfter().run(),
+      deleteRow: () => editor.chain().focus().deleteRow().run(),
+      mergeCells: () => editor.chain().focus().mergeCells().run(),
+      splitCell: () => editor.chain().focus().splitCell().run(),
+      toggleHeaderCell: () => editor.chain().focus().toggleHeaderCell().run(),
+      deleteTable: () => editor.chain().focus().deleteTable().run(),
       undo: () => editor?.chain().undo().run(),
       redo: () => editor?.chain().redo().run(),
       copy: async () => {
