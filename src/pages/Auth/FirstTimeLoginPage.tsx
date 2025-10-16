@@ -11,6 +11,7 @@ import {
   Alert,
   CircularProgress,
   Fade,
+  LinearProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff, LockReset as LockResetIcon } from "@mui/icons-material";
 import { useState, type FormEvent } from "react";
@@ -39,6 +40,35 @@ export default function FirstTimeLoginPage() {
     return "";
   };
 
+  // Calculate password strength
+  const getPasswordStrength = (password: string): { strength: number; label: string; color: string } => {
+    if (!password) return { strength: 0, label: "", color: "" };
+    
+    let strength = 0;
+    
+    // Length check
+    if (password.length >= 8) strength += 25;
+    if (password.length >= 12) strength += 10;
+    
+    // Character variety checks
+    if (/[a-z]/.test(password)) strength += 15;
+    if (/[A-Z]/.test(password)) strength += 15;
+    if (/[0-9]/.test(password)) strength += 15;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 20; // Special characters
+    
+    // Determine label and color
+    if (strength <= 35) {
+      return { strength, label: "Weak", color: "#f44336" }; // Red
+    } else if (strength <= 65) {
+      return { strength, label: "Medium", color: "#ff9800" }; // Orange
+    } else if (strength <= 85) {
+      return { strength, label: "Strong", color: "#4caf50" }; // Green
+    } else {
+      return { strength, label: "Very Strong", color: "#2196f3" }; // Blue
+    }
+  };
+
+  const passwordStrength = getPasswordStrength(password);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -104,6 +134,39 @@ export default function FirstTimeLoginPage() {
                 ),
               }}
             />
+
+            {/* Password Strength Indicator */}
+            {password && (
+              <Box sx={{ mt: 1, mb: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ mr: 1, color: "text.secondary" }}>
+                    Password Strength:
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: "bold",
+                      color: passwordStrength.color,
+                    }}
+                  >
+                    {passwordStrength.label}
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={passwordStrength.strength}
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: "#e0e0e0",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: passwordStrength.color,
+                      borderRadius: 3,
+                    },
+                  }}
+                />
+              </Box>
+            )}
 
             <TextField
               fullWidth

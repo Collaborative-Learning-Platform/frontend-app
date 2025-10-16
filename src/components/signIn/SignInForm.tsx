@@ -7,16 +7,24 @@ import {
   Fade,
   Alert,
   CircularProgress,
-  FormControlLabel,
-  Checkbox,
   Link,
+  Typography,
   Stack,
+  useTheme,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
-import { Visibility, VisibilityOff, CheckCircle as CheckCircleIcon } from "@mui/icons-material";
+import { 
+  Visibility, 
+  VisibilityOff, 
+  CheckCircle as CheckCircleIcon,
+  EmailOutlined,
+  LockOutlined,
+} from "@mui/icons-material";
 import axiosInstance from "../../api/axiosInstance";
 import { useAuth } from "../../contexts/Authcontext";
 import { useNavigate } from "react-router-dom";
-import { useState,useEffect,type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 
 
 // Validation functions
@@ -38,17 +46,19 @@ export default function SignInForm() {
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const [touched, setTouched] = useState({ email: false, password: false });
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const { setAuth } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
-  
+  // Load saved credentials on mount
   useEffect(() => {
-    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
       setFormData((prev) => ({ ...prev, email: savedEmail }));
       setRememberMe(true);
@@ -97,16 +107,15 @@ export default function SignInForm() {
       const response = await axiosInstance.post("/auth/login", formData);
       if (response.data.success) {
 
+        // Handle remember me
+        if (rememberMe) {
+          localStorage.setItem('rememberedEmail', formData.email);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
 
         setAuth( response.data.user_id, response.data.role);
         setSuccess(true);
-
-        // Save email if rememberMe is checked
-        if (rememberMe) {
-          localStorage.setItem("rememberedEmail", formData.email);
-        } else {
-          localStorage.removeItem("rememberedEmail");
-        }
 
         setTimeout(() => {
                 if (response.data.firstTimeLogin) {
@@ -140,18 +149,40 @@ export default function SignInForm() {
     <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }} noValidate>
       <TextField
         fullWidth
-        label="Email"
+        placeholder="Email"
         margin="normal"
         value={formData.email}
         onChange={(e) => handleInputChange("email", e.target.value)}
         onBlur={() => handleInputBlur("email")}
         error={touched.email && !!fieldErrors.email}
         helperText={touched.email && fieldErrors.email}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <EmailOutlined sx={{ color: "text.secondary" }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa',
+            borderRadius: 2,
+            '& fieldset': {
+              borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+            },
+            '&:hover fieldset': {
+              borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : '#e0e0e0',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'primary.main',
+            },
+          },
+        }}
       />
 
       <TextField
         fullWidth
-        label="Password"
+        placeholder="Password"
         type={showPassword ? "text" : "password"}
         margin="normal"
         value={formData.password}
@@ -160,23 +191,59 @@ export default function SignInForm() {
         error={touched.password && !!fieldErrors.password}
         helperText={touched.password && fieldErrors.password}
         InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <LockOutlined sx={{ color: "text.secondary" }} />
+            </InputAdornment>
+          ),
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={() => setShowPassword((prev) => !prev)}>
+              <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
             </InputAdornment>
           ),
         }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa',
+            borderRadius: 2,
+            '& fieldset': {
+              borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+            },
+            '&:hover fieldset': {
+              borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : '#e0e0e0',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'primary.main',  
+            },
+          },
+        }}
       />
 
       
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 1 }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 1.5 }}>
         <FormControlLabel
-          control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />}
-          label="Remember me"
+          control={
+            <Checkbox
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              size="small"
+              sx={{
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.6)',
+                '&.Mui-checked': {
+                  color: 'primary.main',
+                },
+              }}
+            />
+          }
+          label={
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              Remember me
+            </Typography>
+          }
         />
-        <Link href="/forgot-password" underline="hover" variant="body2">
+        <Link href="/forgot-password" underline="hover" variant="body2" sx={{ color: "text.secondary" }}>
           Forgot password?
         </Link>
       </Stack>
@@ -194,7 +261,18 @@ export default function SignInForm() {
         fullWidth
         variant="contained"
         color={success ? "success" : "primary"}
-        sx={{ mt: 3 }}
+        sx={{ 
+          mt: 3,
+          py: 1.5,
+          borderRadius: 2,
+          textTransform: 'none',
+          fontSize: '1rem',
+          fontWeight: 600,
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          }
+        }}
         disabled={loading || !isFormValid}
         startIcon={loading ? <CircularProgress size={20} color="inherit" /> : success ? <CheckCircleIcon /> : null}
       >
