@@ -10,6 +10,7 @@ import {
   FormControl,
   Select,
   FormHelperText,
+  CircularProgress,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
@@ -102,12 +103,12 @@ export const FlashCardGenerator = () => {
       // Handle success
       if (response.data.success) {
         Snackbar.showSnackbar(
-          'Flashcards generated successfully! Check Flashcard Library :)!'
+          'Flashcards generated successfully! Check Flashcard Library!'
         );
       }
     } catch (error) {
       console.error('Error generating flashcards:', error);
-      Snackbar.showSnackbar('Failed to generate flashcards. Please try again.');
+      Snackbar.showSnackbar('Failed to generate flashcards', 'error');
     } finally {
       setGenerating(false);
     }
@@ -138,6 +139,7 @@ export const FlashCardGenerator = () => {
         }
       } catch (error) {
         console.error('Error fetching resources:', error);
+        Snackbar.showSnackbar('Failed to load resources', 'error');
       } finally {
         setLoading(false);
       }
@@ -303,7 +305,13 @@ export const FlashCardGenerator = () => {
                 >
                   <Button
                     variant="contained"
-                    startIcon={<AddIcon />}
+                    startIcon={
+                      generating ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        <AddIcon />
+                      )
+                    }
                     disabled={!selectedResource || generating}
                     onClick={handleGenerateFlashcards}
                     sx={{

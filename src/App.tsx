@@ -46,13 +46,14 @@ function App() {
       <Route path="/login" element={<SignInLayout />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="about" element={<About />} />
+
+      {/* For now, add it as a protected route later */}
       {/* All authenticated users */}
       <Route
         element={<ProtectedRoute allowedRoles={['user', 'admin', 'tutor']} />}
       >
         <Route path="/first-time-login" element={<FirstTimeLoginPage />} />
       </Route>
-
       <Route element={<Layout />}>
         <Route element={<ProtectedRoute allowedRoles={['tutor']} />}>
           <Route path="/quiz" element={<CreateQuizPage />} />
@@ -115,12 +116,10 @@ function App() {
           </Route>
         </Route>
       </Route>
-
       <Route element={<ProtectedRoute allowedRoles={['user', 'tutor']} />}>
         <Route path="/whiteboard/:roomId" element={<WhiteboardPage />} />
         <Route path="/document-editor/:room" element={<EditorApp />} />
       </Route>
-
       {/* Catch-all route for 404 Not Found */}
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<NotFound />} />
