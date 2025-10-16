@@ -10,8 +10,6 @@ import { useLocation } from 'react-router-dom';
 // const ydoc = new Y.Doc();
 // const room = "shared-doc";
 
-const fontSize = '17px';
-
 function EditorApp() {
   const { room } = useParams();
   const location = useLocation();
@@ -36,7 +34,6 @@ function EditorApp() {
         ydoc={ydoc}
         provider={provider}
         isConnected={isConnected}
-        fontSize={fontSize}
         documentData={documentData}
       />
     </Box>
