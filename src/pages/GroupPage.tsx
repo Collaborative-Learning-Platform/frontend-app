@@ -18,12 +18,13 @@ import QuizSection from '../components/Group/QuizSection';
 // import ResourceSection from '../components/Group/ResourceSection';
 import ResourceSection from '../components/Group/ResourceSection';
 import GroupChat from '../components/Group/GroupChat';
+import GroupDocuments from './GroupDocuments';
 import AddMembersDialog from '../components/workpsaces/Management/AddMembersToGroups';
 import { useAuth } from '../contexts/Authcontext';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import axiosInstance from '../api/axiosInstance';
 
-interface GroupData {
+export interface GroupData {
   id: string;
   name: string;
   description: string;
@@ -85,8 +86,9 @@ const GroupPage = () => {
           `/workspace/groups/${groupId}/fetchDetails`
         );
         console.log('Fetched group data:', response.data);
+        // Use the URL parameter groupId which is guaranteed to be correct
         setGroupData({
-          id: response.data.data.id || '',
+          id: groupId, // Use the URL parameter directly
           name: `${response.data.data.name}` || 'Group Name',
           description:
             response.data.data.description || 'No description available',
@@ -205,6 +207,7 @@ const GroupPage = () => {
           allowScrollButtonsMobile
         >
           <Tab label="Navigation" />
+          <Tab label="Documents" />
           <Tab label="Quizzes" />
           <Tab label="Resources" />
           <Tab label="Chat" />
@@ -220,9 +223,12 @@ const GroupPage = () => {
               />
             </Stack>
           )}
-          {tabIndex === 1 && <QuizSection groupId={groupId || ''} />}
-          {tabIndex === 2 && <ResourceSection groupId={groupId || ''} />}
-          {tabIndex === 3 && (
+          {tabIndex === 1 && (
+            <GroupDocuments {...groupData} id={groupId || ''} />
+          )}
+          {tabIndex === 2 && <QuizSection groupId={groupId || ''} />}
+          {tabIndex === 3 && <ResourceSection groupId={groupId || ''} />}
+          {tabIndex === 4 && (
             <GroupChat
               groupName={groupData.name}
               groupId={groupId || ''}

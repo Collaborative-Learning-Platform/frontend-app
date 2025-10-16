@@ -12,16 +12,20 @@ import {
   Menu,
   MenuItem,
   Tooltip,
+  Alert,
+  AlertTitle,
+  CircularProgress,
+  alpha,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShareIcon from '@mui/icons-material/Share';
 import BookIcon from '@mui/icons-material/Book';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PeopleIcon from '@mui/icons-material/People';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/Authcontext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
@@ -43,6 +47,7 @@ interface FlashcardSet {
 
 export const FlashCardLibrary = () => {
   const { user_id } = useAuth();
+  const snackbar = useSnackbar();
   const theme = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,11 +75,12 @@ export const FlashCardLibrary = () => {
         if (response.data.success) {
           setFlashcardSets(response.data.data || []);
         } else {
-          setError(response.data.message || 'Failed to fetch flashcards');
+          throw new Error(response.data.message);
         }
       } catch (error) {
         console.error('Error fetching flashcards:', error);
-        setError('Failed to load flashcards. Please try again.');
+        setError('Failed to load flashcards. Check your connection.');
+        snackbar.showSnackbar('Failed to load flashcards', 'error');
       } finally {
         setLoading(false);
       }
@@ -152,23 +158,17 @@ export const FlashCardLibrary = () => {
           );
           console.log('Flashcard set deleted successfully');
         } else {
-          console.error(
-            'Failed to delete flashcard set:',
-            response.data.message
-          );
-          alert('Failed to delete flashcard set. Please try again.');
+          throw new Error(response.data.message);
         }
       } catch (error) {
         console.error('Error deleting flashcard set:', error);
-        alert('Failed to delete flashcard set. Please try again.');
+        snackbar.showSnackbar('Failed to delete flashcard set', 'error');
       }
     }
     handleMenuClose();
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
+  // Date formatting removed as per request
 
   return (
     <>
@@ -183,7 +183,7 @@ export const FlashCardLibrary = () => {
 
       <Card sx={{ mb: theme.spacing(3) }}>
         <CardHeader
-          avatar={<SearchIcon />}
+          avatar={<SearchIcon color="primary" />}
           title="Search Flashcards"
           subheader="Find your flashcard sets by title or subject"
         />
@@ -196,7 +196,7 @@ export const FlashCardLibrary = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <SearchIcon color="primary" />
                 </InputAdornment>
               ),
             }}
@@ -204,10 +204,19 @@ export const FlashCardLibrary = () => {
         </CardContent>
       </Card>
 
-      {/* Loading State */}
       {loading && (
-        <Box sx={{ textAlign: 'center', py: theme.spacing(4) }}>
-          <Typography variant="body1" color="text.secondary">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            py: theme.spacing(4),
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={40} />
+          <Typography variant="body1" color="text.secondary" fontWeight={500}>
             Loading your flashcards...
           </Typography>
         </Box>
@@ -215,10 +224,16 @@ export const FlashCardLibrary = () => {
 
       {/* Error State */}
       {error && (
-        <Box sx={{ textAlign: 'center', py: theme.spacing(4) }}>
-          <Typography variant="body1" color="error">
+        <Box
+          sx={{
+            py: theme.spacing(4),
+            mx: 'auto',
+          }}
+        >
+          <Alert severity="error">
+            <AlertTitle align="left">Error</AlertTitle>
             {error}
-          </Typography>
+          </Alert>
         </Box>
       )}
 
@@ -251,25 +266,36 @@ export const FlashCardLibrary = () => {
                 onClick={() => handleCardClick(set)}
                 sx={{
                   cursor: 'pointer',
-                  '&:hover': { boxShadow: theme.shadows[4] },
-                  height: 'fit-content',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: theme.shadows[8],
+                    backgroundColor:
+                      theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.primary.main, 0.15)
+                        : alpha(theme.palette.primary.main, 0.05),
+                    transform: 'translateY(-4px)',
+                  },
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
                 <CardHeader
-                  avatar={<LibraryBooksIcon />}
+                  avatar={<LibraryBooksIcon fontSize="small" color="primary" />}
                   action={
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent card click when clicking menu
                         handleMenuClick(e, set.flashcardId);
                       }}
-                      sx={{ p: 1 }}
+                      sx={{ p: 0.5 }}
+                      size="small"
                     >
-                      <MoreVertIcon />
+                      <MoreVertIcon fontSize="small" />
                     </IconButton>
                   }
                   title={
-                    <Tooltip title={set.title} arrow placement="top">
+                    <Tooltip title={set.title}>
                       <Typography
                         variant="subtitle1"
                         fontWeight="medium"
@@ -294,93 +320,86 @@ export const FlashCardLibrary = () => {
                         flexWrap: 'wrap',
                       }}
                     >
-                      <Tooltip title={set.subject} arrow placement="top">
-                        <Chip
-                          label={set.subject}
-                          size="small"
-                          icon={<BookIcon />}
-                          variant="outlined"
-                          sx={{
-                            maxWidth: '150px',
-                            '& .MuiChip-label': {
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            },
-                          }}
-                        />
-                      </Tooltip>
-                      {set.resourceId && (
-                        <Chip
-                          label="Shared"
-                          size="small"
-                          icon={<PeopleIcon />}
-                          color="primary"
-                          variant="outlined"
-                        />
-                      )}
+                      {/* Subject chip moved to card content */}
                     </Box>
                   }
                   sx={{
-                    pb: 1, // Reduce bottom padding of header
+                    pb: 1, // Slightly increased bottom padding of header
+                    pt: 2, // More padding to the top for better spacing
+                    px: 2, // Consistent horizontal padding
                     '& .MuiCardHeader-content': {
                       overflow: 'hidden',
                       minWidth: 0, // Allow content to shrink
                     },
+                    '& .MuiCardHeader-avatar': {
+                      marginRight: 1.5, // Less space for the icon
+                    },
                   }}
                 />
-                <CardContent sx={{ pt: 0 }}>
+                <CardContent
+                  sx={{
+                    pt: 1.5,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
                   <Box
                     sx={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       gap: 2,
+                      py: 1,
                     }}
                   >
-                    <Typography
-                      variant="h6"
-                      color="primary.main"
-                      fontWeight="bold"
-                      sx={{ flexShrink: 0 }}
-                    >
-                      {set.cardCount} cards
-                    </Typography>
                     <Box
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 0.5,
-                        minWidth: 0, // Allow to shrink
-                        overflow: 'hidden',
                       }}
                     >
-                      <AccessTimeIcon
-                        sx={{
-                          fontSize: 16,
-                          color: 'text.secondary',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <Tooltip
-                        title={`Created on ${formatDate(set.createdAt)}`}
-                        arrow
-                        placement="top"
+                      <Typography
+                        variant="h6"
+                        color="primary.main"
+                        fontWeight="bold"
+                        sx={{ flexShrink: 0, fontSize: '1.1rem' }}
                       >
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
+                        {set.cardCount}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ flexShrink: 0 }}
+                      >
+                        cards
+                      </Typography>
+                    </Box>
+                    <Tooltip title={set.subject}>
+                      <Chip
+                        label={set.subject}
+                        size="small"
+                        icon={<BookIcon fontSize="small" />}
+                        variant="outlined"
+                        sx={{
+                          maxWidth: '150px',
+                          height: 24,
+                          '& .MuiChip-label': {
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
-                            cursor: 'help',
-                          }}
-                        >
-                          {formatDate(set.createdAt)}
-                        </Typography>
-                      </Tooltip>
-                    </Box>
+                            fontSize: '0.75rem',
+                            px: 0.5,
+                          },
+                          '& .MuiChip-icon': {
+                            fontSize: '0.875rem',
+                            ml: 0.5,
+                          },
+                        }}
+                      />
+                    </Tooltip>
                   </Box>
                 </CardContent>
               </Card>
