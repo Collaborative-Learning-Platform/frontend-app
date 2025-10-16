@@ -40,7 +40,7 @@ export default function FirstTimeLoginPage() {
     return "";
   };
 
-  // Calculate password strength
+
   const getPasswordStrength = (password: string): { strength: number; label: string; color: string } => {
     if (!password) return { strength: 0, label: "", color: "" };
     
@@ -54,17 +54,17 @@ export default function FirstTimeLoginPage() {
     if (/[a-z]/.test(password)) strength += 15;
     if (/[A-Z]/.test(password)) strength += 15;
     if (/[0-9]/.test(password)) strength += 15;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 20; // Special characters
+    if (/[^A-Za-z0-9]/.test(password)) strength += 20; 
     
     // Determine label and color
     if (strength <= 35) {
-      return { strength, label: "Weak", color: "#f44336" }; // Red
+      return { strength, label: "Weak", color: "#f44336" }; 
     } else if (strength <= 65) {
-      return { strength, label: "Medium", color: "#ff9800" }; // Orange
+      return { strength, label: "Medium", color: "#ff9800" }; 
     } else if (strength <= 85) {
-      return { strength, label: "Strong", color: "#4caf50" }; // Green
+      return { strength, label: "Strong", color: "#4caf50" }; 
     } else {
-      return { strength, label: "Very Strong", color: "#2196f3" }; // Blue
+      return { strength, label: "Very Strong", color: "#2196f3" }; 
     }
   };
 
@@ -109,11 +109,58 @@ export default function FirstTimeLoginPage() {
         px: 2,
       }}
     >
-      <Card sx={{ maxWidth: 420, width: "100%", boxShadow: 6, borderRadius: 3 }}>
+      <Card sx={{ maxWidth: 450, width: "100%", boxShadow: 6, borderRadius: 3 }}>
         <CardHeader
-          title="Set Your New Password"
-          subheader="First-time login requires updating your password"
-          sx={{ textAlign: "center", pb: 0 }}
+          title={
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  mb: 1.5,
+                }}
+              >
+                Welcome to{" "}
+                <Box
+                  component="span"
+                  sx={{
+                    background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    fontWeight: 900,
+                  }}
+                >
+                  Learni
+                </Box>{" "}
+                🎓
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "text.secondary",
+                  fontStyle: "italic",
+                  mb: 2,
+                }}
+              >
+                "Every expert was once a beginner"
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  mt: 2,
+                }}
+              >
+                Set Your New Password
+              </Typography>
+            </Box>
+          }
+          subheader="This is your first time logging in. Let's secure your account with a strong password."
+          sx={{ textAlign: "center", pb: 1, pt: 4 }}
+          subheaderTypographyProps={{
+            sx: { mt: 1 }
+          }}
         />
         <CardContent>
           <Box component="form" onSubmit={handleSubmit}>

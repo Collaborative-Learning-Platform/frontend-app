@@ -76,13 +76,13 @@ export default function PasswordResetPage() {
     
     // Determine label and color
     if (strength <= 35) {
-      return { strength, label: "Weak", color: "#f44336" }; // Red
+      return { strength, label: "Weak", color: "#f44336" }; 
     } else if (strength <= 65) {
-      return { strength, label: "Medium", color: "#ff9800" }; // Orange
+      return { strength, label: "Medium", color: "#ff9800" }; 
     } else if (strength <= 85) {
-      return { strength, label: "Strong", color: "#4caf50" }; // Green
+      return { strength, label: "Strong", color: "#4caf50" }; 
     } else {
-      return { strength, label: "Very Strong", color: "#2196f3" }; // Blue
+      return { strength, label: "Very Strong", color: "#2196f3" };
     }
   };
 
