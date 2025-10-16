@@ -18,6 +18,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   List,
+  CircularProgress,
+  Alert,
+  AlertTitle,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
@@ -35,6 +38,7 @@ import {
 import NewDocumentDialog from '../components/UserDocuments/NewDocumentDialog';
 import { useAuth } from '../contexts/Authcontext';
 import axiosInstance from '../api/axiosInstance';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 // Interface for document response from API
 interface DocumentResponse {
@@ -62,53 +66,12 @@ interface WorkspaceWithGroups {
   groups: GroupWithDocuments[];
 }
 
-// interface Document {
-//   id: number;
-//   title: string;
-//   lastModified: string;
-//   collaborators: number;
-//   size: string;
-//   folder: string;
-//   starred: boolean;
-//   owner: string;
-// }
-
-// Removed Folder interface
-
-// const groups = [
-//   { id: "a1b2c3d4-e5f6-7890-abcd-1234567890ab", name: "Team Alpha" },
-//   { id: "b2c3d4e5-f6a7-8901-bcde-2345678901bc", name: "Team Beta" },
-// ]; // Replace with API fetched groups
-
-// const recentDocuments: Document[] = [
-//   {
-//     id: 1,
-//     title: 'Project Proposal Q4',
-//     lastModified: '2 hours ago',
-//     collaborators: 3,
-//     size: '2.4 MB',
-//     folder: 'Archived',
-//     starred: true,
-//     owner: 'You',
-//   },
-//   {
-//     id: 2,
-//     title: 'Marketing Strategy',
-//     lastModified: '1 day ago',
-//     collaborators: 5,
-//     size: '1.8 MB',
-//     folder: 'Marketing',
-//     starred: false,
-//     owner: 'Sarah Chen',
-//   },
-// ];
-
 export const UserDocuments = () => {
+  const snackBar = useSnackbar();
   const auth = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  // const [viewModeRecent, setViewModeRecent] = useState<'grid' | 'list'>('grid');
   const [viewModeWorkspace, setViewModeWorkspace] = useState<'grid' | 'list'>(
     'grid'
   );
@@ -154,11 +117,15 @@ export const UserDocuments = () => {
         // }]
         setWorkspaceDocuments(response.data.data);
       } else {
-        setError(response.data.message || 'Failed to fetch documents');
+        throw new Error(response.data.message);
       }
     } catch (err: any) {
       console.error('Error fetching documents:', err);
-      setError(err.message || 'An error occurred while fetching documents');
+      setError('An error occurred while fetching documents');
+      snackBar.showSnackbar(
+        'An error occurred while fetching documents',
+        'error'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -787,13 +754,6 @@ export const UserDocuments = () => {
       {/* Main Content */}
       <Box sx={{ flex: 1, overflow: 'auto', py: { xs: 2, sm: 3 } }}>
         <Box sx={{ maxWidth: 'lg', mx: 'auto', width: '100%' }}>
-          {/* Error State */}
-          {error && (
-            <Box sx={{ textAlign: 'center', my: 4 }}>
-              <Typography color="error">{error}</Typography>
-            </Box>
-          )}
-
           {/* Search Documents Section */}
           <Box sx={{ mb: theme.spacing(3), width: '100%' }}>
             <Typography variant="h5" fontWeight="bold">
@@ -828,10 +788,36 @@ export const UserDocuments = () => {
           </Card>
 
           {/* Workspaces and Documents */}
+          {/* Error State */}
+          {error && (
+            <Box
+              sx={{
+                py: theme.spacing(4),
+                mx: 'auto',
+              }}
+            >
+              <Alert severity="error">
+                <AlertTitle align="left">Error</AlertTitle>
+                {error}
+              </Alert>
+            </Box>
+          )}
           {/* Loading State for Workspaces */}
           {isLoading ? (
-            <Box sx={{ textAlign: 'center', my: 4 }}>
-              <Typography>Loading your documents...</Typography>
+            <Box
+              sx={{
+                textAlign: 'center',
+                my: 4,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              <CircularProgress size={40} />
+              <Typography variant="body1" color="text.secondary">
+                Loading your documents...
+              </Typography>
             </Box>
           ) : (
             workspaceDocuments.length > 0 && (
@@ -845,6 +831,20 @@ export const UserDocuments = () => {
                     overflow: 'visible',
                   }}
                 >
+                  {/* Error State */}
+                  {error && (
+                    <Box
+                      sx={{
+                        py: theme.spacing(4),
+                        mx: 'auto',
+                      }}
+                    >
+                      <Alert severity="error">
+                        <AlertTitle align="left">Error</AlertTitle>
+                        {error}
+                      </Alert>
+                    </Box>
+                  )}
                   <CardContent sx={{ py: 1.5 }}>
                     <Box
                       sx={{

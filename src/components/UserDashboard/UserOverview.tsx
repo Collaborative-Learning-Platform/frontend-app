@@ -39,7 +39,7 @@ interface RecentActivityLog {
 
 export function UserOverview() {
   const { user_id } = useAuth();
-
+  const groupIdNameMap: Record<string, string> = {};
   const [dashboardData, setDashboardData] = useState<{
     workspaces: number;
     groups: number;
@@ -63,16 +63,29 @@ export function UserOverview() {
       }
 
       try {
-        // Fetch all data in parallel
+        const userGroupsRes = await axiosInstance.post(
+          `/workspace/groups/by-user`, {userId:user_id}
+        );
+        console.log('User groups response:', userGroupsRes.data);
+        if (userGroupsRes.data.success) {
+          userGroupsRes.data.data.forEach((group: any) => {
+            groupIdNameMap[group.groupId] = group.groupName;
+          });
+        }
+        const userGroupIds = Object.keys(groupIdNameMap);
+        
         const [quizzesRes, statsRes, activityRes] = await Promise.all([
-          axiosInstance.get(`/quiz/user-group/${user_id}`),
+          axiosInstance.post('/quiz/user-quizzes', {userGroupIds}),
           axiosInstance.get(`/dashboard/userStats/${user_id}`),
           axiosInstance.get(`/dashboard/recentActivity/${user_id}`),
         ]);
 
         let upcomingQuizzesData = [];
         if (quizzesRes.data.success) {
-          upcomingQuizzesData = quizzesRes.data.data.quizzes || [];
+          upcomingQuizzesData = quizzesRes.data.data.map((quiz: any) => ({
+            ...quiz,
+            groupName: groupIdNameMap[quiz.groupId] || 'Unknown Workspace',
+          }));
         }
 
         let activityData = [];
@@ -137,12 +150,6 @@ export function UserOverview() {
     }
   };
 
-  const sortedQuizzes = [...dashboardData.quizzes]
-    .filter((quiz) => quiz.deadline)
-    .sort(
-      (a, b) => new Date(b.deadline).getTime() - new Date(a.deadline).getTime()
-    )
-    .slice(0, 4);
 
   return (
     <Box>
@@ -199,7 +206,7 @@ export function UserOverview() {
       </Box>
 
       {/* Quizzes and Recent Activity */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         {/* Upcoming Quizzes */}
         <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
           <Card
@@ -224,7 +231,7 @@ export function UserOverview() {
                       sx={{ mb: 2, borderRadius: 1 }}
                     />
                   ))
-                : sortedQuizzes.map((quiz) => (
+                : dashboardData.quizzes.map((quiz) => (
                     <QuizCard
                       key={quiz.quizId}
                       id={quiz.quizId}
