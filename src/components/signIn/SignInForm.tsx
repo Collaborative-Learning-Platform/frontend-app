@@ -204,7 +204,7 @@ export default function SignInForm() {
             </InputAdornment>
           ),
         }}
-         sx={{
+        sx={{
           '& .MuiOutlinedInput-root': {
             backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa',
             borderRadius: 2,
