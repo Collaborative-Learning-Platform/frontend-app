@@ -4,15 +4,15 @@ export const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#6366f1",
-      light: "#818cf8",
-      dark: "#4f46e5",
+      main: "#1976d2", // Learni Primary Blue
+      light: "#42a5f5", // Learni Light Blue
+      dark: "#0d47a1", // Learni Dark Blue
       contrastText: "#ffffff",
     },
     secondary: {
-      main: "#8b5cf6",
-      light: "#a78bfa",
-      dark: "#7c3aed",
+      main: "#1565c0", // Learni Secondary Blue
+      light: "#5e92f3", // Learni Light Secondary
+      dark: "#003c8f", // Learni Dark Secondary
       contrastText: "#ffffff",
     },
     success: {

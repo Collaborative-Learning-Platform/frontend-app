@@ -206,7 +206,7 @@ export function UserOverview() {
       </Box>
 
       {/* Quizzes and Recent Activity */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         {/* Upcoming Quizzes */}
         <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
           <Card
