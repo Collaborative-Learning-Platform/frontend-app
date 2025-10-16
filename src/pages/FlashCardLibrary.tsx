@@ -22,7 +22,6 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShareIcon from '@mui/icons-material/Share';
 import BookIcon from '@mui/icons-material/Book';
-import PeopleIcon from '@mui/icons-material/People';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/Authcontext';
 import { useSnackbar } from '../contexts/SnackbarContext';

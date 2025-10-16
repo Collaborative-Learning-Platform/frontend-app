@@ -23,7 +23,6 @@ interface GroupNavigationProps {
 
 const GroupNavigation = ({
   onNavigateToWhiteboard,
-  onNavigateToEditor,
   setTabIndex,
 }: GroupNavigationProps) => {
   const theme = useTheme();
