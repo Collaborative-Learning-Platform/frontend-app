@@ -27,11 +27,7 @@ import { Link } from 'react-router-dom';
 import { ThemeToggle, useTheme as useAppTheme } from '../theme';
 import { keyframes } from '@emotion/react';
 
-// Animation keyframes
-const float = keyframes`
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(2deg); }
-`;
+
 
 
 
