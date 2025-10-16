@@ -24,9 +24,10 @@ import { FlashCardLayout } from './pages/FlashCardLayout';
 import AddUsers from './pages/AddUsers';
 import WorkspacePage from './pages/WorkspacePage';
 import GroupPage from './pages/GroupPage';
-import SignInLayout from './pages/signIn/SignInLayout';
-import ForgotPasswordPage from './pages/signIn/ForgotPassword';
-import FirstTimeLoginPage from './pages/signIn/FirstTimeLoginPage';
+import SignInLayout from './pages/Auth/SignInLayout';
+import ForgotPasswordPage from './pages/Auth/ForgotPassword';
+import PasswordResetPage from './pages/Auth/PasswordResetPage';
+import FirstTimeLoginPage from './pages/Auth/FirstTimeLoginPage';
 import TutorAnalytics from './components/TutorDashboard/TutorAnalytics';
 import TutorOverview from './components/TutorDashboard/TutorOverview';
 import ProtectedRoute from './pages/ProtectedRoutes';
@@ -45,6 +46,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<SignInLayout />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<PasswordResetPage />} />
       <Route path="about" element={<About />} />
       {/* All authenticated users */}
       <Route
