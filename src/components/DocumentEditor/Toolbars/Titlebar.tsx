@@ -15,7 +15,6 @@ import {
   Popover,
 } from '@mui/material';
 import {
-  Share as ShareIcon,
   CloudDone as CloudDoneIcon,
   Sync as SyncIcon,
   MoreVert as MoreVertIcon,
@@ -38,9 +37,7 @@ import {
   getMoreVertIconStyle,
   getSaveButtonStyles,
   getSaveStatusWrapper,
-  getShareButtonStyles,
   responsiveLayoutWrapper,
-  shareIconStyles,
   syncIconStyles,
   textFieldWrapper,
   toolBarStyles,
@@ -71,7 +68,6 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const appBarStyles = getAppBarStyling(theme);
   const docNameWrapper = getDocNameWrapper(theme);
-  const shareButtonStyles = getShareButtonStyles(theme);
   const saveButtonStyles = getSaveButtonStyles(theme);
   // const collaboratorsBoxStyles = getCollaboratorsBoxStyles(theme);
   // const avatarGroupStyles = getAvatarGroupStyles(theme);
@@ -86,14 +82,11 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
 
     let html = editor.getHTML();
 
-    // // Replace <br> tags with the class 'ProseMirror-trailingBreak' with <p> tags containing newline characters
-    // html = html.replace(/<br class="ProseMirror-trailingBreak">/g, '<p>\n</p>');
-
     const opt = {
       margin: 0.5,
       filename: `${documentData?.title || 'document'}.pdf`,
       image: { type: 'jpeg' as 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 2, useCORS: true },
       jsPDF: {
         unit: 'in',
         format: 'a4',
@@ -102,34 +95,48 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
     };
 
     const element = document.createElement('div');
-    // const isDarkMode = theme.palette.mode === 'dark';
     const editorTextColor = editor.getAttributes('textStyle')?.color;
     const textColor = editorTextColor;
     const fontFamily =
-      editor.getAttributes('textStyle')?.fontFamily || 'Gill Sans';
+      editor.getAttributes('textStyle')?.fontFamily || 'Georgia, serif';
+
+    // Add inline styles directly to table elements
+    html = html.replace(
+      /<table/g,
+      '<table style="border-collapse: collapse; width: 100%; margin: 10px 0; table-layout: fixed;"'
+    );
+    html = html.replace(
+      /<td/g,
+      '<td style="border: 2px solid #101011; padding: 8px 12px; vertical-align: top; box-sizing: border-box; min-width: 1em; line-height: 1.6; position: relative; height: auto;"'
+    );
+    html = html.replace(
+      /<th/g,
+      '<th style="border: 2px solid #101011; padding: 8px 12px; background-color: #2c2b2b; font-weight: bold; text-align: left; vertical-align: top; box-sizing: border-box; min-width: 1em; color: white; line-height: 1.6; position: relative; height: auto;"'
+    );
 
     element.innerHTML = `
       <div style="
-    font-family: ${fontFamily};
-    padding: 20px;
-    color: ${textColor ? textColor : theme.palette.common.black};
-    white-space: normal;
-    line-height: 1.5;
-  ">
-    <style>
-      p {
-        margin: 0 0 10px 0; /* spacing between paragraphs */
-      }
-      br {
-        content: "\\A";
-        white-space: pre-line;
-      }
-    </style>
-    ${html}
-  </div>
-`;
+        font-family: ${fontFamily};
+        padding: 20px;
+        color: ${textColor ? textColor : '#000000'};
+        white-space: normal;
+        line-height: 1.6;
+        font-size: 16px;
+      ">
+        ${html}
+      </div>
+    `;
 
-    html2pdf().from(element).set(opt).save();
+    // Append to body temporarily to ensure proper rendering
+    document.body.appendChild(element);
+
+    html2pdf()
+      .from(element)
+      .set(opt)
+      .save()
+      .then(() => {
+        document.body.removeChild(element);
+      });
   };
 
   const handleMenuClose = () => {
@@ -223,14 +230,6 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
             <Box sx={actionsAndCollaborators}>
               {/* Action Buttons - Responsive display */}
               <Box sx={actionStyles}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ShareIcon sx={shareIconStyles} />}
-                  sx={shareButtonStyles}
-                >
-                  Share
-                </Button>
                 <Button
                   variant="contained"
                   size="small"

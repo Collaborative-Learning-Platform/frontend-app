@@ -14,8 +14,15 @@ import {
   Typography,
   Autocomplete,
   TextField,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  IconButton,
+  SwipeableDrawer,
 } from '@mui/material';
-import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
@@ -33,6 +40,16 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import FormatColorTextIcon from '@mui/icons-material/FormatColorText';
+import {
+  AddCardOutlined as AddTable,
+  Delete as DeleteIcon,
+  Merge as MergeIcon,
+  CallSplit as SplitIcon,
+  TableRows as TableRowsIcon,
+  ViewColumn as ColumnIcon,
+  ViewHeadline as HeaderIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
 import { getButtonGroupStyles } from '../../../styles/components/DocumentEditor/Formatbar';
 import {
   dividerStyles,
@@ -40,6 +57,8 @@ import {
 } from '../../../styles/components/DocumentEditor/common';
 import { MuiColorInput } from 'mui-color-input';
 import { Editor } from '@tiptap/react';
+
+const drawerWidth = 280;
 
 type FormatbarProps = {
   commands: {
@@ -59,6 +78,18 @@ type FormatbarProps = {
     copy: () => Promise<boolean>;
     cut: () => Promise<boolean>;
     paste: () => Promise<boolean>;
+    // Table commands
+    insertTable: () => boolean;
+    addColumnBefore: () => boolean;
+    addColumnAfter: () => boolean;
+    deleteColumn: () => boolean;
+    addRowBefore: () => boolean;
+    addRowAfter: () => boolean;
+    deleteRow: () => boolean;
+    mergeCells: () => boolean;
+    splitCell: () => boolean;
+    toggleHeaderCell: () => boolean;
+    deleteTable: () => boolean;
     setFontFamily: (fontFamily: string) => void; // Added setFontFamily to commands
   };
   editor: Editor;
@@ -166,6 +197,12 @@ export const Formatbar: React.FC<FormatbarProps> = ({
   const [linkAnchorEl, setLinkAnchorEl] = useState<HTMLElement | null>(null);
   const [linkUrl, setLinkUrl] = useState<string>('');
 
+  // Table state
+  const [tableAnchorEl, setTableAnchorEl] = useState<HTMLElement | null>(null);
+
+  // Table state
+  const [tableDrawerOpen, setTableDrawerOpen] = useState<boolean>(false);
+
   const handleSelectedFormat = (
     _event: React.MouseEvent<HTMLElement>,
     updatedSelectedFormat: string[]
@@ -245,16 +282,73 @@ export const Formatbar: React.FC<FormatbarProps> = ({
       //1.FileUpload Functionality to s3/Cloudinary
       //2.Get link to uploaded file from s3/Cloudinary
       //3.Display the fetched image from Cloudinary
-      //Also you can do signed Cloudfront URLs and get the benefit of caching.
     } else if (updatedSelectedInsert == 'Hyperlink') {
       // Open link input popover
       setLinkAnchorEl(event.currentTarget);
       // Pre-fill with existing link if text is already linked
       const currentLink = editor.getAttributes('link').href || '';
       setLinkUrl(currentLink);
+    } else if (updatedSelectedInsert == 'Table') {
+      // Open table popover
+      setTableAnchorEl(event.currentTarget);
     }
     // Reset selection after handling
     setSelectedInsert(null);
+  };
+
+  const handleDrawerClose = () => {
+    setTableDrawerOpen(false);
+  };
+
+  const handleInsertTable = async () => {
+    // Insert a basic 3x3 table
+    await commands.insertTable();
+    handleTablePopoverClose();
+  };
+
+  const handleTablePopoverClose = () => {
+    setTableAnchorEl(null);
+  };
+
+  const handleDrawerToggle = () => {
+    setTableDrawerOpen(!tableDrawerOpen);
+    handleTablePopoverClose();
+  };
+
+  const handleTableAction = (action: string) => {
+    switch (action) {
+      case 'addColumnBefore':
+        commands.addColumnBefore();
+        break;
+      case 'addColumnAfter':
+        commands.addColumnAfter();
+        break;
+      case 'deleteColumn':
+        commands.deleteColumn?.();
+        break;
+      case 'addRowBefore':
+        commands.addRowBefore?.();
+        break;
+      case 'addRowAfter':
+        commands.addRowAfter?.();
+        break;
+      case 'deleteRow':
+        commands.deleteRow?.();
+        break;
+      case 'deleteTable':
+        commands.deleteTable?.();
+        break;
+      case 'mergeCells':
+        commands.mergeCells?.();
+        break;
+      case 'splitCell':
+        commands.splitCell?.();
+        break;
+      case 'toggleHeaderCell':
+        commands.toggleHeaderCell?.();
+        break;
+    }
+    handleDrawerClose();
   };
 
   const handleSelectedStyle = (
@@ -709,6 +803,198 @@ export const Formatbar: React.FC<FormatbarProps> = ({
               </Box>
             </Popover>
 
+            {/* Table Popover */}
+            <Popover
+              open={Boolean(tableAnchorEl)}
+              anchorEl={tableAnchorEl}
+              onClose={handleTablePopoverClose}
+              disableScrollLock={true}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+            >
+              <Box sx={{ ...popOverBoxSize, py: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                  Table Options
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Button
+                    size="small"
+                    startIcon={<AddTable />}
+                    onClick={handleInsertTable}
+                    disableRipple
+                    sx={{ justifyContent: 'flex-start' }}
+                  >
+                    Insert Table
+                  </Button>
+                  <Button
+                    size="small"
+                    disableRipple
+                    onClick={handleDrawerToggle}
+                    sx={{ justifyContent: 'flex-start' }}
+                  >
+                    Table Controls
+                  </Button>
+                </Box>
+              </Box>
+            </Popover>
+
+            {/* Table Controls Drawer */}
+            <SwipeableDrawer
+              anchor="right"
+              open={tableDrawerOpen}
+              onClose={handleDrawerClose}
+              onOpen={() => setTableDrawerOpen(true)}
+              sx={{
+                '& .MuiDrawer-paper': {
+                  width: drawerWidth,
+                  boxSizing: 'border-box',
+                  p: 2,
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 2,
+                }}
+              >
+                <Typography variant="h6">Table Controls</Typography>
+                <IconButton onClick={handleDrawerClose}>
+                  <Tooltip title="Close">
+                    <CloseIcon />
+                  </Tooltip>
+                </IconButton>
+              </Box>
+
+              <Divider sx={{ mb: 2 }} />
+
+              <List sx={{ overflow: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+                <ListSubheader>Column Operations</ListSubheader>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('addColumnBefore')}
+                  >
+                    <ListItemIcon>
+                      <ColumnIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Add column before" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('addColumnAfter')}
+                  >
+                    <ListItemIcon>
+                      <ColumnIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Add column after" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('deleteColumn')}
+                  >
+                    <ListItemIcon>
+                      <DeleteIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Delete column" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListSubheader>Row Operations</ListSubheader>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('addRowBefore')}
+                  >
+                    <ListItemIcon>
+                      <TableRowsIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Add row before" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('addRowAfter')}
+                  >
+                    <ListItemIcon>
+                      <TableRowsIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Add row after" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('deleteRow')}
+                  >
+                    <ListItemIcon>
+                      <DeleteIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Delete row" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListSubheader>Cell Operations</ListSubheader>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('mergeCells')}
+                  >
+                    <ListItemIcon>
+                      <MergeIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Merge cells" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('splitCell')}
+                  >
+                    <ListItemIcon>
+                      <SplitIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Split cell" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('toggleHeaderCell')}
+                  >
+                    <ListItemIcon>
+                      <HeaderIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Toggle header cell" />
+                  </ListItemButton>
+                </ListItem>
+
+                <Divider sx={{ my: 1 }} />
+
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleTableAction('deleteTable')}
+                    sx={{ color: 'error.main' }}
+                  >
+                    <ListItemIcon sx={{ color: 'error.main' }}>
+                      <DeleteIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Delete table" />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            </SwipeableDrawer>
+
             {/* Link Popover */}
             <Popover
               open={Boolean(linkAnchorEl)}
@@ -775,6 +1061,7 @@ export const Formatbar: React.FC<FormatbarProps> = ({
               flexItem
               sx={{
                 ...dividerStyles,
+                flexWrap: 'nowrap',
               }}
             />
             {/* Alignment Group */}
@@ -854,9 +1141,6 @@ export const Formatbar: React.FC<FormatbarProps> = ({
                   ...buttonGroupStyles,
                 }}
               >
-                <ToggleButton value="Image" aria-label="insert-image">
-                  <InsertPhotoIcon />
-                </ToggleButton>
                 <ToggleButton value="Hyperlink" aria-label="insert-hyperlink">
                   <AddLinkIcon />
                 </ToggleButton>

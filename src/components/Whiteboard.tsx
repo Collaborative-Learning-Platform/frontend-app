@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
-import { Tldraw, createTLStore, defaultShapeUtils } from "tldraw";
-import type { TLRecord } from "tldraw";
-import "tldraw/tldraw.css";
+import { useEffect, useRef } from 'react';
+import { Tldraw, createTLStore, defaultShapeUtils } from 'tldraw';
+import type { TLRecord } from 'tldraw';
+// import { useUserSettings } from '../contexts/SettingsContext';
+import 'tldraw/tldraw.css';
 
 interface WhiteboardProps {
   roomId: string;
@@ -12,22 +13,28 @@ interface WhiteboardProps {
 export default function Whiteboard({
   roomId,
   sessionId = `user-${Date.now()}`,
-  wsUrl = import.meta.env.VITE_WS_WHITEBOARD_URL || "ws://localhost:8080",
+  wsUrl = import.meta.env.VITE_WS_WHITEBOARD_URL || 'ws://localhost:8080',
 }: WhiteboardProps) {
   const storeRef = useRef<ReturnType<typeof createTLStore> | null>(null);
   if (!storeRef.current) {
     storeRef.current = createTLStore({ shapeUtils: defaultShapeUtils });
   }
+  // const userSettings = useUserSettings();
   const store = storeRef.current;
   const wsRef = useRef<WebSocket | null>(null);
   const isUpdating = useRef(false);
   const mountedRef = useRef(true);
   const storeListenerRef = useRef<(() => void) | null>(null);
 
+  // const isGridMode = userSettings.settings?.showGrid;
+  // const isDark = userSettings.settings?.themeMode === 'dark' ? true : false;
+  // const brushSize = userSettings.settings?.defaultBrushSize;
+  // const cursorType = userSettings.settings?.defaultCursorType;
+
   useEffect(() => {
     mountedRef.current = true;
     console.log(
-      "Connecting to:",
+      'Connecting to:',
       `${wsUrl}/connect/${roomId}?sessionId=${sessionId}`
     );
     const ws = new WebSocket(
@@ -37,7 +44,7 @@ export default function Whiteboard({
 
     ws.onopen = () => {
       if (!mountedRef.current) return;
-      console.log("Connected to whiteboard");
+      console.log('Connected to whiteboard');
       // setIsConnected(true);
     };
 
@@ -46,11 +53,11 @@ export default function Whiteboard({
 
       try {
         const message = JSON.parse(event.data);
-        if (message.type === "room-state" && message.state?.records) {
+        if (message.type === 'room-state' && message.state?.records) {
           console.log(
-            "Loading initial state with",
+            'Loading initial state with',
             Object.keys(message.state.records).length,
-            "records"
+            'records'
           );
           isUpdating.current = true;
 
@@ -58,7 +65,7 @@ export default function Whiteboard({
             const allRecords = store.allRecords();
             const shapesToRemove = allRecords.filter(
               (record) =>
-                record.typeName === "shape" || record.typeName === "binding"
+                record.typeName === 'shape' || record.typeName === 'binding'
             );
             if (shapesToRemove.length > 0) {
               store.remove(shapesToRemove.map((r) => r.id));
@@ -73,7 +80,7 @@ export default function Whiteboard({
           isUpdating.current = false;
         }
         if (
-          message.type === "document-update" &&
+          message.type === 'document-update' &&
           message.data &&
           message.sessionId !== sessionId
         ) {
@@ -83,21 +90,21 @@ export default function Whiteboard({
             if (message.data.removedIds && message.data.removedIds.length > 0) {
               try {
                 store.remove(message.data.removedIds);
-                console.log("Successfully removed records");
+                console.log('Successfully removed records');
               } catch (error) {
-                console.error("REMOVAL ERROR:", error);
+                console.error('REMOVAL ERROR:', error);
               }
             }
 
             if (message.data.records) {
               const records = Object.values(message.data.records) as TLRecord[];
               if (records.length > 0) {
-                console.log("Adding/updating", records.length, "records");
+                console.log('Adding/updating', records.length, 'records');
                 try {
                   store.put(records);
-                  console.log("Successfully added/updated records");
+                  console.log('Successfully added/updated records');
                 } catch (error) {
-                  console.error("Error putting records:", error);
+                  console.error('Error putting records:', error);
                 }
               }
             }
@@ -106,22 +113,22 @@ export default function Whiteboard({
           isUpdating.current = false;
         }
 
-        if (message.type === "ping") {
-          ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }));
+        if (message.type === 'ping') {
+          ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
         }
       } catch (error) {
-        console.error("Error processing message:", error);
+        console.error('Error processing message:', error);
       }
     };
 
     ws.onclose = () => {
       if (!mountedRef.current) return;
-      console.log("Disconnected from whiteboard");
+      console.log('Disconnected from whiteboard');
       // setIsConnected(false);
     };
 
     ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error('WebSocket error:', error);
     };
 
     const setupStoreListener = () => {
@@ -176,10 +183,10 @@ export default function Whiteboard({
           const filterDrawingRecords = (records: TLRecord[]) =>
             records.filter(
               (record) =>
-                record.typeName === "shape" ||
-                record.typeName === "binding" ||
-                record.typeName === "asset" ||
-                record.typeName === "page"
+                record.typeName === 'shape' ||
+                record.typeName === 'binding' ||
+                record.typeName === 'asset' ||
+                record.typeName === 'page'
             );
 
           const drawingAdded = filterDrawingRecords(addedRecords);
@@ -201,7 +208,7 @@ export default function Whiteboard({
             drawingRemoved.forEach((record) => removeIds.push(record.id));
 
             const message = {
-              type: "document-update",
+              type: 'document-update',
               data: {
                 records: putRecords,
                 removedIds: removeIds,
@@ -212,11 +219,11 @@ export default function Whiteboard({
             ws.send(JSON.stringify(message));
           }
         },
-        { source: "user", scope: "document" }
+        { source: 'user', scope: 'document' }
       );
     };
 
-    ws.addEventListener("open", setupStoreListener);
+    ws.addEventListener('open', setupStoreListener);
 
     return () => {
       mountedRef.current = false;
@@ -227,7 +234,7 @@ export default function Whiteboard({
       }
 
       if (ws.readyState === WebSocket.OPEN) {
-        ws.close(1000, "Component unmounting");
+        ws.close(1000, 'Component unmounting');
       }
       wsRef.current = null;
     };
@@ -236,8 +243,24 @@ export default function Whiteboard({
   return (
     <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
       <Tldraw
+        // onMount={(editor) => {
+        //   editor.setCurrentTool('draw');
+        //   editor.updateInstanceState({
+        //     isGridMode: isGridMode ? true : false,
+        //     cursor: { type: cursorType || 'default', rotation: 0 },
+        //     brush: {
+        //       x: 0, // optional
+        //       y: 0, // optional
+        //       w: brushSize || 6, // width = brush size
+        //       h: brushSize || 6, // height = brush size
+        //     },
+        //   });
+        //   editor.user.updateUserPreferences({
+        //     colorScheme: isDark ? 'dark' : 'light',
+        //   });
+        // }}
         store={store}
-        licenseKey= {import.meta.env.VITE_TLDRAW_LICENSE_KEY}
+        licenseKey={import.meta.env.VITE_TLDRAW_LICENSE_KEY}
       />
     </div>
   );

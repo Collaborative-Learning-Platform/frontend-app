@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -13,137 +13,128 @@ import {
   FormControl,
   InputLabel,
   Slider,
-  Snackbar,
-  Alert,
   useTheme,
-} from "@mui/material";
+} from '@mui/material';
+import { useUserSettings } from '../contexts/SettingsContext';
 import {
   Settings as SettingsIcon,
   Palette,
   Notifications as Bell,
-  Person as User,
   Description as FileText,
-  DarkMode as Moon,
-  LightMode as Sun,
   Email as Mail,
-  Chat as MessageSquare,
-  People as Users,
-  OpenInNew as ExternalLink,
   Save,
   RestartAlt as RotateCcw,
-} from "@mui/icons-material";
-import GestureIcon from "@mui/icons-material/Gesture";
-import { useNavigate } from "react-router-dom";
-import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
+  People as Users,
+  Chat as MessageSquare,
+  Person as User,
+  Link as ExternalLink,
+} from '@mui/icons-material';
+import GestureIcon from '@mui/icons-material/Gesture';
+import { useNavigate } from 'react-router-dom';
+import { useTheme as useCustomTheme } from '../contexts/ThemeContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
+
+// Define the cursor types to match your backend enum
+type CursorType = 'default' | 'text' | 'resize-corner' | 'nesw-rotate';
 
 export default function SettingsPage() {
   const theme = useTheme();
+  const userSettings = useUserSettings();
   const navigate = useNavigate();
   const { toggleTheme, mode: currentTheme } = useCustomTheme();
 
-  const [whiteboardSettings, setWhiteboardSettings] = useState({
-    gridEnabled: true,
-    snapToGrid: false,
-    brushSize: 3,
-    autoSave: true,
-    collaboratorCursors: true,
-    drawingSmoothing: 75,
-  });
-
-  const [documentSettings, setDocumentSettings] = useState({
+  // Initialize settings state with default values
+  const [settings, setSettings] = useState({
+    showGrid: false,
+    defaultBrushSize: 3,
+    defaultCursorType: 'default' as CursorType,
     fontSize: 14,
     lineHeight: 1.5,
-    spellCheck: true,
-    autoFormat: true,
-    trackChanges: true,
-    commentNotifications: true,
-  });
-
-  const [themeSettings, setThemeSettings] = useState({
-    theme: currentTheme,
-    accentColor: "primary",
-    reducedMotion: false,
-    highContrast: false,
-  });
-
-  const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
-    pushNotifications: false,
-    soundEnabled: true,
-    vibrationEnabled: true,
-    collaboratorJoined: true,
-    documentShared: true,
-    mentionNotifications: true,
-    weeklyDigest: false,
-    quizes: false,
+    themeMode: 'light' as 'light' | 'dark',
+    accentColor: 'primary',
   });
 
-  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const snackBar = useSnackbar();
+
+  useEffect(() => {
+    userSettings.reloadSettings();
+  }, []);
+
+  useEffect(() => {
+    if (userSettings.settings) {
+      setSettings({
+        showGrid: userSettings.settings.showGrid ?? false,
+        defaultBrushSize: userSettings.settings.defaultBrushSize ?? 3,
+        defaultCursorType: userSettings.settings.defaultCursorType ?? 'default',
+        fontSize: userSettings.settings.fontSize ?? 14,
+        lineHeight: userSettings.settings.lineHeight ?? 1.5,
+        emailNotifications: userSettings.settings.emailNotifications ?? true,
+        themeMode: userSettings.settings.themeMode ?? 'light',
+        accentColor: 'primary',
+      });
+    }
+  }, [userSettings.settings]);
 
   const handleSaveSettings = () => {
-    console.log("Settings saved:", {
-      whiteboard: whiteboardSettings,
-      document: documentSettings,
-      theme: themeSettings,
-      notifications: notificationSettings,
+    userSettings.updateSettings({
+      showGrid: settings.showGrid,
+      defaultBrushSize: settings.defaultBrushSize,
+      defaultCursorType: settings.defaultCursorType,
+      fontSize: settings.fontSize,
+      lineHeight: settings.lineHeight,
+      emailNotifications: settings.emailNotifications,
+      themeMode: settings.themeMode,
     });
-    setSnackbar({ open: true, message: "Settings saved successfully!" });
+
+    snackBar.showSnackbar('Settings saved!', 'success');
   };
 
   const handleResetSettings = () => {
-    setWhiteboardSettings({
-      gridEnabled: true,
-      snapToGrid: false,
-      brushSize: 3,
-      autoSave: true,
-      collaboratorCursors: true,
-      drawingSmoothing: 75,
-    });
-    setDocumentSettings({
+    // Reset settings to default values from your entity
+    setSettings({
+      // Whiteboard settings
+      showGrid: true,
+      defaultBrushSize: 3,
+      defaultCursorType: 'default' as CursorType,
+
+      // Document editor preferences
       fontSize: 14,
-      lineHeight: 1.5,
-      spellCheck: true,
-      autoFormat: true,
-      trackChanges: true,
-      commentNotifications: true,
-    });
-    setThemeSettings({
-      theme: "light",
-      accentColor: "primary",
-      reducedMotion: false,
-      highContrast: false,
-    });
-    setNotificationSettings({
+      lineHeight: 1.1,
+
+      // Notifications
       emailNotifications: true,
-      pushNotifications: false,
-      soundEnabled: true,
-      vibrationEnabled: true,
-      collaboratorJoined: true,
-      documentShared: true,
-      mentionNotifications: true,
-      weeklyDigest: false,
-      quizes: false,
+
+      // Theme preferences
+      themeMode: 'light',
+      accentColor: 'primary',
     });
-    setSnackbar({ open: true, message: "Settings reset to defaults!" });
+
+    // If the theme was reset, you might want to update the actual theme
+    if (currentTheme !== 'light') {
+      toggleTheme();
+    }
+
+    snackBar.showSnackbar('Settings Reset to Defaults!', 'success');
   };
 
   return (
     <Box>
-      <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 4 }}>
         <Container maxWidth="lg">
           {/* Header */}
           <Box sx={{ mb: 4 }}>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 gap: 2,
                 mb: 2,
               }}
             >
               <SettingsIcon
                 sx={{
-                  color: "primary.main",
+                  color: 'primary.main',
                   fontSize: 32,
                 }}
               />
@@ -157,7 +148,7 @@ export default function SettingsPage() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Whiteboard Settings */}
             <Card sx={{ boxShadow: 1 }}>
               <CardHeader
@@ -178,19 +169,19 @@ export default function SettingsPage() {
               <CardContent>
                 <Box
                   sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                     gap: 4,
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box>
@@ -199,61 +190,11 @@ export default function SettingsPage() {
                         </Typography>
                       </Box>
                       <Switch
-                        checked={whiteboardSettings.gridEnabled}
+                        checked={settings.showGrid}
                         onChange={(_, checked) =>
-                          setWhiteboardSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
-                            gridEnabled: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Auto Save
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={whiteboardSettings.autoSave}
-                        onChange={(_, checked) =>
-                          setWhiteboardSettings((prev) => ({
-                            ...prev,
-                            autoSave: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-                  </Box>
-
-                  <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Show Collaborator Cursors
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={whiteboardSettings.collaboratorCursors}
-                        onChange={(_, checked) =>
-                          setWhiteboardSettings((prev) => ({
-                            ...prev,
-                            collaboratorCursors: checked,
+                            showGrid: checked,
                           }))
                         }
                       />
@@ -261,42 +202,57 @@ export default function SettingsPage() {
 
                     <Box>
                       <Typography variant="body2" fontWeight={500} gutterBottom>
-                        Default Brush Size: {whiteboardSettings.brushSize}px
+                        Default Brush Size: {settings.defaultBrushSize}px
                       </Typography>
                       <Slider
-                        value={whiteboardSettings.brushSize}
+                        value={settings.defaultBrushSize}
                         onChange={(_, value) =>
-                          setWhiteboardSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
-                            brushSize: value as number,
+                            defaultBrushSize: value as number,
                           }))
                         }
-                        max={20}
+                        max={10}
                         min={1}
                         step={1}
                         valueLabelDisplay="auto"
                       />
                     </Box>
+                  </Box>
 
-                    <Box>
-                      <Typography variant="body2" fontWeight={500} gutterBottom>
-                        Drawing Smoothing: {whiteboardSettings.drawingSmoothing}
-                        %
-                      </Typography>
-                      <Slider
-                        value={whiteboardSettings.drawingSmoothing}
-                        onChange={(_, value) =>
-                          setWhiteboardSettings((prev) => ({
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+                  >
+                    <FormControl fullWidth>
+                      <InputLabel id="cursor-type-label">
+                        Cursor Type
+                      </InputLabel>
+                      <Select
+                        labelId="cursor-type-label"
+                        id="cursor-type-select"
+                        value={settings.defaultCursorType}
+                        label="Cursor Type"
+                        onChange={(e) =>
+                          setSettings((prev) => ({
                             ...prev,
-                            drawingSmoothing: value as number,
+                            defaultCursorType: e.target.value as CursorType,
                           }))
                         }
-                        max={100}
-                        min={0}
-                        step={5}
-                        valueLabelDisplay="auto"
-                      />
-                    </Box>
+                      >
+                        <MenuItem value="default" disableRipple>
+                          Default
+                        </MenuItem>
+                        <MenuItem value="text" disableRipple>
+                          Text
+                        </MenuItem>
+                        <MenuItem value="resize-corner" disableRipple>
+                          Resize
+                        </MenuItem>
+                        <MenuItem value="nesw-rotate" disableRipple>
+                          Rotate
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                   </Box>
                 </Box>
               </CardContent>
@@ -324,22 +280,22 @@ export default function SettingsPage() {
               <CardContent>
                 <Box
                   sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                     gap: 4,
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
                     <Box>
                       <Typography variant="body2" fontWeight={500} gutterBottom>
-                        Font Size: {documentSettings.fontSize}px
+                        Font Size: {settings.fontSize}px
                       </Typography>
                       <Slider
-                        value={documentSettings.fontSize}
+                        value={settings.fontSize || 14}
                         onChange={(_, value) =>
-                          setDocumentSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
                             fontSize: value as number,
                           }))
@@ -353,12 +309,12 @@ export default function SettingsPage() {
 
                     <Box>
                       <Typography variant="body2" fontWeight={500} gutterBottom>
-                        Line Height: {documentSettings.lineHeight}
+                        Line Height: {settings.lineHeight}
                       </Typography>
                       <Slider
-                        value={documentSettings.lineHeight}
+                        value={settings.lineHeight || 1.5}
                         onChange={(_, value) =>
-                          setDocumentSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
                             lineHeight: value as number,
                           }))
@@ -372,49 +328,29 @@ export default function SettingsPage() {
                   </Box>
 
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box>
                         <Typography variant="body2" fontWeight={500}>
-                          Track Changes
+                          Auto Save
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Automatically save document changes
                         </Typography>
                       </Box>
                       <Switch
-                        checked={documentSettings.trackChanges}
+                        checked={settings.emailNotifications}
                         onChange={(_, checked) =>
-                          setDocumentSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
-                            trackChanges: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Comment Notifications
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={documentSettings.commentNotifications}
-                        onChange={(_, checked) =>
-                          setDocumentSettings((prev) => ({
-                            ...prev,
-                            commentNotifications: checked,
+                            emailNotifications: checked,
                           }))
                         }
                       />
@@ -442,73 +378,31 @@ export default function SettingsPage() {
               <CardContent>
                 <Box
                   sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                     gap: 4,
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
-                    <FormControl fullWidth>
-                      <InputLabel>Theme Mode</InputLabel>
-                      <Select
-                        value={themeSettings.theme}
-                        label="Theme Mode"
-                        onChange={(e) => {
-                          setThemeSettings((prev) => ({
-                            ...prev,
-                            theme: e.target.value,
-                          }));
-                          if (e.target.value !== currentTheme) {
-                            toggleTheme();
-                          }
-                        }}
-                      >
-                        <MenuItem value="light">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Sun sx={{ fontSize: 16 }} />
-                            Light
-                          </Box>
-                        </MenuItem>
-                        <MenuItem value="dark">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Moon sx={{ fontSize: 16 }} />
-                            Dark
-                          </Box>
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-
                     <FormControl fullWidth>
                       <InputLabel>Accent Color</InputLabel>
                       <Select
-                        value={themeSettings.accentColor}
+                        value={settings.accentColor}
                         label="Accent Color"
                         onChange={(e) =>
-                          setThemeSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
                             accentColor: e.target.value,
                           }))
                         }
                       >
-                        <MenuItem value="primary">
+                        <MenuItem value="primary" disableRipple>
                           <Box
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               gap: 1,
                             }}
                           >
@@ -516,18 +410,18 @@ export default function SettingsPage() {
                               sx={{
                                 width: 12,
                                 height: 12,
-                                borderRadius: "50%",
+                                borderRadius: '50%',
                                 bgcolor: theme.palette.primary.main,
                               }}
                             />
                             Primary Blue
                           </Box>
                         </MenuItem>
-                        <MenuItem value="secondary">
+                        <MenuItem value="fuchsia" disableRipple>
                           <Box
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               gap: 1,
                             }}
                           >
@@ -535,49 +429,11 @@ export default function SettingsPage() {
                               sx={{
                                 width: 12,
                                 height: 12,
-                                borderRadius: "50%",
-                                bgcolor: theme.palette.secondary.main,
+                                borderRadius: '50%',
+                                bgcolor: '#ff00ff',
                               }}
                             />
-                            Secondary
-                          </Box>
-                        </MenuItem>
-                        <MenuItem value="success">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: 12,
-                                height: 12,
-                                borderRadius: "50%",
-                                bgcolor: theme.palette.success.main,
-                              }}
-                            />
-                            Success Green
-                          </Box>
-                        </MenuItem>
-                        <MenuItem value="warning">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: 12,
-                                height: 12,
-                                borderRadius: "50%",
-                                bgcolor: theme.palette.warning.main,
-                              }}
-                            />
-                            Warning Orange
+                            Fuchsia
                           </Box>
                         </MenuItem>
                       </Select>
@@ -586,32 +442,37 @@ export default function SettingsPage() {
 
                   <Box
                     sx={{
-                      display: "flex",
-                      flexDirection: "column",
+                      display: 'flex',
+                      flexDirection: 'column',
                       gap: 3,
                       pt: 1,
                     }}
                   >
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box>
                         <Typography variant="body2" fontWeight={500}>
-                          High Contrast
+                          Dark Theme
                         </Typography>
                       </Box>
                       <Switch
-                        checked={themeSettings.highContrast}
-                        onChange={(_, checked) =>
-                          setThemeSettings((prev) => ({
+                        checked={settings.themeMode === 'dark'}
+                        onChange={(_, checked) => {
+                          const newMode = checked ? 'dark' : 'light';
+                          setSettings((prev) => ({
                             ...prev,
-                            highContrast: checked,
-                          }))
-                        }
+                            themeMode: newMode,
+                          }));
+                          const themeMode = checked ? 'dark' : 'light';
+                          if (currentTheme !== themeMode) {
+                            toggleTheme();
+                          }
+                        }}
                       />
                     </Box>
                   </Box>
@@ -639,19 +500,19 @@ export default function SettingsPage() {
               <CardContent>
                 <Box
                   sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                     gap: 4,
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
                     <Typography
                       variant="overline"
                       sx={{
                         fontWeight: 600,
-                        color: "text.secondary",
+                        color: 'text.secondary',
                         letterSpacing: 1,
                       }}
                     >
@@ -660,23 +521,23 @@ export default function SettingsPage() {
 
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
-                        <Mail sx={{ fontSize: 16, color: "text.secondary" }} />
+                        <Mail sx={{ fontSize: 16, color: 'text.secondary' }} />
                         <Typography variant="body2" fontWeight={500}>
                           Email Notifications
                         </Typography>
                       </Box>
                       <Switch
-                        checked={notificationSettings.emailNotifications}
+                        checked={settings.emailNotifications}
                         onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
                             emailNotifications: checked,
                           }))
@@ -686,27 +547,27 @@ export default function SettingsPage() {
 
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
                         <MessageSquare
-                          sx={{ fontSize: 16, color: "text.secondary" }}
+                          sx={{ fontSize: 16, color: 'text.secondary' }}
                         />
                         <Typography variant="body2" fontWeight={500}>
                           Push Notifications
                         </Typography>
                       </Box>
                       <Switch
-                        checked={notificationSettings.pushNotifications}
+                        checked={settings.emailNotifications}
                         onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
-                            pushNotifications: checked,
+                            emailNotifications: checked,
                           }))
                         }
                       />
@@ -714,13 +575,13 @@ export default function SettingsPage() {
                   </Box>
 
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                   >
                     <Typography
                       variant="overline"
                       sx={{
                         fontWeight: 600,
-                        color: "text.secondary",
+                        color: 'text.secondary',
                         letterSpacing: 1,
                       }}
                     >
@@ -729,25 +590,25 @@ export default function SettingsPage() {
 
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
-                        <Users sx={{ fontSize: 16, color: "text.secondary" }} />
+                        <Users sx={{ fontSize: 16, color: 'text.secondary' }} />
                         <Typography variant="body2" fontWeight={500}>
                           Collaborator Joined
                         </Typography>
                       </Box>
                       <Switch
-                        checked={notificationSettings.collaboratorJoined}
+                        checked={settings.emailNotifications}
                         onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
-                            collaboratorJoined: checked,
+                            emailNotifications: checked,
                           }))
                         }
                       />
@@ -755,22 +616,22 @@ export default function SettingsPage() {
 
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box>
                         <Typography variant="body2" fontWeight={500}>
-                          Document Shared
+                          Weekly Upcoming Quizzes
                         </Typography>
                       </Box>
                       <Switch
-                        checked={notificationSettings.documentShared}
+                        checked={settings.emailNotifications}
                         onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
-                            documentShared: checked,
+                            emailNotifications: checked,
                           }))
                         }
                       />
@@ -778,32 +639,9 @@ export default function SettingsPage() {
 
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Mentions & Comments
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={notificationSettings.mentionNotifications}
-                        onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
-                            ...prev,
-                            mentionNotifications: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
                       <Box>
@@ -812,36 +650,11 @@ export default function SettingsPage() {
                         </Typography>
                       </Box>
                       <Switch
-                        checked={notificationSettings.weeklyDigest}
+                        checked={settings.emailNotifications}
                         onChange={(_, checked) =>
-                          setNotificationSettings((prev) => ({
+                          setSettings((prev) => ({
                             ...prev,
-                            weeklyDigest: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Upcoming quizzes
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={notificationSettings.quizes}
-                        onChange={(
-                          _event: React.ChangeEvent<HTMLInputElement>,
-                          checked: boolean
-                        ) =>
-                          setNotificationSettings((prev) => ({
-                            ...prev,
-                            quizes: checked,
+                            emailNotifications: checked,
                           }))
                         }
                       />
@@ -869,8 +682,8 @@ export default function SettingsPage() {
               <CardContent>
                 <Button
                   variant="outlined"
-                  onClick={() => navigate("/user-profile")}
-                  sx={{ width: { xs: "100%", md: "auto" } }}
+                  onClick={() => navigate('/user-profile')}
+                  sx={{ width: { xs: '100%', md: 'auto' } }}
                 >
                   <ExternalLink sx={{ mr: 1, fontSize: 16 }} />
                   Go to Profile Settings
@@ -881,8 +694,8 @@ export default function SettingsPage() {
             {/* Action Buttons */}
             <Box
               sx={{
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
                 gap: 2,
                 pt: 3,
               }}
@@ -890,7 +703,7 @@ export default function SettingsPage() {
               <Button
                 onClick={handleSaveSettings}
                 variant="contained"
-                sx={{ flex: { xs: 1, sm: "none" } }}
+                sx={{ flex: { xs: 1, sm: 'none' } }}
               >
                 <Save sx={{ mr: 1, fontSize: 16 }} />
                 Save Settings
@@ -898,29 +711,13 @@ export default function SettingsPage() {
               <Button
                 variant="outlined"
                 onClick={handleResetSettings}
-                sx={{ flex: { xs: 1, sm: "none" } }}
+                sx={{ flex: { xs: 1, sm: 'none' } }}
               >
                 <RotateCcw sx={{ mr: 1, fontSize: 16 }} />
                 Reset to Defaults
               </Button>
             </Box>
           </Box>
-
-          {/* Success Snackbar */}
-          <Snackbar
-            open={snackbar.open}
-            autoHideDuration={4000}
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          >
-            <Alert
-              onClose={() => setSnackbar({ ...snackbar, open: false })}
-              severity="success"
-              variant="filled"
-            >
-              {snackbar.message}
-            </Alert>
-          </Snackbar>
         </Container>
       </Box>
     </Box>
