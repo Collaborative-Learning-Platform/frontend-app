@@ -15,19 +15,25 @@ import {
   Alert,
   Snackbar,
   Skeleton,
+  CircularProgress,
+  alpha,
+  Paper,
+  Chip,
 } from "@mui/material";
-import { Clear, Delete, UploadFile } from "@mui/icons-material";
+import { 
+  Delete, 
+  UploadFile,
+  CloudUpload,
+  CheckCircle,
+  Delete as DeleteIcon,
+  Error as ErrorIcon,
+  Warning,
+  PersonAdd,
+  Email,
+} from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
+import { visuallyHidden } from "@mui/utils";
 import { motion } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
 import axiosInstance from "../../../api/axiosInstance";
 
 
@@ -40,6 +46,21 @@ interface User {
   avatar?: string;
 }
 
+interface FailedUser {
+  email: string;
+  reason: string;
+}
+
+interface UploadSummary {
+  total: number;
+  added: number;
+  existing: number;
+  failed: number;
+  successfulUsers?: string[];
+  failedUsers?: FailedUser[];
+  existingUsers?: string[];
+}
+
 interface Props {
   workspaceId: string;
   users: User[];
@@ -50,12 +71,87 @@ interface Props {
 export default function UsersPanel({ workspaceId, users, setUsers, loading = false }: Props) {
   const theme = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [summary, setSummary] = useState<any>(null);
+  const [summary, setSummary] = useState<UploadSummary | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) setSelectedFile(event.target.files[0]);
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file type
+      const allowedTypes = [".csv", ".xlsx", ".xls"];
+      const fileExtension = file.name
+        .toLowerCase()
+        .substr(file.name.lastIndexOf("."));
+
+      if (allowedTypes.includes(fileExtension)) {
+        setSelectedFile(file);
+        setSummary(null);
+        setSuccessMsg(`File "${file.name}" selected successfully`);
+      } else {
+        setErrorMsg("Please upload a valid file type: CSV or Excel (.xlsx, .xls)");
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      // Check file type
+      const allowedTypes = [".csv", ".xlsx", ".xls"];
+      const fileExtension = file.name
+        .toLowerCase()
+        .substr(file.name.lastIndexOf("."));
+
+      if (allowedTypes.includes(fileExtension)) {
+        setSelectedFile(file);
+        setSummary(null);
+        setSuccessMsg(`File "${file.name}" selected successfully`);
+      } else {
+        setErrorMsg("Please upload a valid file type: CSV or Excel (.xlsx, .xls)");
+      }
+    }
+  };
+
+  const handleRemoveFile = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedFile(null);
+    setSuccessMsg("File removed");
+  };
+
+  const handleUploadAreaClick = (event: React.MouseEvent) => {
+    if (selectedFile) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const setS3ProfilePictureDownloadURL = async (userId: string) => {
@@ -100,6 +196,10 @@ export default function UsersPanel({ workspaceId, users, setUsers, loading = fal
       return;
     }
 
+    setUploading(true);
+    setSummary(null);
+    setSuccessMsg("Starting file upload...");
+
     const formData = new FormData();
     formData.append("file", selectedFile);
 
@@ -110,6 +210,7 @@ export default function UsersPanel({ workspaceId, users, setUsers, loading = fal
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
+      console.log("Upload response:", response.data);
       const data = response.data.data;
 
       if (response.data.success) {
@@ -139,11 +240,33 @@ export default function UsersPanel({ workspaceId, users, setUsers, loading = fal
 
         setUsers([...users, ...usersWithProfilePics]);
 
+        // Extract detailed user lists - API returns them directly
+        const successfulUsers = (data.results || [])
+          .filter((r: any) => r.success)
+          .map((r: any) => r.email);
+        
+        const failedUsers = (data.failedUsers || []).map((user: any) => ({
+          email: user.email,
+          reason: user.error || user.message || "Unknown error"
+        }));
+        
+        const existingUsers = (data.existingUsers || []).map((user: any) => user.email);
+
+        console.log("Extracted lists:", {
+          successfulUsers,
+          failedUsers,
+          existingUsers,
+          summary: data.summary
+        });
+
         setSummary({
           total: data.summary.total,
           added: data.summary.added,
           existing: data.summary.existing,
           failed: data.summary.failed,
+          successfulUsers: successfulUsers,
+          failedUsers: failedUsers,
+          existingUsers: existingUsers,
         });
       } else {
         setErrorMsg(data.message || "Failed to upload users.");
@@ -151,8 +274,11 @@ export default function UsersPanel({ workspaceId, users, setUsers, loading = fal
 
       setSelectedFile(null);
     } catch (error: any) {
-      console.error(error);
-      setErrorMsg("Failed to upload users.");
+      console.error("Upload error:", error);
+      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Failed to upload users.";
+      setErrorMsg(errorMessage);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -166,191 +292,551 @@ export default function UsersPanel({ workspaceId, users, setUsers, loading = fal
     }
   };
 
-  const chartData = summary
-    ? [
-        { name: "Added", value: summary.added, color: theme.palette.success.main },
-        { name: "Existing", value: summary.existing, color: theme.palette.info.main },
-        { name: "Failed", value: summary.failed, color: theme.palette.error.main },
-      ]
-    : [];
-
-  const DarkTooltip = ({ active, payload, label }: any) => {
-  if (active ) {
-    return (
-      <Box
-        sx={{
-          backgroundColor: "#121212", 
-          color: "#fff",
-          padding: "8px 12px",
-          borderRadius: 2,
-          boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
-          fontSize: 14,
-        }}
-      >
-        <Typography variant="subtitle2">{label}</Typography>
-        <Typography variant="body2">{`Users: ${payload[0].value}`}</Typography>
-      </Box>
-    );
-  }
-    return null;
-  };    
+  // Debug logging
+  React.useEffect(() => {
+    if (summary) {
+      console.log("Summary state updated:", summary);
+    }
+  }, [summary]);
 
   return (
     <Box>
       {/* Upload Card */}
-      <Card sx={{ mb: 3 }}>
-        <CardHeader title="Add Users" />
+      <Card sx={{ mb: 3, borderRadius: 2, boxShadow: theme.shadows[4] }}>
+        <CardHeader 
+          avatar={<UploadFile color="primary" />}
+          title="Add Users" 
+          subheader="Upload CSV or Excel file to add multiple users at once"
+          sx={{
+            "& .MuiCardHeader-title": {
+              fontWeight: "bold",
+            },
+          }}
+        />
         <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Button variant="outlined" component="label">
-              Choose File
+          <label
+            htmlFor={selectedFile ? undefined : "file-upload"}
+            style={{
+              display: "block",
+              cursor: selectedFile ? "default" : "pointer",
+            }}
+            onClick={handleUploadAreaClick}
+          >
+            <Box
+              sx={{
+                border: `2px dashed`,
+                borderColor: isDragOver
+                  ? theme.palette.primary.main
+                  : selectedFile
+                  ? theme.palette.success.main
+                  : theme.palette.grey[300],
+                borderRadius: 3,
+                p: theme.spacing(4),
+                textAlign: "center",
+                transition: theme.transitions.create(
+                  ["border-color", "background-color"],
+                  {
+                    duration: theme.transitions.duration.short,
+                  }
+                ),
+                width: "100%",
+                boxSizing: "border-box",
+                display: "block",
+                backgroundColor: isDragOver
+                  ? alpha(theme.palette.primary.main, 0.08)
+                  : selectedFile
+                  ? alpha(theme.palette.success.main, 0.04)
+                  : "transparent",
+                "&:hover": {
+                  borderColor: theme.palette.primary.main,
+                  backgroundColor: alpha(
+                    theme.palette.primary.main,
+                    0.02
+                  ),
+                },
+              }}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <input
                 type="file"
-                hidden
+                id="file-upload"
                 onChange={handleFileChange}
-                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                style={visuallyHidden}
+                accept=".csv,.xlsx,.xls"
               />
-            </Button>
-            {selectedFile && (
-              <>
-                <Typography variant="body2">{selectedFile.name}</Typography>
-                <IconButton onClick={() => setSelectedFile(null)} size="small">
-                  <Clear />
-                </IconButton>
-              </>
-            )}
-            <Button
-              onClick={handleUpload}
-              variant="contained"
-              disabled={!selectedFile}
-              startIcon={<UploadFile />}
-            >
-              Upload
-            </Button>
-          </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: theme.spacing(2),
+                }}
+              >
+                {selectedFile ? (
+                  // Show uploaded file details
+                  <Box>
+                    <CheckCircle
+                      sx={{
+                        fontSize: theme.spacing(6),
+                        color: "success.main",
+                      }}
+                    />
+                    <Box sx={{ textAlign: "center" }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight="medium"
+                        color="success.main"
+                      >
+                        File uploaded successfully!
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ mt: theme.spacing(1) }}
+                      >
+                        {selectedFile.name}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {formatFileSize(selectedFile.size)}
+                      </Typography>
+                    </Box>
+                    <IconButton
+                      onClick={handleRemoveFile}
+                      color="error"
+                      sx={{ mt: theme.spacing(1) }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  // Show upload prompt
+                  <Box>
+                    <CloudUpload
+                      sx={{
+                        fontSize: theme.spacing(6),
+                        color: "text.secondary",
+                      }}
+                    />
+                    <Box>
+                      <Typography variant="body2" fontWeight="medium">
+                        Click to upload or drag and drop
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        CSV, Excel (.xlsx, .xls) - max 10MB
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          </label>
+
+          {/* Upload Button */}
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleUpload}
+            disabled={uploading || !selectedFile}
+            startIcon={
+              uploading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <CloudUpload />
+              )
+            }
+            sx={{
+              mt: 3,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: "bold",
+              textTransform: "none",
+              backgroundColor: theme.palette.primary.main,
+              "&:hover": {
+                backgroundColor: theme.palette.primary.dark,
+                transform: "translateY(-1px)",
+              },
+              "&:disabled": {
+                backgroundColor:
+                  theme.palette.action.disabledBackground,
+              },
+            }}
+          >
+            {uploading ? "Uploading Users..." : "Upload Users"}
+          </Button>
         </CardContent>
       </Card>
 
       {/* Summary Card */}
       {summary && (
-        <Card sx={{ mb: 3 }}>
-          <CardHeader title="Upload Summary" />
-          <CardContent>
-            <Box sx={{ display: "flex", gap: 3, mb: 2 }}>
-              {["added", "existing", "failed"].map((key) => (
-                <motion.div
-                  key={key}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    {key.charAt(0).toUpperCase() + key.slice(1)}: {summary[key]}
+        <Box sx={{ display: 'flex', gap: 3, mb: 3, flexWrap: 'wrap' }}>
+          {/* Successful Users Card */}
+          <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Paper
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)}, ${alpha(theme.palette.success.main, 0.05)})`,
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <CheckCircle sx={{ color: 'success.main', mr: 1 }} />
+                  <Typography variant="h6" color="success.main" fontWeight="bold">
+                    Added
                   </Typography>
-                </motion.div>
-              ))}
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  Total: {summary.total}
+                </Box>
+                <Typography variant="h3" fontWeight="bold" color="success.main">
+                  {summary.added}
                 </Typography>
-              </motion.div>
+                <Typography variant="body2" color="text.secondary">
+                  Users added successfully
+                </Typography>
+              </Paper>
+            </motion.div>
+          </Box>
+
+          {/* Failed Users Card */}
+          <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Paper
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)}, ${alpha(theme.palette.error.main, 0.05)})`,
+                  border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <ErrorIcon sx={{ color: 'error.main', mr: 1 }} />
+                  <Typography variant="h6" color="error.main" fontWeight="bold">
+                    Failed
+                  </Typography>
+                </Box>
+                <Typography variant="h3" fontWeight="bold" color="error.main">
+                  {summary.failed}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Users failed to add
+                </Typography>
+              </Paper>
+            </motion.div>
+          </Box>
+
+          {/* Existing Users Card */}
+          <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Paper
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)}, ${alpha(theme.palette.warning.main, 0.05)})`,
+                  border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Warning sx={{ color: 'warning.main', mr: 1 }} />
+                  <Typography variant="h6" color="warning.main" fontWeight="bold">
+                    Existing
+                  </Typography>
+                </Box>
+                <Typography variant="h3" fontWeight="bold" color="warning.main">
+                  {summary.existing}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Users already exist
+                </Typography>
+              </Paper>
+            </motion.div>
+          </Box>
+        </Box>
+      )}
+
+      {/* Detailed User Lists */}
+      {summary && (
+        <Box sx={{ display: 'flex', gap: 3, mb: 3, flexDirection: { xs: 'column', lg: 'row' } }}>
+          {/* Successful Users */}
+          {summary.successfulUsers && summary.successfulUsers.length > 0 && (
+            <Box sx={{ flex: 1, minWidth: '300px' }}>
+              <Card sx={{ borderRadius: 2, height: '100%' }}>
+                <CardHeader
+                  avatar={<CheckCircle color="success" />}
+                  title="Successfully Added Users"
+                  subheader={`${summary.successfulUsers.length} users`}
+                  action={
+                    <Chip
+                      label={summary.added}
+                      color="success"
+                      size="small"
+                    />
+                  }
+                />
+                <CardContent sx={{ pt: 0 }}>
+                  <List dense sx={{ maxHeight: 300, overflow: 'auto' }}>
+                    {summary.successfulUsers.map((email, index) => (
+                      <ListItem key={index} sx={{ px: 0 }}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: theme.palette.success.main, width: 32, height: 32 }}>
+                            <PersonAdd sx={{ fontSize: 16 }} />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={email}
+                          primaryTypographyProps={{
+                            variant: 'body2',
+                            fontWeight: 'medium'
+                          }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
             </Box>
-            <ResponsiveContainer width="100%" height={150}>
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip content={<DarkTooltip />} />
-                <Bar dataKey="value"  fill={theme.palette.primary.main} fillOpacity={1}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color}
-                     />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          )}
+
+          {/* Failed Users */}
+          {summary.failedUsers && summary.failedUsers.length > 0 && (
+            <Box sx={{ flex: 1, minWidth: '300px' }}>
+              <Card sx={{ borderRadius: 2, height: '100%' }}>
+                <CardHeader
+                  avatar={<ErrorIcon color="error" />}
+                  title="Failed to Add Users"
+                  subheader={`${summary.failedUsers.length} users`}
+                  action={
+                    <Chip
+                      label={summary.failed}
+                      color="error"
+                      size="small"
+                    />
+                  }
+                />
+                <CardContent sx={{ pt: 0 }}>
+                  <List dense sx={{ maxHeight: 300, overflow: 'auto' }}>
+                    {summary.failedUsers.map((failedUser, index) => (
+                      <ListItem key={index} sx={{ px: 0 }}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: theme.palette.error.main, width: 32, height: 32 }}>
+                            <Email sx={{ fontSize: 16 }} />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={failedUser.email}
+                          secondary={failedUser.reason}
+                          primaryTypographyProps={{
+                            variant: 'body2',
+                            fontWeight: 'medium'
+                          }}
+                          secondaryTypographyProps={{
+                            variant: 'caption',
+                            color: 'text.secondary'
+                          }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
+            </Box>
+          )}
+
+          {/* Existing Users */}
+          {summary.existingUsers && summary.existingUsers.length > 0 && (
+            <Box sx={{ flex: 1, minWidth: '300px' }}>
+              <Card sx={{ borderRadius: 2, height: '100%' }}>
+                <CardHeader
+                  avatar={<Warning color="warning" />}
+                  title="Already Existing Users"
+                  subheader={`${summary.existingUsers.length} users`}
+                  action={
+                    <Chip
+                      label={summary.existing}
+                      color="warning"
+                      size="small"
+                    />
+                  }
+                />
+                <CardContent sx={{ pt: 0 }}>
+                  <List dense sx={{ maxHeight: 300, overflow: 'auto' }}>
+                    {summary.existingUsers.map((email, index) => (
+                      <ListItem key={index} sx={{ px: 0 }}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: theme.palette.warning.main, width: 32, height: 32 }}>
+                            <Email sx={{ fontSize: 16 }} />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={email}
+                          primaryTypographyProps={{
+                            variant: 'body2',
+                            fontWeight: 'medium'
+                          }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
+            </Box>
+          )}
+        </Box>
       )}
 
       {/* Users List */}
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Users
-      </Typography>
-      <List>
-        {loading ? (
-          // Loading skeleton for users
-          Array.from({ length: 5 }).map((_, index) => (
-            <ListItem 
-              key={index}
-              secondaryAction={
-                <IconButton edge="end" disabled>
-                  <Skeleton variant="circular" width={24} height={24} />
-                </IconButton>
-              }
-              sx={{
-                py: 1.5,
-                border: `1px solid transparent`,
-                borderRadius: 2,
-                mb: 1,
-                background: `${theme.palette.background.paper}`,
-              }}
-            >
-              <ListItemAvatar>
-                <Skeleton 
-                  variant="circular" 
-                  width={40} 
-                  height={40}
-                  animation="wave"
-                />
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <Skeleton 
-                    variant="text" 
-                    width={`${Math.random() * 30 + 40}%`} 
-                    height={24} 
-                    sx={{ mb: 0.5 }}
-                    animation="wave"
-                  />
-                }
-                secondary={
-                  <Skeleton 
-                    variant="text" 
-                    width={`${Math.random() * 40 + 50}%`} 
-                    height={20}
-                    animation="wave"
-                  />
-                }
-              />
-            </ListItem>
-          ))
-        ) : (
-          users.map((user) => (
-            <ListItem
-              key={user.userId}
-              secondaryAction={
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  onClick={() => handleDeleteUser(user.userId)}
+      <Card sx={{ borderRadius: 2, boxShadow: theme.shadows[4] }}>
+        <CardHeader 
+          title="Workspace Users" 
+          subheader={`Total: ${users.length} user${users.length !== 1 ? 's' : ''}`}
+          sx={{
+            "& .MuiCardHeader-title": {
+              fontWeight: "bold",
+            },
+          }}
+        />
+        <CardContent>
+          <List>
+            {loading ? (
+              // Loading skeleton for users
+              Array.from({ length: 5 }).map((_, index) => (
+                <ListItem 
+                  key={index}
+                  secondaryAction={
+                    <IconButton edge="end" disabled>
+                      <Skeleton variant="circular" width={24} height={24} />
+                    </IconButton>
+                  }
+                  sx={{
+                    py: 1.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 2,
+                    mb: 1,
+                    background: `${theme.palette.background.paper}`,
+                  }}
                 >
-                  <Delete />
-                </IconButton>
-              }
-            >
-              <ListItemAvatar>
-                <Avatar src={user.avatar}>{user.name.charAt(0)}</Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={`${user.name} (${user.role})`}
-                secondary={`${user.email} - Joined: ${new Date(
-                  user.joinedAt
-                ).toLocaleDateString()}`}
-              />
-            </ListItem>
-          ))
-        )}
-      </List>
+                  <ListItemAvatar>
+                    <Skeleton 
+                      variant="circular" 
+                      width={40} 
+                      height={40}
+                      animation="wave"
+                    />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Skeleton 
+                        variant="text" 
+                        width={`${Math.random() * 30 + 40}%`} 
+                        height={24} 
+                        sx={{ mb: 0.5 }}
+                        animation="wave"
+                      />
+                    }
+                    secondary={
+                      <Skeleton 
+                        variant="text" 
+                        width={`${Math.random() * 40 + 50}%`} 
+                        height={20}
+                        animation="wave"
+                      />
+                    }
+                  />
+                </ListItem>
+              ))
+            ) : users.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body1" color="text.secondary">
+                  No users in this workspace yet.
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Upload a CSV file to add users.
+                </Typography>
+              </Box>
+            ) : (
+              users.map((user) => (
+                <ListItem
+                  key={user.userId}
+                  secondaryAction={
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleDeleteUser(user.userId)}
+                      sx={{
+                        color: theme.palette.error.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.error.main, 0.1),
+                        }
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  }
+                  sx={{
+                    py: 1.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 2,
+                    mb: 1,
+                    background: `${theme.palette.background.paper}`,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                      borderColor: theme.palette.primary.main,
+                    },
+                    transition: 'all 0.2s ease-in-out',
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar src={user.avatar} sx={{ width: 40, height: 40 }}>
+                      {user.name.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="body1" fontWeight="medium" component="span">
+                          {user.name}
+                        </Typography>
+                        <Chip 
+                          label={user.role} 
+                          size="small" 
+                          sx={{ 
+                            ml: 1, 
+                            height: 20,
+                            fontSize: '0.75rem',
+                            textTransform: 'capitalize'
+                          }} 
+                        />
+                      </Box>
+                    }
+                    secondary={
+                      <Typography variant="body2" color="text.secondary">
+                        {user.email} • Joined: {new Date(user.joinedAt).toLocaleDateString()}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ))
+            )}
+          </List>
+        </CardContent>
+      </Card>
 
       {/* Snackbar for Success */}
       <Snackbar
