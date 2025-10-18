@@ -96,21 +96,38 @@ export default function AddMembersDialog({
           avatar: wu.user.avatar || "",
         }));
         
-        // Fetch S3 profile pictures for each user
-        for (const user of extractedUsers) {
-          const s3Url = await setS3ProfilePictureDownloadURL(user.userId);
-          if (s3Url) {
-            user.avatar = s3Url;
-          }
-        }
-        
+        // Show users immediately without waiting for profile pictures
         setWorkspaceUsers(extractedUsers);
+        setLoading(false);
+        
+        // Fetch S3 profile pictures in parallel 
+        const profilePicturePromises = extractedUsers.map(async (user) => {
+          try {
+            const s3Url = await setS3ProfilePictureDownloadURL(user.userId);
+            if (s3Url) {
+              return { userId: user.userId, avatar: s3Url };
+            }
+          } catch (error) {
+            console.error(`Error loading avatar for user ${user.userId}:`, error);
+          }
+          return null;
+        });
+
+        // Update avatars after they load
+        Promise.all(profilePicturePromises).then((results) => {
+          setWorkspaceUsers((prevUsers) =>
+            prevUsers.map((user) => {
+              const result = results.find((r) => r?.userId === user.userId);
+              return result ? { ...user, avatar: result.avatar } : user;
+            })
+          );
+        });
       } else {
         setError(res.data.message || "Failed to load users");
+        setLoading(false);
       }
     } catch (err: any) {
       setError(err?.response?.data?.message || "Failed to fetch users");
-    } finally {
       setLoading(false);
     }
   };
