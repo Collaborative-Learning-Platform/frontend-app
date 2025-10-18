@@ -115,7 +115,9 @@ export const UserDocuments = () => {
         //     }]
         //   }]
         // }]
-        setWorkspaceDocuments(response.data.data);
+        if (response.data.data && response.data.data.length > 0) {
+          setWorkspaceDocuments(response.data.data);
+        }
       } else {
         throw new Error(response.data.message);
       }
@@ -819,164 +821,341 @@ export const UserDocuments = () => {
                 Loading your documents...
               </Typography>
             </Box>
-          ) : (
-            workspaceDocuments.length > 0 && (
-              <Box sx={{ mb: 4 }}>
-                <Card
-                  elevation={1}
-                  sx={{
-                    mb: 2,
-                    background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.primary.light}15)`,
-                    borderLeft: `4px solid ${theme.palette.primary.main}`,
-                    overflow: 'visible',
-                  }}
-                >
-                  {/* Error State */}
-                  {error && (
-                    <Box
-                      sx={{
-                        py: theme.spacing(4),
-                        mx: 'auto',
-                      }}
-                    >
-                      <Alert severity="error">
-                        <AlertTitle align="left">Error</AlertTitle>
-                        {error}
-                      </Alert>
-                    </Box>
-                  )}
-                  <CardContent sx={{ py: 1.5 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: { xs: 'flex-start', sm: 'center' },
-                        justifyContent: 'space-between',
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        gap: { xs: 1, sm: 0 },
-                      }}
-                    >
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                      >
-                        <UsersIcon color="primary" />
-                        <Typography
-                          variant="h6"
-                          fontWeight="600"
-                          sx={{ color: theme.palette.primary.main }}
-                        >
-                          {searchQuery
-                            ? `Search Results (${totalFilteredDocuments})`
-                            : 'My Workspaces'}
-                        </Typography>
-                      </Box>
-                      <ToggleButtonGroup
-                        value={viewModeWorkspace}
-                        exclusive
-                        onChange={handleWorkspaceViewModeChange}
-                        size="small"
-                        sx={{ width: { xs: '100%', sm: 'auto' } }}
-                      >
-                        <ToggleButton
-                          value="grid"
-                          sx={{ flex: { xs: 1, sm: 'none' } }}
-                        >
-                          <Grid3X3Icon />
-                        </ToggleButton>
-                        <ToggleButton
-                          value="list"
-                          sx={{ flex: { xs: 1, sm: 'none' } }}
-                        >
-                          <ListIcon />
-                        </ToggleButton>
-                      </ToggleButtonGroup>
-                    </Box>
-                  </CardContent>
-                </Card>
-
-                {filteredWorkspaceDocuments.map((workspace) => (
-                  <Box key={workspace.workspaceId} sx={{ mb: 4 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 2,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                        pb: 1,
-                      }}
-                    >
+          ) : workspaceDocuments.length > 0 ? (
+            <Box sx={{ mb: 4 }}>
+              <Card
+                elevation={1}
+                sx={{
+                  mb: 2,
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.primary.light}15)`,
+                  borderLeft: `4px solid ${theme.palette.primary.main}`,
+                  overflow: 'visible',
+                }}
+              >
+                {/* Error State */}
+                {error && (
+                  <Box
+                    sx={{
+                      py: theme.spacing(4),
+                      mx: 'auto',
+                    }}
+                  >
+                    <Alert severity="error">
+                      <AlertTitle align="left">Error</AlertTitle>
+                      {error}
+                    </Alert>
+                  </Box>
+                )}
+                <CardContent sx={{ py: 1.5 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: { xs: 'flex-start', sm: 'center' },
+                      justifyContent: 'space-between',
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: { xs: 1, sm: 0 },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <UsersIcon color="primary" />
                       <Typography
-                        variant="subtitle1"
+                        variant="h6"
                         fontWeight="600"
                         sx={{ color: theme.palette.primary.main }}
                       >
-                        Workspace: {workspace.name}
+                        {searchQuery
+                          ? `Search Results (${totalFilteredDocuments})`
+                          : 'My Workspaces'}
                       </Typography>
                     </Box>
+                    <ToggleButtonGroup
+                      value={viewModeWorkspace}
+                      exclusive
+                      onChange={handleWorkspaceViewModeChange}
+                      size="small"
+                      sx={{ width: { xs: '100%', sm: 'auto' } }}
+                    >
+                      <ToggleButton
+                        value="grid"
+                        sx={{ flex: { xs: 1, sm: 'none' } }}
+                      >
+                        <Grid3X3Icon />
+                      </ToggleButton>
+                      <ToggleButton
+                        value="list"
+                        sx={{ flex: { xs: 1, sm: 'none' } }}
+                      >
+                        <ListIcon />
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  </Box>
+                </CardContent>
+              </Card>
 
-                    {workspace.groups
-                      .filter((group) => group.documents.length > 0)
-                      .map((group) => (
-                        <Box key={group.groupId} sx={{ mb: 3 }}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              mb: 1.5,
-                            }}
+              {filteredWorkspaceDocuments.map((workspace) => (
+                <Box key={workspace.workspaceId} sx={{ mb: 4 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 2,
+                      borderBottom: `1px solid ${theme.palette.divider}`,
+                      pb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="600"
+                      sx={{ color: theme.palette.primary.main }}
+                    >
+                      Workspace: {workspace.name}
+                    </Typography>
+                  </Box>
+
+                  {workspace.groups
+                    .filter((group) => group.documents.length > 0)
+                    .map((group) => (
+                      <Box key={group.groupId} sx={{ mb: 3 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            mb: 1.5,
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight="500"
+                            sx={{ color: theme.palette.primary.main }}
                           >
-                            <Typography
-                              variant="subtitle2"
-                              fontWeight="500"
-                              sx={{ color: theme.palette.primary.main }}
-                            >
-                              <Chip
-                                label={group.name}
-                                size="small"
-                                sx={{
-                                  mr: 1,
-                                  color: theme.palette.primary.main,
-                                  borderColor: theme.palette.primary.main,
-                                }}
-                              />
-                              Group Documents
-                            </Typography>
-                          </Box>
+                            <Chip
+                              label={group.name}
+                              size="small"
+                              sx={{
+                                mr: 1,
+                                color: theme.palette.primary.main,
+                                borderColor: theme.palette.primary.main,
+                              }}
+                            />
+                            Group Documents
+                          </Typography>
+                        </Box>
 
-                          {viewModeWorkspace === 'grid' ? (
-                            <Grid
-                              container
-                              spacing={2}
-                              sx={{ width: '100%', margin: 0 }}
-                            >
-                              {group.documents.map((doc) => (
-                                <Grid
-                                  size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-                                  key={doc.documentId}
+                        {viewModeWorkspace === 'grid' ? (
+                          <Grid
+                            container
+                            spacing={2}
+                            sx={{ width: '100%', margin: 0 }}
+                          >
+                            {group.documents.map((doc) => (
+                              <Grid
+                                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                                key={doc.documentId}
+                              >
+                                <Card
+                                  sx={{
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease-in-out',
+                                    height: { xs: 260, sm: 280 },
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    '&:hover': {
+                                      boxShadow: theme.shadows[4],
+                                      transform: 'translateY(-2px)',
+                                      '& .document-actions': {
+                                        opacity: 1,
+                                      },
+                                    },
+                                  }}
+                                  onClick={() =>
+                                    handleWorkspaceDocumentClick(doc, group)
+                                  }
                                 >
-                                  <Card
+                                  <CardHeader
+                                    sx={{ pb: 1 }}
+                                    title={
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <FileTextIcon />
+                                      </Box>
+                                    }
+                                    action={
+                                      <IconButton
+                                        size="small"
+                                        className="document-actions"
+                                        sx={{
+                                          opacity: 0.7,
+                                          transition: 'opacity 0.2s',
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleMenuOpen(
+                                            e,
+                                            parseInt(doc.documentId)
+                                          );
+                                        }}
+                                      >
+                                        <MoreHorizontalIcon />
+                                      </IconButton>
+                                    }
+                                  />
+                                  <CardContent
                                     sx={{
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s ease-in-out',
-                                      height: { xs: 260, sm: 280 },
+                                      pt: 0,
+                                      flex: 1,
                                       display: 'flex',
                                       flexDirection: 'column',
-                                      '&:hover': {
-                                        boxShadow: theme.shadows[4],
-                                        transform: 'translateY(-2px)',
-                                        '& .document-actions': {
-                                          opacity: 1,
-                                        },
-                                      },
                                     }}
-                                    onClick={() =>
-                                      handleWorkspaceDocumentClick(doc, group)
-                                    }
                                   >
-                                    <CardHeader
-                                      sx={{ pb: 1 }}
-                                      title={
+                                    <Typography
+                                      variant="body1"
+                                      fontWeight="500"
+                                      sx={{
+                                        mb: 2,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                      title={doc.title}
+                                    >
+                                      {doc.title}
+                                    </Typography>
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 1,
+                                        flex: 1,
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <CalendarIcon sx={{ fontSize: 14 }} />
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          {new Date(
+                                            doc.lastEdited
+                                          ).toLocaleDateString()}{' '}
+                                          {new Date(
+                                            doc.lastEdited
+                                          ).toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          })}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <UsersIcon sx={{ fontSize: 14 }} />
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          {doc.contributorIds?.length || 1}{' '}
+                                          collaborators
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'space-between',
+                                          mt: 'auto',
+                                        }}
+                                      >
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          {doc.sizeInBytes < 1024
+                                            ? `${doc.sizeInBytes} B`
+                                            : doc.sizeInBytes < 1048576
+                                            ? `${(
+                                                doc.sizeInBytes / 1024
+                                              ).toFixed(1)} KB`
+                                            : `${(
+                                                doc.sizeInBytes / 1048576
+                                              ).toFixed(1)} MB`}
+                                        </Typography>
+                                        <Chip
+                                          label={group.name}
+                                          size="small"
+                                          variant="outlined"
+                                        />
+                                      </Box>
+                                    </Box>
+                                  </CardContent>
+                                </Card>
+                              </Grid>
+                            ))}
+                          </Grid>
+                        ) : (
+                          <List>
+                            {group.documents.map((doc) => (
+                              <Box key={doc.documentId}>
+                                <Card
+                                  sx={{
+                                    mb: 1,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease-in-out',
+                                    '&:hover': {
+                                      boxShadow: theme.shadows[2],
+                                    },
+                                  }}
+                                  onClick={() =>
+                                    navigate(`/document-editor/${doc.name}`)
+                                  }
+                                >
+                                  <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        alignItems: {
+                                          xs: 'flex-start',
+                                          sm: 'center',
+                                        },
+                                        justifyContent: 'space-between',
+                                        flexDirection: {
+                                          xs: 'column',
+                                          sm: 'row',
+                                        },
+                                        gap: { xs: 1, sm: 0 },
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: {
+                                            xs: 'flex-start',
+                                            sm: 'center',
+                                          },
+                                          gap: 2,
+                                          flex: 1,
+                                          flexDirection: {
+                                            xs: 'column',
+                                            sm: 'row',
+                                          },
+                                        }}
+                                      >
                                         <Box
                                           sx={{
                                             display: 'flex',
@@ -986,15 +1165,66 @@ export const UserDocuments = () => {
                                         >
                                           <FileTextIcon />
                                         </Box>
-                                      }
-                                      action={
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                          <Typography
+                                            fontWeight="500"
+                                            sx={{
+                                              overflow: 'hidden',
+                                              textOverflow: 'ellipsis',
+                                              whiteSpace: 'nowrap',
+                                            }}
+                                          >
+                                            {doc.title}
+                                          </Typography>
+                                        </Box>
+                                      </Box>
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: {
+                                            xs: 'flex-start',
+                                            sm: 'center',
+                                          },
+                                          gap: { xs: 2, sm: 3 },
+                                          flexDirection: {
+                                            xs: 'column',
+                                            sm: 'row',
+                                          },
+                                          width: { xs: '100%', sm: 'auto' },
+                                        }}
+                                      >
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                          sx={{ order: { xs: 1, sm: 0 } }}
+                                        >
+                                          {new Date(
+                                            doc.lastEdited
+                                          ).toLocaleDateString()}
+                                        </Typography>
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 0.5,
+                                            order: { xs: 0, sm: 1 },
+                                          }}
+                                        >
+                                          <UsersIcon sx={{ fontSize: 14 }} />
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                          >
+                                            {doc.contributorIds?.length || 1}
+                                          </Typography>
+                                        </Box>
+                                        <Chip
+                                          label={group.name}
+                                          size="small"
+                                          variant="outlined"
+                                        />
                                         <IconButton
                                           size="small"
-                                          className="document-actions"
-                                          sx={{
-                                            opacity: 0.7,
-                                            transition: 'opacity 0.2s',
-                                          }}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleMenuOpen(
@@ -1005,251 +1235,75 @@ export const UserDocuments = () => {
                                         >
                                           <MoreHorizontalIcon />
                                         </IconButton>
-                                      }
-                                    />
-                                    <CardContent
-                                      sx={{
-                                        pt: 0,
-                                        flex: 1,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                      }}
-                                    >
-                                      <Typography
-                                        variant="body1"
-                                        fontWeight="500"
-                                        sx={{
-                                          mb: 2,
-                                          overflow: 'hidden',
-                                          textOverflow: 'ellipsis',
-                                          whiteSpace: 'nowrap',
-                                        }}
-                                        title={doc.title}
-                                      >
-                                        {doc.title}
-                                      </Typography>
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          flexDirection: 'column',
-                                          gap: 1,
-                                          flex: 1,
-                                        }}
-                                      >
-                                        <Box
-                                          sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                          }}
-                                        >
-                                          <CalendarIcon sx={{ fontSize: 14 }} />
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                          >
-                                            {new Date(
-                                              doc.lastEdited
-                                            ).toLocaleDateString()}{' '}
-                                            {new Date(
-                                              doc.lastEdited
-                                            ).toLocaleTimeString([], {
-                                              hour: '2-digit',
-                                              minute: '2-digit',
-                                            })}
-                                          </Typography>
-                                        </Box>
-                                        <Box
-                                          sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                          }}
-                                        >
-                                          <UsersIcon sx={{ fontSize: 14 }} />
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                          >
-                                            {doc.contributorIds?.length || 1}{' '}
-                                            collaborators
-                                          </Typography>
-                                        </Box>
-                                        <Box
-                                          sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            mt: 'auto',
-                                          }}
-                                        >
-                                          <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                          >
-                                            {doc.sizeInBytes < 1024
-                                              ? `${doc.sizeInBytes} B`
-                                              : doc.sizeInBytes < 1048576
-                                              ? `${(
-                                                  doc.sizeInBytes / 1024
-                                                ).toFixed(1)} KB`
-                                              : `${(
-                                                  doc.sizeInBytes / 1048576
-                                                ).toFixed(1)} MB`}
-                                          </Typography>
-                                          <Chip
-                                            label={group.name}
-                                            size="small"
-                                            variant="outlined"
-                                          />
-                                        </Box>
                                       </Box>
-                                    </CardContent>
-                                  </Card>
-                                </Grid>
-                              ))}
-                            </Grid>
-                          ) : (
-                            <List>
-                              {group.documents.map((doc) => (
-                                <Box key={doc.documentId}>
-                                  <Card
-                                    sx={{
-                                      mb: 1,
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s ease-in-out',
-                                      '&:hover': {
-                                        boxShadow: theme.shadows[2],
-                                      },
-                                    }}
-                                    onClick={() =>
-                                      navigate(`/document-editor/${doc.name}`)
-                                    }
-                                  >
-                                    <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          alignItems: {
-                                            xs: 'flex-start',
-                                            sm: 'center',
-                                          },
-                                          justifyContent: 'space-between',
-                                          flexDirection: {
-                                            xs: 'column',
-                                            sm: 'row',
-                                          },
-                                          gap: { xs: 1, sm: 0 },
-                                        }}
-                                      >
-                                        <Box
-                                          sx={{
-                                            display: 'flex',
-                                            alignItems: {
-                                              xs: 'flex-start',
-                                              sm: 'center',
-                                            },
-                                            gap: 2,
-                                            flex: 1,
-                                            flexDirection: {
-                                              xs: 'column',
-                                              sm: 'row',
-                                            },
-                                          }}
-                                        >
-                                          <Box
-                                            sx={{
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              gap: 1,
-                                            }}
-                                          >
-                                            <FileTextIcon />
-                                          </Box>
-                                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                                            <Typography
-                                              fontWeight="500"
-                                              sx={{
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                              }}
-                                            >
-                                              {doc.title}
-                                            </Typography>
-                                          </Box>
-                                        </Box>
-                                        <Box
-                                          sx={{
-                                            display: 'flex',
-                                            alignItems: {
-                                              xs: 'flex-start',
-                                              sm: 'center',
-                                            },
-                                            gap: { xs: 2, sm: 3 },
-                                            flexDirection: {
-                                              xs: 'column',
-                                              sm: 'row',
-                                            },
-                                            width: { xs: '100%', sm: 'auto' },
-                                          }}
-                                        >
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            sx={{ order: { xs: 1, sm: 0 } }}
-                                          >
-                                            {new Date(
-                                              doc.lastEdited
-                                            ).toLocaleDateString()}
-                                          </Typography>
-                                          <Box
-                                            sx={{
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              gap: 0.5,
-                                              order: { xs: 0, sm: 1 },
-                                            }}
-                                          >
-                                            <UsersIcon sx={{ fontSize: 14 }} />
-                                            <Typography
-                                              variant="body2"
-                                              color="text.secondary"
-                                            >
-                                              {doc.contributorIds?.length || 1}
-                                            </Typography>
-                                          </Box>
-                                          <Chip
-                                            label={group.name}
-                                            size="small"
-                                            variant="outlined"
-                                          />
-                                          <IconButton
-                                            size="small"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleMenuOpen(
-                                                e,
-                                                parseInt(doc.documentId)
-                                              );
-                                            }}
-                                          >
-                                            <MoreHorizontalIcon />
-                                          </IconButton>
-                                        </Box>
-                                      </Box>
-                                    </CardContent>
-                                  </Card>
-                                </Box>
-                              ))}
-                            </List>
-                          )}
-                        </Box>
-                      ))}
-                  </Box>
-                ))}
+                                    </Box>
+                                  </CardContent>
+                                </Card>
+                              </Box>
+                            ))}
+                          </List>
+                        )}
+                      </Box>
+                    ))}
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 8,
+                px: 4,
+                textAlign: 'center',
+              }}
+            >
+              <Box
+                sx={{
+                  mb: 3,
+                  opacity: 0.5,
+                }}
+              >
+                <FileTextIcon
+                  sx={{
+                    fontSize: 120,
+                    color: theme.palette.text.secondary,
+                  }}
+                />
               </Box>
-            )
+              <Typography
+                variant="h5"
+                fontWeight="600"
+                sx={{ mb: 2, color: theme.palette.text.primary }}
+              >
+                No Workspaces Found
+              </Typography>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ mb: 4, maxWidth: 400 }}
+              >
+                Join a workspace to get started and begin collaborating on
+                documents with your team.
+              </Typography>
+              {/* <Button
+                variant="contained"
+                size="large"
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                }}
+                onClick={() => {
+                  // You can add navigation to workspace join page here
+                  console.log('Navigate to join workspace');
+                }}
+              >
+                Explore Workspaces
+              </Button> */}
+            </Box>
           )}
         </Box>
       </Box>
