@@ -66,6 +66,7 @@ export function UserManagement() {
   const [activeTab, setActiveTab] = useState(0);
   const [users, setUsers] = useState<Array<User>>([]);
   const [loading, setLoading] = useState(true);
+  const [profilePicCache, setProfilePicCache] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
 
@@ -79,6 +80,28 @@ export function UserManagement() {
   };
 
 
+  // Fetch profile picture for a single user (non-blocking)
+  const fetchProfilePicture = async (userId: string) => {
+    try {
+      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url', {
+        userId: userId
+      });
+      if (response.data.downloadUrl) {
+        setProfilePicCache(prev => ({
+          ...prev,
+          [userId]: response.data.downloadUrl
+        }));
+      }
+    } catch (error) {
+      console.error(`Error fetching profile picture for user ${userId}:`, error);
+    }
+  };
+
+
+  const fetchAllProfilePictures = async (userList: User[]) => {
+    const promises = userList.map(user => fetchProfilePicture(user.id));
+    Promise.allSettled(promises);
+  };
 
   const fetchUsers = async () => {
     try {
@@ -87,17 +110,15 @@ export function UserManagement() {
       console.log("API Response:", res.data);
       if (res.data.success) {
         setUsers(res.data.users);
-        // Fetch profile pictures for each user
-        for (const user of res.data.users) {
-          await setS3DownloadURL(user);
-        }
-
+        setLoading(false);
+        
+        fetchAllProfilePictures(res.data.users);
       } else {
         console.error("API request failed:", res.data.message);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-    } finally {
       setLoading(false);
     }
   };
@@ -105,12 +126,6 @@ export function UserManagement() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-
-  const setS3DownloadURL = async (user: User) => {
-        const response = await axiosInstance.post('/storage/generate-profile-pic-download-url',{userId: user.id})
-        user.avatar = response.data.downloadUrl;
-  }
 
 
 
@@ -276,7 +291,10 @@ export function UserManagement() {
                         }}
                       >
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                          <Avatar src={user.avatar} sx={{ bgcolor: "primary.main", color: "white" }}>
+                          <Avatar 
+                            src={profilePicCache[user.id] || user.avatar} 
+                            sx={{ bgcolor: "primary.main", color: "white" }}
+                          >
                             {user.name
                               ? user.name
                                   .split(" ")
@@ -391,7 +409,10 @@ export function UserManagement() {
                             }}
                           >
                             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                              <Avatar src={user.avatar} sx={{ bgcolor: "primary.main", color: "white" }}>
+                              <Avatar 
+                                src={profilePicCache[user.id] || user.avatar} 
+                                sx={{ bgcolor: "primary.main", color: "white" }}
+                              >
                                 {user.name
                                   ? user.name
                                       .split(" ")
