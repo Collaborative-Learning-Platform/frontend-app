@@ -98,9 +98,18 @@ export function UserManagement() {
   };
 
 
+  // Batch profile picture requests to avoid overwhelming the server
   const fetchAllProfilePictures = async (userList: User[]) => {
-    const promises = userList.map(user => fetchProfilePicture(user.id));
-    Promise.allSettled(promises);
+    const batchSize = 5; // Number of requests per batch
+    const delayMs = 200; // Delay between batches in milliseconds
+
+    for (let i = 0; i < userList.length; i += batchSize) {
+      const batch = userList.slice(i, i + batchSize);
+      await Promise.allSettled(batch.map(user => fetchProfilePicture(user.id)));
+      if (i + batchSize < userList.length) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
   };
 
   const fetchUsers = async () => {
