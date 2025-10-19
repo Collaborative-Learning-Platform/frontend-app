@@ -1,6 +1,3 @@
-
-
-
 export interface QuizQuestion {
   question_no: number;
   question_type: 'MCQ' | 'short_answer' | 'true_false';
@@ -24,7 +21,6 @@ export interface CreateQuestion {
   points: number;
 }
 
-
 export interface Quiz {
   quizId?: string;
   title?: string;
@@ -35,8 +31,8 @@ export interface Quiz {
   totalPoints?: number;
 }
 
-
 export interface CreateQuiz {
+  quizId?: string;
   title: string;
   description: string;
   group: string;
@@ -46,12 +42,11 @@ export interface CreateQuiz {
   totalPoints: number;
 }
 
-// Answer interface
+
 export interface Answer {
   questionId: number;
   answer: string | number;
 }
-
 
 export interface QuestionResult {
   question: QuizQuestion;
@@ -68,7 +63,6 @@ export interface QuizResult {
   timeSpent: number;
   questionResults: QuestionResult[];
 }
-
 
 export interface QuizAttemptProps {
   quiz?: Quiz;
