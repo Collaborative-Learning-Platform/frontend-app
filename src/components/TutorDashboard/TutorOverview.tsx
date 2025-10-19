@@ -63,10 +63,16 @@ interface WorkspaceData {
 
 interface ActivityItem {
   id: string;
-  type: 'submission' | 'question' | 'completion' | 'join';
-  student: string;
-  workspace: string;
-  timestamp: string;
+  user_id: string;
+  user_name: string;
+  group_id: string;
+  group_name: string;
+  workspace_id: string;
+  workspace_name: string;
+  category: string;
+  description: string;
+  created_at: string;
+  time?: string;
   avatar?: string;
 }
 
@@ -85,10 +91,13 @@ const TutorOverview: React.FC = () => {
   const [expandedWorkspace, setExpandedWorkspace] = useState<string | null>(
     null
   );
+  const [groupActivities, setGroupActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [recentTutorActivity, setRecentTutorActivity] = useState<
     RecentActivityLog[]
   >([]);
+
+  //Fetch recent student activity data
 
   // Fetch recent tutor activity data
   useEffect(() => {
@@ -101,11 +110,54 @@ const TutorOverview: React.FC = () => {
           `/dashboard/recentActivity/${user_id}`
         );
 
+        const groupActivityRes = await axiosInstance.get(
+          `/dashboard/groupActivity/${user_id}`
+        );
+
         if (response.data && response.data.success && response.data.data) {
           setRecentTutorActivity(response.data.data);
         }
+
+        // Process the group activity response
+        console.log(
+          'Tutor Group Activity Success:',
+          groupActivityRes.data.success
+        );
+        console.log(
+          'Tutor Group Activity Response:',
+          groupActivityRes.data.data
+        );
+        if (
+          groupActivityRes.data?.success &&
+          Array.isArray(groupActivityRes.data.data)
+        ) {
+          // Transform to match ActivityItem interface
+          const transformedActivities = groupActivityRes.data.data.map(
+            (item: any) => ({
+              id: item.id,
+              user_id: item.user_id || '',
+              user_name: item.user_name || 'Unknown User',
+              group_id: item.metadata?.groupId || '',
+              group_name: item.group_name || 'Unknown Group',
+              workspace_id: item.workspace_id || '',
+              workspace_name: item.workspace_name || '',
+              category: item.category || '',
+              description: item.description || '',
+              created_at: item.created_at || '',
+              time: item.time || '',
+              avatar: item.user_name
+                ? item.user_name.substring(0, 2).toUpperCase()
+                : '??',
+            })
+          );
+
+          setGroupActivities(transformedActivities);
+        }
       } catch (error) {
-        console.error('Failed to fetch recent tutor activity:', error);
+        console.error(
+          'Failed to fetch recent tutor dashboard responses:',
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -119,7 +171,6 @@ const TutorOverview: React.FC = () => {
       console.log('Category is undefined for activity');
       return <BookOpenIcon />;
     }
-    console.log('Activity category:', category);
 
     switch (category.toUpperCase()) {
       case 'QUIZ':
@@ -139,6 +190,7 @@ const TutorOverview: React.FC = () => {
         return <BookOpenIcon />;
     }
   };
+
   const workspacesData: WorkspaceData[] = [
     {
       id: '1',
@@ -180,48 +232,6 @@ const TutorOverview: React.FC = () => {
     },
   ];
 
-  const recentActivity: ActivityItem[] = [
-    {
-      id: '1',
-      type: 'submission',
-      student: 'Alice Johnson',
-      workspace: 'Advanced React Concepts',
-      timestamp: '15 minutes ago',
-      avatar: 'AJ',
-    },
-    {
-      id: '2',
-      type: 'question',
-      student: 'Bob Smith',
-      workspace: 'JavaScript Fundamentals',
-      timestamp: '1 hour ago',
-      avatar: 'BS',
-    },
-    {
-      id: '3',
-      type: 'completion',
-      student: 'Carol Wilson',
-      workspace: 'Web Design Principles',
-      timestamp: '2 hours ago',
-      avatar: 'CW',
-    },
-    {
-      id: '4',
-      type: 'join',
-      student: 'David Brown',
-      workspace: 'Node.js Backend Development',
-      timestamp: '3 hours ago',
-      avatar: 'DB',
-    },
-    {
-      id: '5',
-      type: 'submission',
-      student: 'Eva Davis',
-      workspace: 'Advanced React Concepts',
-      timestamp: '4 hours ago',
-      avatar: 'ED',
-    },
-  ];
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -520,75 +530,88 @@ const TutorOverview: React.FC = () => {
                 <AccessTime sx={{ mr: 1, color: theme.palette.primary.main }} />
                 Recent Group Activity
               </Typography>
+              {/* Add debug code in useEffect instead */}
+
               <List sx={{ p: 0 }}>
-                {recentActivity.map((activity, index) => (
-                  <React.Fragment key={activity.id}>
-                    <ListItem
-                      sx={{
-                        px: 0,
-                        py: 1.5,
-                        borderRadius: 2,
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          backgroundColor: alpha(
-                            theme.palette.primary.main,
-                            0.05
-                          ),
-                        },
-                      }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            bgcolor: theme.palette.primary.main,
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {activity.avatar}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {activity.student}
+                {groupActivities.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No group activities found.
+                  </Typography>
+                ) : (
+                  groupActivities.map((activity, index) => (
+                    <React.Fragment key={activity.id}>
+                      <ListItem
+                        sx={{
+                          px: 0,
+                          py: 1.5,
+                          borderRadius: 2,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(
+                              theme.palette.primary.main,
+                              0.05
+                            ),
+                          },
+                        }}
+                      >
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              bgcolor: theme.palette.primary.main,
+                              fontSize: '0.875rem',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {activity.avatar}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 600, mb: 0.5 }}
+                          >
+                            {activity.user_name || 'Unknown User'}
                           </Typography>
-                        }
-                        secondary={
-                          <Box>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ mb: 0.5 }}
-                            >
-                              {activity.type === 'submission' &&
-                                `Submitted assignment in ${activity.workspace}`}
-                              {activity.type === 'question' &&
-                                `Asked a question in ${activity.workspace}`}
-                              {activity.type === 'completion' &&
-                                `Completed ${activity.workspace}`}
-                              {activity.type === 'join' &&
-                                `Joined ${activity.workspace}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {activity.timestamp}
-                            </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 0.5 }}
+                          >
+                            {activity.description || 'Activity in group'}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              fontSize: '0.75rem',
+                              color: 'text.secondary',
+                            }}
+                          >
+                            <span>
+                              Group: {activity.group_name || 'Unknown Group'}
+                            </span>
+                            <span>
+                              Workspace:{' '}
+                              {activity.workspace_name || 'Unknown Workspace'}
+                            </span>
+                            <span>
+                              {activity.time ||
+                                activity.created_at ||
+                                'Recently'}
+                            </span>
                           </Box>
-                        }
-                      />
-                    </ListItem>
-                    {index < recentActivity.length - 1 && (
-                      <Divider sx={{ mx: 2, opacity: 0.5 }} />
-                    )}
-                  </React.Fragment>
-                ))}
+                        </Box>
+                      </ListItem>
+                      {index < groupActivities.length - 1 && (
+                        <Divider sx={{ mx: 2, opacity: 0.5 }} />
+                      )}
+                    </React.Fragment>
+                  ))
+                )}
               </List>
-              <Button
+              {/* <Button
                 fullWidth
                 variant="outlined"
                 sx={{
@@ -598,7 +621,7 @@ const TutorOverview: React.FC = () => {
                 }}
               >
                 View All Activity
-              </Button>
+              </Button> */}
             </Paper>
           </Fade>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -64,11 +64,11 @@ export function UserOverview() {
   useEffect(() => {
     console.log('Effect triggered - Auth:', !authLoading, 'User:', user_id);
 
-    // Skip this effect run if auth is still loading
-    if (authLoading) {
-      console.log('Skipping fetch - auth still loading');
-      return;
-    }
+    // // Skip this effect run if auth is still loading
+    // if (authLoading) {
+    //   console.log('Skipping fetch - auth still loading');
+    //   return;
+    // }
 
     // Skip if no user_id available
     if (!user_id) {
@@ -76,11 +76,11 @@ export function UserOverview() {
       return;
     }
 
-    // Skip if we've already fetched once (to prevent double fetches)
-    if (initialFetchRef.current) {
-      console.log('Already fetched data once, skipping duplicate fetch');
-      return;
-    }
+    // // Skip if we've already fetched once (to prevent double fetches)
+    // if (initialFetchRef.current) {
+    //   console.log('Already fetched data once, skipping duplicate fetch');
+    //   return;
+    // }
 
     // Mark that we're fetching now
     initialFetchRef.current = true;
@@ -203,7 +203,7 @@ export function UserOverview() {
     // Execute fetch immediately - we've already checked conditions above
     console.log('Fetching dashboard for user:', user_id);
     fetchDashboard();
-  }, [user_id, authLoading]);
+  }, [user_id]);
 
   const getActivityIcon = (category: string | undefined) => {
     if (!category) {
