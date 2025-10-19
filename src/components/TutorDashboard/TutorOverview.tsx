@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Paper,
@@ -9,17 +9,19 @@ import {
   Button,
   LinearProgress,
   Card,
-  CardContent,
   Collapse,
   Fade,
   Divider,
   Menu,
   MenuItem,
   List,
-  ListItem,
   ListItemAvatar,
   ListItemText,
-} from "@mui/material";
+  Skeleton,
+  CardContent,
+  ListItem,
+  ListItemIcon,
+} from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   Group,
@@ -33,117 +35,203 @@ import {
   Pause,
   CheckCircle,
   AccessTime,
-} from "@mui/icons-material";
-import { useTheme, alpha } from "@mui/material/styles";
+  TrendingUp as TrendingUpIcon,
+} from '@mui/icons-material';
+import { useTheme, alpha } from '@mui/material/styles';
+import {
+  MenuBook as BookOpenIcon,
+  Group as GroupIcon,
+  EmojiEvents as AwardIcon,
+  Description as FileTextIcon,
+} from '@mui/icons-material';
+import MessageIcon from '@mui/icons-material/Message';
+import GroupWorkIcon from '@mui/icons-material/GroupWork';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { useAuth } from '../../contexts/Authcontext';
+import { useEffect } from 'react';
+import axiosInstance from '../../api/axiosInstance';
 
 interface WorkspaceData {
   id: string;
   title: string;
   students: number;
   completion: number;
-  status: "active" | "paused" | "completed";
+  status: 'active' | 'paused' | 'completed';
   lastActivity: string;
   description: string;
 }
 
 interface ActivityItem {
   id: string;
-  type: "submission" | "question" | "completion" | "join";
-  student: string;
-  workspace: string;
-  timestamp: string;
+  user_id: string;
+  user_name: string;
+  group_id: string;
+  group_name: string;
+  workspace_id: string;
+  workspace_name: string;
+  category: string;
+  description: string;
+  created_at: string;
+  time?: string;
   avatar?: string;
+}
+
+interface RecentActivityLog {
+  id: string;
+  category: string;
+  activity_type: string;
+  description: string;
+  time: string;
 }
 
 const TutorOverview: React.FC = () => {
   const theme = useTheme();
+  const { user_id } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [expandedWorkspace, setExpandedWorkspace] = useState<string | null>(
     null
   );
+  const [groupActivities, setGroupActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [recentTutorActivity, setRecentTutorActivity] = useState<
+    RecentActivityLog[]
+  >([]);
+
+  //Fetch recent student activity data
+
+  // Fetch recent tutor activity data
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      if (!user_id) return;
+
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get(
+          `/dashboard/recentActivity/${user_id}`
+        );
+
+        const groupActivityRes = await axiosInstance.get(
+          `/dashboard/groupActivity/${user_id}`
+        );
+
+        if (response.data && response.data.success && response.data.data) {
+          setRecentTutorActivity(response.data.data);
+        }
+
+        // Process the group activity response
+        console.log(
+          'Tutor Group Activity Success:',
+          groupActivityRes.data.success
+        );
+        console.log(
+          'Tutor Group Activity Response:',
+          groupActivityRes.data.data
+        );
+        if (
+          groupActivityRes.data?.success &&
+          Array.isArray(groupActivityRes.data.data)
+        ) {
+          // Transform to match ActivityItem interface
+          const transformedActivities = groupActivityRes.data.data.map(
+            (item: any) => ({
+              id: item.id,
+              user_id: item.user_id || '',
+              user_name: item.user_name || 'Unknown User',
+              group_id: item.metadata?.groupId || '',
+              group_name: item.group_name || 'Unknown Group',
+              workspace_id: item.workspace_id || '',
+              workspace_name: item.workspace_name || '',
+              category: item.category || '',
+              description: item.description || '',
+              created_at: item.created_at || '',
+              time: item.time || '',
+              avatar: item.user_name
+                ? item.user_name.substring(0, 2).toUpperCase()
+                : '??',
+            })
+          );
+
+          setGroupActivities(transformedActivities);
+        }
+      } catch (error) {
+        console.error(
+          'Failed to fetch recent tutor dashboard responses:',
+          error
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentActivity();
+  }, [user_id]);
+
+  const getActivityIcon = (category: string | undefined) => {
+    if (!category) {
+      console.log('Category is undefined for activity');
+      return <BookOpenIcon />;
+    }
+
+    switch (category.toUpperCase()) {
+      case 'QUIZ':
+        return <AwardIcon />;
+      case 'GENERAL':
+        return <GroupIcon />;
+      case 'RESOURCE':
+        return <FileTextIcon />;
+      case 'COLLABORATION':
+        return <GroupWorkIcon />;
+      case 'COMMUNICATION':
+        return <MessageIcon />;
+      case 'AI_LEARNING':
+        return <AutoAwesomeIcon />;
+      default:
+        console.log('Falling back to default icon for category:', category);
+        return <BookOpenIcon />;
+    }
+  };
+
   const workspacesData: WorkspaceData[] = [
     {
-      id: "1",
-      title: "Advanced React Concepts",
+      id: '1',
+      title: 'Advanced React Concepts',
       students: 24,
       completion: 85,
-      status: "active",
-      lastActivity: "2 hours ago",
+      status: 'active',
+      lastActivity: '2 hours ago',
       description:
-        "Deep dive into React hooks, context API, and performance optimization",
+        'Deep dive into React hooks, context API, and performance optimization',
     },
     {
-      id: "2",
-      title: "JavaScript Fundamentals",
+      id: '2',
+      title: 'JavaScript Fundamentals',
       students: 18,
       completion: 92,
-      status: "active",
-      lastActivity: "4 hours ago",
-      description: "Complete guide to ES6+ features and modern JavaScript",
+      status: 'active',
+      lastActivity: '4 hours ago',
+      description: 'Complete guide to ES6+ features and modern JavaScript',
     },
     {
-      id: "3",
-      title: "Node.js Backend Development",
+      id: '3',
+      title: 'Node.js Backend Development',
       students: 15,
       completion: 67,
-      status: "active",
-      lastActivity: "1 day ago",
+      status: 'active',
+      lastActivity: '1 day ago',
       description:
-        "Building scalable backend applications with Node.js and Express",
+        'Building scalable backend applications with Node.js and Express',
     },
     {
-      id: "4",
-      title: "Web Design Principles",
+      id: '4',
+      title: 'Web Design Principles',
       students: 22,
       completion: 100,
-      status: "completed",
-      lastActivity: "3 days ago",
-      description: "UI/UX design fundamentals and responsive web design",
+      status: 'completed',
+      lastActivity: '3 days ago',
+      description: 'UI/UX design fundamentals and responsive web design',
     },
   ];
 
-  const recentActivity: ActivityItem[] = [
-    {
-      id: "1",
-      type: "submission",
-      student: "Alice Johnson",
-      workspace: "Advanced React Concepts",
-      timestamp: "15 minutes ago",
-      avatar: "AJ",
-    },
-    {
-      id: "2",
-      type: "question",
-      student: "Bob Smith",
-      workspace: "JavaScript Fundamentals",
-      timestamp: "1 hour ago",
-      avatar: "BS",
-    },
-    {
-      id: "3",
-      type: "completion",
-      student: "Carol Wilson",
-      workspace: "Web Design Principles",
-      timestamp: "2 hours ago",
-      avatar: "CW",
-    },
-    {
-      id: "4",
-      type: "join",
-      student: "David Brown",
-      workspace: "Node.js Backend Development",
-      timestamp: "3 hours ago",
-      avatar: "DB",
-    },
-    {
-      id: "5",
-      type: "submission",
-      student: "Eva Davis",
-      workspace: "Advanced React Concepts",
-      timestamp: "4 hours ago",
-      avatar: "ED",
-    },
-  ];
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -159,11 +247,11 @@ const TutorOverview: React.FC = () => {
   };
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "active":
+      case 'active':
         return <PlayArrow sx={{ color: theme.palette.primary.main }} />;
-      case "paused":
+      case 'paused':
         return <Pause sx={{ color: theme.palette.primary.dark }} />;
-      case "completed":
+      case 'completed':
         return <CheckCircle sx={{ color: theme.palette.primary.main }} />;
       default:
         return <PlayArrow />;
@@ -171,10 +259,10 @@ const TutorOverview: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh" }}>
+    <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100vh' }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        {" "}
+        {' '}
         <Typography
           variant="h4"
           component="h1"
@@ -193,8 +281,8 @@ const TutorOverview: React.FC = () => {
       {/* Main Content Grid */}
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" },
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
           gap: 4,
         }}
       >
@@ -206,36 +294,36 @@ const TutorOverview: React.FC = () => {
               p: 3,
               borderRadius: 3,
               background: alpha(theme.palette.background.paper, 0.9),
-              backdropFilter: "blur(20px)",
+              backdropFilter: 'blur(20px)',
               border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             }}
           >
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 mb: 3,
               }}
             >
               <Typography
                 variant="h6"
-                sx={{ fontWeight: 600, display: "flex", alignItems: "center" }}
+                sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}
               >
                 <Assignment sx={{ mr: 1, color: theme.palette.primary.main }} />
                 Active Workspaces
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {workspacesData.map((workspace) => (
                 <Card
                   key={workspace.id}
                   sx={{
                     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     borderRadius: 2,
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    "&:hover": {
-                      transform: "translateY(-2px)",
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
                       boxShadow: `0 8px 25px ${alpha(
                         theme.palette.common.black,
                         0.1
@@ -246,13 +334,13 @@ const TutorOverview: React.FC = () => {
                   <CardContent sx={{ p: 3 }}>
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                         mb: 2,
                       }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         {getStatusIcon(workspace.status)}
                         <Typography
                           variant="h6"
@@ -260,11 +348,11 @@ const TutorOverview: React.FC = () => {
                         >
                           {workspace.title}
                         </Typography>
-                      </Box>{" "}
+                      </Box>{' '}
                       <IconButton
                         size="small"
                         onClick={(e) => handleMenuOpen(e)}
-                        sx={{ color: "text.secondary" }}
+                        sx={{ color: 'text.secondary' }}
                       >
                         <MoreVertIcon />
                       </IconButton>
@@ -280,8 +368,8 @@ const TutorOverview: React.FC = () => {
 
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: 2,
                         mb: 2,
                       }}
@@ -291,7 +379,7 @@ const TutorOverview: React.FC = () => {
                         label={`${workspace.students} students`}
                         size="small"
                         variant="outlined"
-                      />{" "}
+                      />{' '}
                       <Chip
                         label={workspace.status}
                         size="small"
@@ -306,7 +394,7 @@ const TutorOverview: React.FC = () => {
                       <Typography
                         variant="caption"
                         color="text.secondary"
-                        sx={{ ml: "auto" }}
+                        sx={{ ml: 'auto' }}
                       >
                         Updated {workspace.lastActivity}
                       </Typography>
@@ -315,9 +403,9 @@ const TutorOverview: React.FC = () => {
                     <Box sx={{ mb: 2 }}>
                       <Box
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                           mb: 1,
                         }}
                       >
@@ -338,7 +426,7 @@ const TutorOverview: React.FC = () => {
                             theme.palette.primary.main,
                             0.1
                           ),
-                          "& .MuiLinearProgress-bar": {
+                          '& .MuiLinearProgress-bar': {
                             borderRadius: 4,
                             background: theme.palette.primary.main,
                           },
@@ -346,11 +434,11 @@ const TutorOverview: React.FC = () => {
                       />
                     </Box>
 
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Button
                         size="small"
                         startIcon={<Visibility />}
-                        sx={{ textTransform: "none" }}
+                        sx={{ textTransform: 'none' }}
                       >
                         View Details
                       </Button>
@@ -358,12 +446,12 @@ const TutorOverview: React.FC = () => {
                         size="small"
                         onClick={() => toggleWorkspaceExpanded(workspace.id)}
                         sx={{
-                          ml: "auto",
+                          ml: 'auto',
                           transform:
                             expandedWorkspace === workspace.id
-                              ? "rotate(180deg)"
-                              : "rotate(0deg)",
-                          transition: "transform 0.3s ease",
+                              ? 'rotate(180deg)'
+                              : 'rotate(0deg)',
+                          transition: 'transform 0.3s ease',
                         }}
                       >
                         <ExpandMore />
@@ -393,8 +481,8 @@ const TutorOverview: React.FC = () => {
                         </Typography>
                         <Box
                           sx={{
-                            display: "flex",
-                            flexDirection: "column",
+                            display: 'flex',
+                            flexDirection: 'column',
                             gap: 1,
                           }}
                         >
@@ -417,110 +505,218 @@ const TutorOverview: React.FC = () => {
           </Paper>
         </Fade>
 
-        {/* Recent Activity */}
-        <Fade in={true} timeout={1200}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              background: alpha(theme.palette.background.paper, 0.9),
-              backdropFilter: "blur(20px)",
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              height: "fit-content",
-            }}
-          >
-            {" "}
-            <Typography
-              variant="h6"
+        {/* Recent Student Activity */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <Fade in={true} timeout={1200}>
+            <Paper
+              elevation={0}
               sx={{
-                fontWeight: 600,
-                mb: 3,
-                display: "flex",
-                alignItems: "center",
+                p: 3,
+                borderRadius: 3,
+                background: alpha(theme.palette.background.paper, 0.9),
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
               }}
             >
-              <AccessTime sx={{ mr: 1, color: theme.palette.primary.main }} />
-              Recent Activity
-            </Typography>
-            <List sx={{ p: 0 }}>
-              {recentActivity.map((activity, index) => (
-                <React.Fragment key={activity.id}>
-                  <ListItem
-                    sx={{
-                      px: 0,
-                      py: 1.5,
-                      borderRadius: 2,
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        backgroundColor: alpha(
-                          theme.palette.primary.main,
-                          0.05
-                        ),
-                      },
-                    }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  mb: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <AccessTime sx={{ mr: 1, color: theme.palette.primary.main }} />
+                Recent Group Activity
+              </Typography>
+              {/* Add debug code in useEffect instead */}
+
+              <List sx={{ p: 0 }}>
+                {groupActivities.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No group activities found.
+                  </Typography>
+                ) : (
+                  groupActivities.map((activity, index) => (
+                    <React.Fragment key={activity.id}>
+                      <ListItem
                         sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: theme.palette.primary.main,
-                          fontSize: "0.875rem",
-                          fontWeight: 600,
+                          px: 0,
+                          py: 1.5,
+                          borderRadius: 2,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(
+                              theme.palette.primary.main,
+                              0.05
+                            ),
+                          },
                         }}
                       >
-                        {activity.avatar}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {activity.student}
-                        </Typography>
-                      }
-                      secondary={
-                        <Box>
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              bgcolor: theme.palette.primary.main,
+                              fontSize: '0.875rem',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {activity.avatar}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 600, mb: 0.5 }}
+                          >
+                            {activity.user_name || 'Unknown User'}
+                          </Typography>
                           <Typography
                             variant="body2"
                             color="text.secondary"
                             sx={{ mb: 0.5 }}
                           >
-                            {activity.type === "submission" &&
-                              `Submitted assignment in ${activity.workspace}`}
-                            {activity.type === "question" &&
-                              `Asked a question in ${activity.workspace}`}
-                            {activity.type === "completion" &&
-                              `Completed ${activity.workspace}`}
-                            {activity.type === "join" &&
-                              `Joined ${activity.workspace}`}
+                            {activity.description || 'Activity in group'}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {activity.timestamp}
-                          </Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              fontSize: '0.75rem',
+                              color: 'text.secondary',
+                            }}
+                          >
+                            <span>
+                              Group: {activity.group_name || 'Unknown Group'}
+                            </span>
+                            <span>
+                              Workspace:{' '}
+                              {activity.workspace_name || 'Unknown Workspace'}
+                            </span>
+                            <span>
+                              {activity.time ||
+                                activity.created_at ||
+                                'Recently'}
+                            </span>
+                          </Box>
                         </Box>
-                      }
-                    />
-                  </ListItem>
-                  {index < recentActivity.length - 1 && (
-                    <Divider sx={{ mx: 2, opacity: 0.5 }} />
-                  )}
-                </React.Fragment>
-              ))}
-            </List>
-            <Button
-              fullWidth
-              variant="outlined"
+                      </ListItem>
+                      {index < groupActivities.length - 1 && (
+                        <Divider sx={{ mx: 2, opacity: 0.5 }} />
+                      )}
+                    </React.Fragment>
+                  ))
+                )}
+              </List>
+              {/* <Button
+                fullWidth
+                variant="outlined"
+                sx={{
+                  mt: 2,
+                  textTransform: 'none',
+                  borderRadius: 2,
+                }}
+              >
+                View All Activity
+              </Button> */}
+            </Paper>
+          </Fade>
+
+          {/* Recent Tutor Activity */}
+          <Fade in={true} timeout={1400}>
+            <Paper
+              elevation={0}
               sx={{
-                mt: 2,
-                textTransform: "none",
-                borderRadius: 2,
+                p: 3,
+                borderRadius: 3,
+                background: alpha(theme.palette.background.paper, 0.9),
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
               }}
             >
-              View All Activity
-            </Button>
-          </Paper>
-        </Fade>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  mb: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <TrendingUpIcon
+                  sx={{ mr: 1, color: theme.palette.primary.main }}
+                />
+                Recent Activity
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Your personal activities
+              </Typography>
+              {loading ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <Skeleton
+                    key={idx}
+                    variant="rectangular"
+                    height={50}
+                    sx={{ mb: 1, borderRadius: 1 }}
+                  />
+                ))
+              ) : recentTutorActivity.length > 0 ? (
+                <List sx={{ p: 0 }}>
+                  {recentTutorActivity.map((activity, index) => (
+                    <React.Fragment key={activity.id}>
+                      <ListItem
+                        sx={{
+                          px: 0,
+                          py: 1.5,
+                          borderRadius: 2,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(
+                              theme.palette.primary.main,
+                              0.05
+                            ),
+                          },
+                        }}
+                      >
+                        <ListItemIcon>
+                          {getActivityIcon(activity.category)}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {activity.description}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {activity.time}
+                            </Typography>
+                          }
+                        />
+                      </ListItem>
+                      {index < recentTutorActivity.length - 1 && (
+                        <Divider sx={{ mx: 2, opacity: 0.5 }} />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </List>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No recent activity found.
+                </Typography>
+              )}
+            </Paper>
+          </Fade>
+        </Box>
       </Box>
 
       {/* Context Menu */}
@@ -528,8 +724,8 @@ const TutorOverview: React.FC = () => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        transformOrigin={{ horizontal: "right", vertical: "top" }}
-        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={handleMenuClose}>
           <Visibility sx={{ mr: 1 }} fontSize="small" />
@@ -544,7 +740,7 @@ const TutorOverview: React.FC = () => {
           Mark as Featured
         </MenuItem>
         <Divider />
-        <MenuItem onClick={handleMenuClose} sx={{ color: "error.main" }}>
+        <MenuItem onClick={handleMenuClose} sx={{ color: 'error.main' }}>
           <Delete sx={{ mr: 1 }} fontSize="small" />
           Delete Workspace
         </MenuItem>
