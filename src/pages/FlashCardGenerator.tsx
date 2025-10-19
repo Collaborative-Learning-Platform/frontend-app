@@ -19,6 +19,7 @@ import { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../contexts/Authcontext';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import { Masonry } from '@mui/lab';
 
 // Define Resource interface based on DTO requirements
 interface Resource {
@@ -43,6 +44,27 @@ export const FlashCardGenerator = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [flashcardStats, setFlashcardStats] = useState({
+    totalSets: 0,
+    totalCards: 0,
+    thisWeek: 0,
+  });
+  // Fetch flashcard stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user_id) return;
+      try {
+        const response = await axiosInstance.get('/aiservice/flashcards/stats');
+        if (response.data && response.data.success && response.data.data) {
+          setFlashcardStats(response.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch flashcard stats:', error);
+        Snackbar.showSnackbar('Failed to load flashcard stats', 'error');
+      }
+    };
+    fetchStats();
+  }, [user_id]);
 
   const handleChangeCardNumber = (event: SelectChangeEvent) => {
     const newCardNumber = Number(event.target.value);
@@ -337,6 +359,42 @@ export const FlashCardGenerator = () => {
           </CardContent>
         </Box>
       </Card>
+      <Box py={3}>
+        <Masonry columns={3} spacing={3}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" fontWeight="bold" color="primary.main">
+                {flashcardStats.totalSets}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Sets
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" fontWeight="bold" color="primary.main">
+                {flashcardStats.totalCards}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Cards
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" fontWeight="bold" color="primary.main">
+                {flashcardStats.thisWeek}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                This Week
+              </Typography>
+            </CardContent>
+          </Card>
+        </Masonry>
+      </Box>
     </Box>
   );
 };

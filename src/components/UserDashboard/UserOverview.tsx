@@ -38,7 +38,9 @@ interface RecentActivityLog {
 }
 
 export function UserOverview() {
-  const { user_id } = useAuth();
+  const { user_id, loading: authLoading } = useAuth();
+  console.log('Auth loading:', authLoading);
+  console.log('User ID:', user_id);
   const groupIdNameMap: Record<string, string> = {};
   const [dashboardData, setDashboardData] = useState<{
     workspaces: number;
@@ -54,17 +56,42 @@ export function UserOverview() {
     recentActivity: [],
   });
   const [loading, setLoading] = useState(true);
+
+  // This effect will run only once to set up a ref to track if we've fetched data
+  const initialFetchRef = React.useRef(false);
+
+  // Main data fetching effect that runs when auth is ready and user_id is available
   useEffect(() => {
+    console.log('Effect triggered - Auth:', !authLoading, 'User:', user_id);
+
+    // // Skip this effect run if auth is still loading
+    // if (authLoading) {
+    //   console.log('Skipping fetch - auth still loading');
+    //   return;
+    // }
+
+    // Skip if no user_id available
+    if (!user_id) {
+      console.log('Skipping fetch - no user ID available');
+      return;
+    }
+
+    // // Skip if we've already fetched once (to prevent double fetches)
+    // if (initialFetchRef.current) {
+    //   console.log('Already fetched data once, skipping duplicate fetch');
+    //   return;
+    // }
+
+    // Mark that we're fetching now
+    initialFetchRef.current = true;
+
     const fetchDashboard = async () => {
-      if (!user_id || user_id === 'null' || user_id === null) {
-        console.error('Invalid user_id:', user_id);
-        setLoading(false);
-        return;
-      }
+      console.log('Starting dashboard fetch for user:', user_id);
 
       try {
         const userGroupsRes = await axiosInstance.post(
-          `/workspace/groups/by-user`, {userId:user_id}
+          `/workspace/groups/by-user`,
+          { userId: user_id }
         );
         console.log('User groups response:', userGroupsRes.data);
         if (userGroupsRes.data.success) {
@@ -73,23 +100,75 @@ export function UserOverview() {
           });
         }
         const userGroupIds = Object.keys(groupIdNameMap);
-        
-        const [quizzesRes, statsRes, activityRes] = await Promise.all([
-          axiosInstance.post('/quiz/user-quizzes', {userGroupIds}),
-          axiosInstance.get(`/dashboard/userStats/${user_id}`),
-          axiosInstance.get(`/dashboard/recentActivity/${user_id}`),
-        ]);
+        console.log('Extracted group IDs:', userGroupIds);
+
+        console.log('Starting dashboard data requests...');
+
+        // Define default response objects
+        let quizzesRes: any = { data: { success: false } };
+        let statsRes: any = { data: { success: false } };
+        let activityRes: any = { data: { success: false } };
+
+        // Try each request individually
+        try {
+          quizzesRes = await axiosInstance.post('/quiz/user-quizzes', {
+            userGroupIds,
+          });
+          console.log('Quiz response received:', quizzesRes.status);
+        } catch (err: any) {
+          console.error(
+            'Quiz request failed:',
+            err?.message || 'Unknown error'
+          );
+        }
+
+        try {
+          statsRes = await axiosInstance.get(`/dashboard/userStats/${user_id}`);
+          console.log('Stats response received:', statsRes.status);
+        } catch (err: any) {
+          console.error(
+            'Stats request failed:',
+            err?.message || 'Unknown error'
+          );
+        }
+
+        try {
+          activityRes = await axiosInstance.get(
+            `/dashboard/recentActivity/${user_id}`
+          );
+          console.log('Activity response received:', activityRes.status);
+        } catch (err: any) {
+          console.error(
+            'Activity request failed:',
+            err?.message || 'Unknown error'
+          );
+        }
+
+        console.log('All requests completed');
 
         let upcomingQuizzesData = [];
-        if (quizzesRes.data.success) {
+        if (quizzesRes.data?.success) {
+          console.log(
+            'Processing quiz data:',
+            quizzesRes.data.data?.length || 0,
+            'quizzes found'
+          );
           upcomingQuizzesData = quizzesRes.data.data.map((quiz: any) => ({
             ...quiz,
             groupName: groupIdNameMap[quiz.groupId] || 'Unknown Workspace',
           }));
+        } else {
+          console.log('Quiz data not available or not successful');
         }
 
         let activityData = [];
-        if (activityRes.data.success) {
+        console.log(activityRes.data);
+        if (activityRes.data?.success) {
+          console.log(
+            'Processing activity data:',
+            activityRes.data.data?.length || 0,
+            'activities found'
+          );
           activityData = activityRes.data.data;
           // Debug log for first activity
           if (activityData?.length > 0) {
@@ -121,6 +200,8 @@ export function UserOverview() {
       }
     };
 
+    // Execute fetch immediately - we've already checked conditions above
+    console.log('Fetching dashboard for user:', user_id);
     fetchDashboard();
   }, [user_id]);
 
@@ -149,7 +230,6 @@ export function UserOverview() {
         return <BookOpenIcon />;
     }
   };
-
 
   return (
     <Box>
@@ -206,7 +286,7 @@ export function UserOverview() {
       </Box>
 
       {/* Quizzes and Recent Activity */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {/* Upcoming Quizzes */}
         <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
           <Card

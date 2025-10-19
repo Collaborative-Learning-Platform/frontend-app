@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -8,8 +8,8 @@ import {
   Button,
   MenuItem,
   useTheme,
-} from "@mui/material";
-import axiosInstance from "../../api/axiosInstance";
+} from '@mui/material';
+import axiosInstance from '../../api/axiosInstance';
 
 interface Props {
   open: boolean;
@@ -25,9 +25,9 @@ export default function NewDocumentDialog({
   userId,
 }: Props) {
   const theme = useTheme();
-  const [title, setTitle] = useState("Untitled-Document");
-  const [workspaceId, setWorkspaceId] = useState("");
-  const [groupId, setGroupId] = useState("");
+  const [title, setTitle] = useState('Untitled-Document');
+  const [workspaceId, setWorkspaceId] = useState('');
+  const [groupId, setGroupId] = useState('');
   const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>(
     []
   );
@@ -47,7 +47,7 @@ export default function NewDocumentDialog({
         }));
         setWorkspaces(filtered);
       } catch (err) {
-        console.error("Failed to fetch workspaces:", err);
+        console.error('Failed to fetch workspaces:', err);
         setWorkspaces([]); // safe fallback
       }
     };
@@ -74,7 +74,7 @@ export default function NewDocumentDialog({
         }));
         setGroups(filtered);
       } catch (err) {
-        console.error("Failed to fetch groups:", err);
+        console.error('Failed to fetch groups:', err);
         setGroups([]); // safe fallback
       }
     };
@@ -132,12 +132,12 @@ export default function NewDocumentDialog({
           value={workspaceId}
           onChange={(e) => {
             setWorkspaceId(e.target.value);
-            setGroupId(""); // reset group
+            setGroupId(''); // reset group
           }}
           sx={{ mb: 2 }}
         >
           {workspaces.map((w) => (
-            <MenuItem key={w.id} value={w.id}>
+            <MenuItem key={w.id} value={w.id} disableRipple>
               {w.name}
             </MenuItem>
           ))}
@@ -153,7 +153,7 @@ export default function NewDocumentDialog({
           disabled={!workspaceId}
         >
           {groups.map((g) => (
-            <MenuItem key={g.id} value={g.id}>
+            <MenuItem key={g.id} value={g.id} disableRipple>
               {g.name}
             </MenuItem>
           ))}
@@ -168,7 +168,7 @@ export default function NewDocumentDialog({
           onClick={handleSubmit}
           sx={{
             backgroundColor: theme.palette.primary.main,
-            "&:hover": {
+            '&:hover': {
               backgroundColor: theme.palette.primary.dark,
             },
           }}
