@@ -127,7 +127,7 @@ export function StatsCards() {
           setEngagementInfo(res.data.data.engagementInfo ?? null);
         }
       } catch (err) {
-        console.log(err);
+        console.error('Failed to fetch stats in StatsCards:', err);
         setAuthInfo({
           totalCount: 0,
           tutorCount: 0,
