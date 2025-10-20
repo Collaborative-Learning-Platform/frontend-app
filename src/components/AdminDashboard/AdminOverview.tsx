@@ -12,9 +12,7 @@ import {
   Skeleton,
   Divider,
 } from '@mui/material';
-import {
-  Timeline as ActivityIcon,
-} from '@mui/icons-material';
+import { Timeline as ActivityIcon } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '../../contexts/Authcontext';
 import axiosInstance from '../../api/axiosInstance';
