@@ -1,22 +1,174 @@
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
   Card,
   CardHeader,
   CardContent,
-  Chip,
-} from "@mui/material";
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Skeleton,
+  Divider,
+} from '@mui/material';
 import {
   Timeline as ActivityIcon,
-  Warning as AlertCircleIcon,
-  CheckCircle,
-} from "@mui/icons-material";
-import { StatsCards } from "./StatsCards";
+} from '@mui/icons-material';
+import { useTheme, alpha } from '@mui/material/styles';
+import { useAuth } from '../../contexts/Authcontext';
+import axiosInstance from '../../api/axiosInstance';
+import { StatsCards } from './StatsCards';
+
+interface RecentActivityLog {
+  id: string;
+  category: string;
+  activity_type: string;
+  description: string;
+  time: string;
+}
+
+interface SystemActivity {
+  id: string;
+  user_id: string;
+  user_name: string;
+  role: string;
+  category: string;
+  activity_type: string;
+  description: string;
+  time: string;
+  created_at: string;
+}
 
 export function AdminOverview() {
+  const theme = useTheme();
+  const { user_id } = useAuth();
+  const [recentAdminActivity, setRecentAdminActivity] = useState<
+    RecentActivityLog[]
+  >([]);
+  const [systemActivity, setSystemActivity] = useState<SystemActivity[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [systemLoading, setSystemLoading] = useState(false);
+
+  // Function to get random color for activity dots
+  const getRandomColor = () => {
+    const colors = [
+      '#4CAF50', // Green
+      '#FF9800', // Orange
+      '#2196F3', // Blue
+      '#9C27B0', // Purple
+      '#F44336', // Red
+      '#00BCD4', // Cyan
+      '#FF5722', // Deep Orange
+      '#795548', // Brown
+      '#607D8B', // Blue Grey
+      '#E91E63', // Pink
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  // Fetch recent admin activity data
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      console.log('AdminOverview: Starting fetchRecentActivity');
+      console.log('AdminOverview: user_id:', user_id);
+
+      if (!user_id) {
+        console.log('AdminOverview: No user_id provided, returning early');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        console.log(
+          'AdminOverview: Making API call to /dashboard/recentActivity/' +
+            user_id
+        );
+
+        const response = await axiosInstance.get(
+          `/dashboard/recentActivity/${user_id}`
+        );
+
+        console.log('AdminOverview: Full API response:', response);
+        console.log('AdminOverview: Response data:', response.data);
+        console.log('AdminOverview: Response success:', response.data?.success);
+        console.log('AdminOverview: Response data.data:', response.data?.data);
+        console.log(
+          'AdminOverview: Data is array:',
+          Array.isArray(response.data?.data)
+        );
+        console.log('AdminOverview: Data length:', response.data?.data?.length);
+
+        if (response.data && response.data.success && response.data.data) {
+          console.log(
+            'AdminOverview: Setting recent admin activity:',
+            response.data.data
+          );
+          setRecentAdminActivity(response.data.data);
+        } else {
+          console.log('AdminOverview: Response validation failed');
+          console.log('AdminOverview: - Has response.data:', !!response.data);
+          console.log('AdminOverview: - Success flag:', response.data?.success);
+          console.log('AdminOverview: - Has data.data:', !!response.data?.data);
+        }
+      } catch (error) {
+        console.error(
+          'AdminOverview: Failed to fetch recent admin activity:',
+          error
+        );
+        console.error('AdminOverview: Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          status: (error as any)?.response?.status,
+          statusText: (error as any)?.response?.statusText,
+          data: (error as any)?.response?.data,
+        });
+      } finally {
+        setLoading(false);
+        console.log(
+          'AdminOverview: Finished fetchRecentActivity, loading set to false'
+        );
+      }
+    };
+
+    fetchRecentActivity();
+  }, [user_id]);
+
+  // Fetch system activity data
+  useEffect(() => {
+    const fetchSystemActivity = async () => {
+      try {
+        setSystemLoading(true);
+        const response = await axiosInstance.get('/dashboard/systemActivity');
+
+        console.log('AdminOverview: System Activity Response:', response.data);
+
+        if (response.data && response.data.success && response.data.data) {
+          setSystemActivity(response.data.data);
+        }
+      } catch (error) {
+        console.error('AdminOverview: Failed to fetch system activity:', error);
+      } finally {
+        setSystemLoading(false);
+      }
+    };
+
+    fetchSystemActivity();
+  }, []);
+
+  // Debug logs for rendering (moved outside JSX)
+  console.log('AdminOverview Render: loading state:', loading);
+  console.log(
+    'AdminOverview Render: recentAdminActivity:',
+    recentAdminActivity
+  );
+  console.log(
+    'AdminOverview Render: recentAdminActivity.length:',
+    recentAdminActivity.length
+  );
+
   return (
     <Box>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Dashboard Overview
@@ -31,84 +183,112 @@ export function AdminOverview() {
         {/* Recent Activity */}
         <Box
           sx={{
-            display: "flex",
-            flexDirection: { xs: "column", lg: "row" },
+            display: 'flex',
+            flexDirection: { xs: 'column', lg: 'row' },
             gap: 3,
           }}
         >
           <Box sx={{ flex: 1 }}>
-            <Card>
-              <CardHeader
-                title={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <ActivityIcon />
-                    <Typography variant="h6">Recent Activity</Typography>
-                  </Box>
-                }
-              />
-              <CardContent>
-                <Box
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                background: alpha(theme.palette.background.paper, 0.9),
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              }}
+            >
+              <CardContent
+                sx={{
+                  p: 3,
+                }}
+              >
+                <Typography
+                  variant="h6"
                   sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
+                    fontWeight: 600,
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        bgcolor: "success.main",
-                        borderRadius: "50%",
-                      }}
+                  <ActivityIcon sx={{ mr: 1 }} />
+                  Your Recent Activity
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Your personal activities
+                </Typography>
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, idx) => (
+                    <Skeleton
+                      key={idx}
+                      variant="rectangular"
+                      height={50}
+                      sx={{ mb: 1, borderRadius: 1 }}
                     />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" fontWeight="medium">
-                        New workspace created: "Advanced Mathematics"
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        2 minutes ago
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        bgcolor: "primary.main",
-                        borderRadius: "50%",
-                      }}
-                    />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" fontWeight="medium">
-                        15 students joined "Physics Lab" group
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        1 hour ago
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        bgcolor: "warning.main",
-                        borderRadius: "50%",
-                      }}
-                    />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" fontWeight="medium">
-                        Quiz "Quantum Mechanics" completed by 45 students
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        3 hours ago
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
+                  ))
+                ) : recentAdminActivity.length > 0 ? (
+                  <List sx={{ p: 0 }}>
+                    {recentAdminActivity.map((activity, index) => (
+                      <React.Fragment key={activity.id}>
+                        <ListItem
+                          sx={{
+                            px: 0,
+                            py: 1.5,
+                            borderRadius: 2,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              backgroundColor: alpha(
+                                theme.palette.primary.main,
+                                0.05
+                              ),
+                            },
+                          }}
+                        >
+                          <ListItemIcon>
+                            <Box
+                              sx={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                backgroundColor: getRandomColor(),
+                              }}
+                            />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600 }}
+                              >
+                                {activity.description}
+                              </Typography>
+                            }
+                            secondary={
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {activity.time}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                        {index < recentAdminActivity.length - 1 && (
+                          <Divider sx={{ mx: 2, opacity: 0.5 }} />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No recent activity found.
+                  </Typography>
+                )}
               </CardContent>
             </Card>
           </Box>
@@ -117,77 +297,98 @@ export function AdminOverview() {
             <Card>
               <CardHeader
                 title={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <AlertCircleIcon />
-                    <Typography variant="h6">System Alerts</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <ActivityIcon />
+                    <Typography variant="h6">System Activity</Typography>
                   </Box>
                 }
               />
               <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                  }}
-                >
+                {systemLoading ? (
+                  Array.from({ length: 3 }).map((_, idx) => (
+                    <Skeleton
+                      key={idx}
+                      variant="rectangular"
+                      height={60}
+                      sx={{ mb: 1, borderRadius: 1 }}
+                    />
+                  ))
+                ) : systemActivity.length > 0 ? (
                   <Box
                     sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2,
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <AlertCircleIcon
-                        sx={{ fontSize: 16, color: "warning.main" }}
-                      />
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" fontWeight="medium">
-                          High server load detected
-                        </Typography>
+                    {systemActivity.map((activity) => (
+                      <Box
+                        key={activity.id}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          p: 2,
+                          borderRadius: 1,
+                          backgroundColor: alpha(
+                            theme.palette.primary.main,
+                            0.05
+                          ),
+                          '&:hover': {
+                            backgroundColor: alpha(
+                              theme.palette.primary.main,
+                              0.1
+                            ),
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: 2,
+                            flex: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              backgroundColor: getRandomColor(),
+                              mt: 0.5,
+                            }}
+                          />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="body2" fontWeight="medium">
+                              {activity.user_name}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mb: 0.5 }}
+                            >
+                              {activity.description}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {activity.role} • {activity.category}
+                            </Typography>
+                          </Box>
+                        </Box>
                         <Typography variant="caption" color="text.secondary">
-                          Monitor performance
+                          {activity.time}
                         </Typography>
                       </Box>
-                    </Box>
-                    <Chip label="Warning" variant="outlined" size="small" />
+                    ))}
                   </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CheckCircle
-                        sx={{ fontSize: 16, color: "success.main" }}
-                      />
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" fontWeight="medium">
-                          Database backup completed
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          All data secured
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Chip label="Success" variant="outlined" size="small" />
-                  </Box>
-                </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No recent system activity found.
+                  </Typography>
+                )}
               </CardContent>
             </Card>
           </Box>
