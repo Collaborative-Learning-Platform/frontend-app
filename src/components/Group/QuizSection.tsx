@@ -39,7 +39,7 @@ interface QuizSectionProps {
 }
 
 const QuizSection = ({ groupId }: QuizSectionProps) => {
-  console.log('QuizSection groupId:', groupId); // For debugging
+  console.log('QuizSection groupId:', groupId);
   const theme = useTheme();
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,6 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
       try {
         setLoading(true);
         const response = await axiosInstance.get(`/quiz/group/${groupId}`);
-        console.log('Fetched quizzes:', response.data); // For debugging
 
         if (response.data?.success && Array.isArray(response.data.data)) {
           setQuizzes(response.data.data);
@@ -110,7 +109,6 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
     return 'available';
   };
   const calculateProgress = () => {
-    // Filter quizzes based on user role - only show published quizzes to regular users
     const visibleQuizzes =
       role === 'user' ? quizzes.filter((quiz) => quiz.isPublished) : quizzes;
 
@@ -120,18 +118,16 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
     const totalQuizzes = visibleQuizzes.length;
     return totalQuizzes > 0 ? (completedQuizzes / totalQuizzes) * 100 : 0;
   };
-
   const getVisibleQuizzes = () => {
-    return role === 'user'
-      ? quizzes.filter((quiz) => quiz.isPublished)
-      : quizzes;
+    const filtered =
+      role === 'user' ? quizzes.filter((quiz) => quiz.isPublished) : quizzes;
+    return filtered;
   };
 
   const visibleQuizzes = getVisibleQuizzes();
 
   const handleStartQuiz = async (quiz: QuizItem) => {
     try {
-      // Log the quiz start activity
       await axiosInstance.post('/analytics/log-activity', {
         category: 'QUIZ',
         activity_type: 'STARTED_QUIZ',
@@ -144,10 +140,8 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
       });
     } catch (error) {
       console.error('Failed to log quiz start activity:', error);
-      // Continue anyway - don't block quiz start if logging fails
     }
 
-    // Navigate to quiz (existing logic)
     navigate(`/quiz/attempt/${quiz.quizId}`);
   };
 
@@ -235,7 +229,6 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
               </Typography>
             </Box>
           ) : (
-            // Quiz cards
             visibleQuizzes.map((quiz) => {
               const status = getQuizStatus(quiz);
               const isExpired = status === 'expired';

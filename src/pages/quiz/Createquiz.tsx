@@ -188,15 +188,17 @@ export default function CreateQuizPage() {
       showAlert('success', 'Question updated successfully!');
     } else {
       let currentQuizId = quiz.quizId;
-
       if (!currentQuizId) {
-
-        const quizValidationError = validateQuiz(quiz);
-        if (quizValidationError) {
+        if (!quiz.title.trim()) {
           showAlert(
             'error',
-            `Please complete quiz setup: ${quizValidationError}`
+            'Please enter a quiz title before adding questions'
           );
+          return;
+        }
+
+        if (!quiz.group) {
+          showAlert('error', 'Please select a group before adding questions');
           return;
         }
 
@@ -267,7 +269,6 @@ export default function CreateQuizPage() {
         console.error('Error adding question:', error);
         showAlert('error', 'Failed to add question. Please try again.');
 
-        // Rollback the question addition if API call failed
         setQuiz((prev) => ({
           ...prev,
           questions: prev.questions.filter((q) => q.id !== newQuestion.id),
@@ -325,7 +326,6 @@ export default function CreateQuizPage() {
           quizId: quizId,
         }));
       }
-
 
       await axiosInstance.post('/analytics/log-activity', {
         category: 'QUIZ',
@@ -427,7 +427,6 @@ export default function CreateQuizPage() {
         </Box>
       </Box>
 
- 
       <Card sx={{ mb: 4 }}>
         <CardHeader
           title="Quiz Settings"
@@ -435,7 +434,6 @@ export default function CreateQuizPage() {
         />
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-  
             <Box>
               <Typography
                 variant="h6"
@@ -585,7 +583,6 @@ export default function CreateQuizPage() {
           {quiz.questions.map((question, index) => (
             <Paper key={question.id} sx={{ p: 3, mb: 2 }} variant="outlined">
               {editingQuestionId === question.id ? (
-               
                 <Box>
                   {' '}
                   <Box
