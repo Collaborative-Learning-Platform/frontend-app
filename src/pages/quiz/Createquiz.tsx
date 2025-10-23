@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -41,6 +41,14 @@ import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../contexts/Authcontext';
 import { CreateQuestion, CreateQuiz, Quiz } from './types';
 
+type GroupOption = {
+  groupId: string;
+  groupName: string;
+  groupDescription: string;
+  workspaceId: string;
+  workspaceName: string;
+};
+
 const INITIAL_QUESTION: CreateQuestion = {
   id: '',
   type: 'MCQ',
@@ -60,18 +68,9 @@ const INITIAL_QUIZ: CreateQuiz = {
   totalPoints: 0,
 };
 
-const GROUP_OPTIONS = [
-  { value: 'math-101-a', label: 'Math 101 - Group A' },
-  { value: 'math-101-b', label: 'Math 101 - Group B' },
-  { value: 'advanced-calculus', label: 'Advanced Calculus' },
-];
-
-// Main Component
 export default function CreateQuizPage() {
   const navigate = useNavigate();
   const { user_id } = useAuth();
-
-  // State
   const [quiz, setQuiz] = useState<CreateQuiz>(INITIAL_QUIZ);
   const [currentQuestion, setCurrentQuestion] =
     useState<CreateQuestion>(INITIAL_QUESTION);
@@ -84,8 +83,25 @@ export default function CreateQuizPage() {
     type: 'error' | 'success';
     message: string;
   } | null>(null);
+  const [availableGroups, setAvailableGroups] = useState<GroupOption[]>([]);
 
-  // Utility Functions
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await axiosInstance.post('/workspace/groups/by-user', {
+          userId: user_id,
+        });
+        setAvailableGroups(response.data.data || []);
+        console.log('Fetched groups:', response.data.data);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      }
+    };
+
+    if (user_id) {
+      fetchGroups();
+    }
+  }, [user_id]);
   const showAlert = (type: 'error' | 'success', message: string) => {
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 3000);
@@ -108,7 +124,6 @@ export default function CreateQuizPage() {
     setEditingQuestionId(null);
   };
 
-  // Validation Functions
   const validateQuestion = (question: CreateQuestion): string | null => {
     if (!question.question.trim()) {
       return 'Please enter a question';
@@ -146,7 +161,6 @@ export default function CreateQuizPage() {
     return null;
   };
 
-  // Event Handlers
   const handleAddQuestion = async () => {
     const validationError = validateQuestion(currentQuestion);
     if (validationError) {
@@ -155,7 +169,6 @@ export default function CreateQuizPage() {
     }
 
     if (editingQuestionId) {
-      // Update existing question
       const oldQuestion = quiz.questions.find(
         (q) => q.id === editingQuestionId
       );
@@ -174,6 +187,54 @@ export default function CreateQuizPage() {
 
       showAlert('success', 'Question updated successfully!');
     } else {
+      let currentQuizId = quiz.quizId;
+      if (!currentQuizId) {
+        if (!quiz.title.trim()) {
+          showAlert(
+            'error',
+            'Please enter a quiz title before adding questions'
+          );
+          return;
+        }
+
+        if (!quiz.group) {
+          showAlert('error', 'Please select a group before adding questions');
+          return;
+        }
+
+        try {
+          const selectedGroup = availableGroups.find(
+            (g) => g.groupId === quiz.group
+          );
+
+          const quizPayload = {
+            title: quiz.title,
+            description: quiz.description,
+            groupId: selectedGroup?.groupId,
+            createdById: user_id,
+            timeLimit: quiz.duration,
+            deadline: quiz.dueDate,
+          };
+
+          const quizResponse = await axiosInstance.post(
+            '/quiz/create',
+            quizPayload
+          );
+          currentQuizId = quizResponse.data.quizId;
+
+          setQuiz((prev) => ({
+            ...prev,
+            quizId: currentQuizId,
+          }));
+
+          showAlert('success', 'Quiz created successfully!');
+        } catch (error) {
+          console.error('Error creating quiz:', error);
+          showAlert('error', 'Failed to create quiz. Please try again.');
+          return;
+        }
+      }
+
       const newQuestion: CreateQuestion = {
         ...currentQuestion,
         id: Date.now().toString(),
@@ -185,24 +246,35 @@ export default function CreateQuizPage() {
         totalPoints: prev.totalPoints + newQuestion.points,
       }));
 
-      const payload = {
-        quizId: '7e086d26-ac69-4887-b0af-eea1d807be6b',
-        question_no: quiz.questions.length + 1,
-        question: {
-          text: currentQuestion.question,
-          options: currentQuestion.options,
-        },
-        question_type: currentQuestion.type,
-        correct_answer: currentQuestion.correctAnswer.toString(),
-      };
+      try {
+        const payload = {
+          quizId: currentQuizId,
+          question_no: quiz.questions.length + 1,
+          question: {
+            text: currentQuestion.question,
+            options: currentQuestion.options,
+          },
+          question_type: currentQuestion.type,
+          correct_answer: currentQuestion.correctAnswer.toString(),
+        };
 
-      const response = await axiosInstance.post(
-        '/quiz/question/create',
-        payload
-      );
-      console.log('Response:', response.data);
+        const response = await axiosInstance.post(
+          '/quiz/question/create',
+          payload
+        );
+        console.log('Question added response:', response.data);
 
-      showAlert('success', 'Question added successfully!');
+        showAlert('success', 'Question added successfully!');
+      } catch (error) {
+        console.error('Error adding question:', error);
+        showAlert('error', 'Failed to add question. Please try again.');
+
+        setQuiz((prev) => ({
+          ...prev,
+          questions: prev.questions.filter((q) => q.id !== newQuestion.id),
+          totalPoints: prev.totalPoints - newQuestion.points,
+        }));
+      }
     }
 
     resetCurrentQuestion();
@@ -218,7 +290,6 @@ export default function CreateQuizPage() {
       }));
     }
   };
-
   const handleSaveQuiz = async () => {
     const validationError = validateQuiz(quiz);
     if (validationError) {
@@ -227,36 +298,55 @@ export default function CreateQuizPage() {
     }
 
     try {
-      const payload = {
-        title: quiz.title,
-        description: quiz.description,
-        groupId: 'c662c945-2e9b-4739-bef5-f9a8e2e05bab',
-        createdById: user_id,
-        timeLimit: quiz.duration,
-        deadline: quiz.dueDate,
-      };
-      const response = await axiosInstance.post('/quiz/create', payload);
-      console.log('Response:', response.data);
+      let quizId = quiz.quizId;
 
-      //Log the successful Quiz creation event:
+      if (!quizId) {
+        const selectedGroup = availableGroups.find(
+          (g) => g.groupId === quiz.group
+        );
+        console.log('Selected Group:', selectedGroup);
+
+        const payload = {
+          title: quiz.title,
+          description: quiz.description,
+          groupId: selectedGroup?.groupId,
+          createdById: user_id,
+          timeLimit: quiz.duration,
+          deadline: quiz.dueDate,
+        };
+        console.log('Creating quiz with payload:', payload);
+
+        const response = await axiosInstance.post('/quiz/create', payload);
+        console.log('Quiz creation response:', response.data);
+
+        quizId = response.data.quizId;
+
+        setQuiz((prev) => ({
+          ...prev,
+          quizId: quizId,
+        }));
+      }
+
       await axiosInstance.post('/analytics/log-activity', {
         category: 'QUIZ',
         activity_type: 'CREATED_QUIZ',
         metadata: {
-          quizId: response.data.quizId,
-          quizTitle: response.data.title,
+          quizId: quizId,
+          quizTitle: quiz.title,
           groupName: quiz.group,
-          groupId: response.data.groupId,
-          dueDate: response.data.dueDate,
+          groupId: quiz.group,
+          dueDate: quiz.dueDate,
         },
       });
 
+      showAlert('success', 'Quiz saved successfully!');
       setTimeout(() => navigate('/tutor-dashboard'), 1500);
     } catch (error) {
-      console.error(error);
+      console.error('Error saving quiz:', error);
+      showAlert('error', 'Failed to save quiz. Please try again.');
     }
   };
-  // Transform quiz from CreateQuiz format to QuizAttempt format
+
   const transformQuizForPreview = (createQuiz: CreateQuiz): Quiz => {
     return {
       quizId: 'preview',
@@ -295,14 +385,12 @@ export default function CreateQuizPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Alert */}
       {alert && (
         <Alert severity={alert.type} sx={{ mb: 2 }}>
           {alert.message}
         </Alert>
       )}
 
-      {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box
           sx={{
@@ -339,7 +427,6 @@ export default function CreateQuizPage() {
         </Box>
       </Box>
 
-      {/* Quiz Settings */}
       <Card sx={{ mb: 4 }}>
         <CardHeader
           title="Quiz Settings"
@@ -347,7 +434,6 @@ export default function CreateQuizPage() {
         />
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {/* Basic Information Section */}
             <Box>
               <Typography
                 variant="h6"
@@ -381,8 +467,6 @@ export default function CreateQuizPage() {
                 />
               </Box>
             </Box>
-
-            {/* Assignment & Timing Section */}
             <Box>
               <Typography
                 variant="h6"
@@ -400,9 +484,9 @@ export default function CreateQuizPage() {
                       setQuiz((prev) => ({ ...prev, group: e.target.value }))
                     }
                   >
-                    {GROUP_OPTIONS.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
+                    {availableGroups.map((option) => (
+                      <MenuItem key={option.groupId} value={option.groupId}>
+                        {option.groupName}
                       </MenuItem>
                     ))}
                   </Select>
@@ -442,8 +526,6 @@ export default function CreateQuizPage() {
                 </Box>
               </Box>
             </Box>
-
-            {/* Quiz Statistics */}
             <Box>
               <Typography
                 variant="h6"
@@ -468,13 +550,20 @@ export default function CreateQuizPage() {
                   variant="outlined"
                   color="success"
                 />
+                {quiz.quizId && (
+                  <Chip
+                    label="Quiz Created"
+                    variant="filled"
+                    color="success"
+                    size="small"
+                  />
+                )}
               </Box>
             </Box>
           </Box>
         </CardContent>
       </Card>
 
-      {/* Questions */}
       <Card>
         <CardHeader
           title="Questions"
@@ -491,11 +580,9 @@ export default function CreateQuizPage() {
           }
         />
         <CardContent>
-          {/* Existing Questions */}
           {quiz.questions.map((question, index) => (
             <Paper key={question.id} sx={{ p: 3, mb: 2 }} variant="outlined">
               {editingQuestionId === question.id ? (
-                // Edit Mode
                 <Box>
                   {' '}
                   <Box

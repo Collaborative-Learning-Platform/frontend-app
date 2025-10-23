@@ -6,17 +6,10 @@ import {
   useTheme,
   Button,
 } from '@mui/material';
-import { Masonry } from '@mui/lab';
+
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import StyleIcon from '@mui/icons-material/Style';
 import AddIcon from '@mui/icons-material/Add';
-
-// Mock flashcard stats - you can later replace with real data
-const flashcardStats = {
-  totalSets: 24,
-  totalCards: 340,
-  thisWeek: 12,
-};
 
 export const FlashCardLayout = () => {
   const theme = useTheme();
@@ -109,42 +102,6 @@ export const FlashCardLayout = () => {
       <Box py={3}>
         {/* Render the child component (FlashCardGenerator or FlashCardLibrary) */}
         <Outlet />
-      </Box>
-      <Box py={3}>
-        <Masonry columns={3} spacing={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" fontWeight="bold" color="primary.main">
-                {flashcardStats.totalSets}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Sets
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" fontWeight="bold" color="primary.main">
-                {flashcardStats.totalCards}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Cards
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" fontWeight="bold" color="primary.main">
-                {flashcardStats.thisWeek}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                This Week
-              </Typography>
-            </CardContent>
-          </Card>
-        </Masonry>
       </Box>
     </Box>
   );

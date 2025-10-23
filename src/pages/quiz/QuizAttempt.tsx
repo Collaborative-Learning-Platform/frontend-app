@@ -70,7 +70,7 @@ export default function QuizAttempt({
       const fetchQuizData = async () => {
         try {
           const detailsResponse = await axiosInstance.get(`/quiz/${quizId}`);
-          console.log('Fetched quiz details:', detailsResponse.data);
+          // console.log('Fetched quiz details:', detailsResponse.data);
 
           let quizTimeLimit = 30;
           if (detailsResponse.data?.success && detailsResponse.data.data) {
