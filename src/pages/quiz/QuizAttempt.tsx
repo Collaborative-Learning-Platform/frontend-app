@@ -50,7 +50,7 @@ export default function QuizAttempt({
 }: QuizAttemptProps) {
   const navigate = useNavigate();
   const { quizId } = useParams();
-  const {user_id} = useAuth();
+  const { user_id } = useAuth();
 
   const [quiz, setQuiz] = useState<Quiz | null>(propQuiz || null);
   const [answers, setAnswers] = useState<Answer[]>([]);
@@ -166,28 +166,38 @@ export default function QuizAttempt({
   ) => {
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 3000);
-  };  const handleAnswerChange = useCallback((questionNo: number, answer: string | number) => {
-    if (import.meta.env.DEV) {
-      console.log(`Answer change: Question ${questionNo}, Answer: ${answer}`);
-    }
-    
-    setAnswers((prev) => {
-      const existingIndex = prev.findIndex((a) => a.questionId === questionNo);
-      const newAnswer = { questionId: questionNo, answer };
-      
-      if (existingIndex >= 0) {
-        // Update existing answer
-        const newAnswers = [...prev];
-        newAnswers[existingIndex] = newAnswer;
-        return newAnswers;
-      } else {
-        // Add new answer
-        return [...prev, newAnswer];
+  };
+  const handleAnswerChange = useCallback(
+    (questionNo: number, answer: string | number) => {
+      if (import.meta.env.DEV) {
+        console.log(`Answer change: Question ${questionNo}, Answer: ${answer}`);
       }
-    });
-  }, []);const getAnswer = useMemo(() => {
-    const answerMap = new Map(answers.map(answer => [answer.questionId, answer.answer]));
-    return (questionNo: number): string | number => answerMap.get(questionNo) ?? '';
+
+      setAnswers((prev) => {
+        const existingIndex = prev.findIndex(
+          (a) => a.questionId === questionNo
+        );
+        const newAnswer = { questionId: questionNo, answer };
+
+        if (existingIndex >= 0) {
+          // Update existing answer
+          const newAnswers = [...prev];
+          newAnswers[existingIndex] = newAnswer;
+          return newAnswers;
+        } else {
+          // Add new answer
+          return [...prev, newAnswer];
+        }
+      });
+    },
+    []
+  );
+  const getAnswer = useMemo(() => {
+    const answerMap = new Map(
+      answers.map((answer) => [answer.questionId, answer.answer])
+    );
+    return (questionNo: number): string | number =>
+      answerMap.get(questionNo) ?? '';
   }, [answers]);
   const handleSubmit = (autoSubmit = false) => {
     if (!quiz) return;
@@ -257,8 +267,8 @@ export default function QuizAttempt({
     }, {} as Record<number, string | number>);
     const quizAttemptData = {
       quizId: quiz.quizId!,
-      userId: user_id, 
-      attempt_no: 1, 
+      userId: user_id,
+      attempt_no: 1,
       score: totalScore,
       time_taken: timeSpent,
       submitted_at: new Date(),
@@ -281,11 +291,11 @@ export default function QuizAttempt({
       console.error('Error submitting quiz:', error);
       showAlert('error', 'Failed to submit quiz. Please try again.');
       return;
-    } finally{
+    } finally {
       setIsSubmitting(false);
     }
     setQuizResults(results);
-    setShowResults(true)
+    setShowResults(true);
   };
   const checkAnswer = (
     question: QuizQuestion,
@@ -352,7 +362,7 @@ export default function QuizAttempt({
     return (
       <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress size={20} />
-        <Typography sx={{ml:1}}>Loading quiz</Typography>
+        <Typography sx={{ ml: 1 }}>Loading quiz</Typography>
       </Container>
     );
   }
@@ -660,12 +670,6 @@ export default function QuizAttempt({
             key={question.question_no}
             sx={{
               mb: 3,
-              border: getAnswer(question.question_no)
-                ? '2px solid'
-                : '1px solid',
-              borderColor: getAnswer(question.question_no)
-                ? 'success.main'
-                : 'divider',
               transition: 'border-color 0.2s ease',
             }}
           >
@@ -676,9 +680,6 @@ export default function QuizAttempt({
                 <Chip
                   label={`${index + 1}`}
                   size="small"
-                  color={
-                    getAnswer(question.question_no) ? 'success' : 'default'
-                  }
                   sx={{ fontWeight: 'bold' }}
                 />
                 <Chip
@@ -686,51 +687,47 @@ export default function QuizAttempt({
                   color="secondary"
                   size="small"
                 />
-                <Chip
-                  label={`${question.points || 1} pts`}
-                  variant="outlined"
-                  size="small"
-                />
-                {getAnswer(question.question_no) && (
-                  <CheckCircleIcon color="success" fontSize="small" />
-                )}
               </Box>
               <Typography variant="h6" sx={{ mb: 3, lineHeight: 1.4 }}>
                 {typeof question.question === 'string'
                   ? question.question
                   : question.question.text}
-              </Typography>              {question.question_type === 'MCQ' && (
+              </Typography>{' '}
+              {question.question_type === 'MCQ' && (
                 <FormControl component="fieldset" fullWidth>
-                  {import.meta.env.DEV && (
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
-                      Debug - Question type: {typeof question.question}, Has options: {
-                        typeof question.question === 'object' && question.question.options ? 'Yes' : 'No'
-                      }
-                    </Typography>
-                  )}
                   <RadioGroup
                     value={getAnswer(question.question_no).toString()}
                     onChange={(e) => {
                       if (import.meta.env.DEV) {
-                        console.log(`Selecting option ${e.target.value} for question ${question.question_no}`);
+                        console.log(
+                          `Selecting option ${e.target.value} for question ${question.question_no}`
+                        );
                       }
-                      handleAnswerChange(question.question_no, parseInt(e.target.value));
+                      handleAnswerChange(
+                        question.question_no,
+                        parseInt(e.target.value)
+                      );
                     }}
                   >
                     {(() => {
                       // Extract options with proper type checking
-                      const options = typeof question.question === 'object' && question.question.options 
-                        ? question.question.options 
-                        : null;
+                      const options =
+                        typeof question.question === 'object' &&
+                        question.question.options
+                          ? question.question.options
+                          : null;
 
                       if (!options) {
                         return (
-                          <Typography color="error" variant="body2" sx={{ p: 2, bgcolor: 'error.50', borderRadius: 1 }}>
-                            MCQ question missing options. Question: {
-                              typeof question.question === 'string' 
-                                ? question.question 
-                                : question.question.text
-                            }
+                          <Typography
+                            color="error"
+                            variant="body2"
+                            sx={{ p: 2, bgcolor: 'error.50', borderRadius: 1 }}
+                          >
+                            MCQ question missing options. Question:{' '}
+                            {typeof question.question === 'string'
+                              ? question.question
+                              : question.question.text}
                           </Typography>
                         );
                       }
@@ -759,7 +756,6 @@ export default function QuizAttempt({
                   </RadioGroup>
                 </FormControl>
               )}
-              
               {question.question_type === 'true_false' && (
                 <FormControl component="fieldset" fullWidth>
                   {' '}

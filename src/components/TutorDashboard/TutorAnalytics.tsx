@@ -443,8 +443,6 @@ export default function TutorAnalytics() {
           Quiz Analytics
         </Typography>{' '}
         <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
-          
-          
           <Button
             variant="outlined"
             size="small"
@@ -466,7 +464,6 @@ export default function TutorAnalytics() {
           },
         }}
       >
-       
         <Card elevation={2}>
           <CardHeader
             title="Quiz Performance by Workspace"
@@ -756,7 +753,7 @@ export default function TutorAnalytics() {
                           }
                         >
                           <IconButton
-                            color={quiz.isPublished ? 'success' : 'default'}
+                            color={quiz.isPublished ? 'default' : 'success'}
                             onClick={() => handleTogglePublish(quiz)}
                             disabled={publishingQuiz === quiz.quizId}
                             size="small"
@@ -764,9 +761,9 @@ export default function TutorAnalytics() {
                             {publishingQuiz === quiz.quizId ? (
                               <CircularProgress size={20} />
                             ) : quiz.isPublished ? (
-                              <Publish />
-                            ) : (
                               <UnpublishedOutlined />
+                            ) : (
+                              <Publish />
                             )}
                           </IconButton>
                         </MuiTooltip>
