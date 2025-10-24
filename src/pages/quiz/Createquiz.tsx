@@ -26,6 +26,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton as MuiIconButton,
+  CircularProgress,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -40,6 +41,7 @@ import QuizAttempt from './QuizAttempt';
 import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../contexts/Authcontext';
 import { CreateQuestion, CreateQuiz, Quiz } from './types';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 type GroupOption = {
   groupId: string;
@@ -72,6 +74,7 @@ export default function CreateQuizPage() {
   const navigate = useNavigate();
   const { user_id } = useAuth();
   const [quiz, setQuiz] = useState<CreateQuiz>(INITIAL_QUIZ);
+  const snackbar = useSnackbar();
   const [currentQuestion, setCurrentQuestion] =
     useState<CreateQuestion>(INITIAL_QUESTION);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
@@ -79,10 +82,11 @@ export default function CreateQuizPage() {
     null
   );
   const [showPreview, setShowPreview] = useState(false);
-  const [alert, setAlert] = useState<{
+  const [alert] = useState<{
     type: 'error' | 'success';
     message: string;
   } | null>(null);
+  const [isAddingQuestionLoading, setIsAddingQuestionLoading] = useState(false);
   const [availableGroups, setAvailableGroups] = useState<GroupOption[]>([]);
 
   useEffect(() => {
@@ -102,10 +106,6 @@ export default function CreateQuizPage() {
       fetchGroups();
     }
   }, [user_id]);
-  const showAlert = (type: 'error' | 'success', message: string) => {
-    setAlert({ type, message });
-    setTimeout(() => setAlert(null), 3000);
-  };
 
   const resetCurrentQuestion = () => {
     setCurrentQuestion(INITIAL_QUESTION);
@@ -160,11 +160,13 @@ export default function CreateQuizPage() {
 
     return null;
   };
-
   const handleAddQuestion = async () => {
+    setIsAddingQuestionLoading(true);
+
     const validationError = validateQuestion(currentQuestion);
     if (validationError) {
-      showAlert('error', validationError);
+      snackbar.showSnackbar(validationError, 'error');
+      setIsAddingQuestionLoading(false);
       return;
     }
 
@@ -174,7 +176,6 @@ export default function CreateQuizPage() {
       );
       const pointsDifference =
         currentQuestion.points - (oldQuestion?.points || 0);
-
       setQuiz((prev) => ({
         ...prev,
         questions: prev.questions.map((q) =>
@@ -185,20 +186,25 @@ export default function CreateQuizPage() {
         totalPoints: prev.totalPoints + pointsDifference,
       }));
 
-      showAlert('success', 'Question updated successfully!');
+      snackbar.showSnackbar('Question updated successfully!', 'success');
     } else {
       let currentQuizId = quiz.quizId;
       if (!currentQuizId) {
         if (!quiz.title.trim()) {
-          showAlert(
-            'error',
-            'Please enter a quiz title before adding questions'
+          snackbar.showSnackbar(
+            'Please enter a quiz title before adding questions',
+            'error'
           );
+          setIsAddingQuestionLoading(false);
           return;
         }
 
         if (!quiz.group) {
-          showAlert('error', 'Please select a group before adding questions');
+          snackbar.showSnackbar(
+            'Please select a group before adding questions',
+            'error'
+          );
+          setIsAddingQuestionLoading(false);
           return;
         }
 
@@ -227,10 +233,14 @@ export default function CreateQuizPage() {
             quizId: currentQuizId,
           }));
 
-          showAlert('success', 'Quiz created successfully!');
+          snackbar.showSnackbar('Quiz created successfully!', 'success');
         } catch (error) {
           console.error('Error creating quiz:', error);
-          showAlert('error', 'Failed to create quiz. Please try again.');
+          snackbar.showSnackbar(
+            'Failed to create quiz. Please try again.',
+            'error'
+          );
+          setIsAddingQuestionLoading(false);
           return;
         }
       }
@@ -264,10 +274,13 @@ export default function CreateQuizPage() {
         );
         console.log('Question added response:', response.data);
 
-        showAlert('success', 'Question added successfully!');
+        snackbar.showSnackbar('Question added successfully!', 'success');
       } catch (error) {
         console.error('Error adding question:', error);
-        showAlert('error', 'Failed to add question. Please try again.');
+        snackbar.showSnackbar(
+          'Failed to add question. Please try again.',
+          'error'
+        );
 
         setQuiz((prev) => ({
           ...prev,
@@ -278,6 +291,7 @@ export default function CreateQuizPage() {
     }
 
     resetCurrentQuestion();
+    setIsAddingQuestionLoading(false);
   };
 
   const handleRemoveQuestion = async (questionId: string) => {
@@ -293,17 +307,17 @@ export default function CreateQuizPage() {
   const handleSaveQuiz = async () => {
     const validationError = validateQuiz(quiz);
     if (validationError) {
-      showAlert('error', validationError);
+      snackbar.showSnackbar(validationError, 'error');
       return;
     }
 
     try {
       let quizId = quiz.quizId;
+      const selectedGroup = availableGroups.find(
+        (g) => g.groupId === quiz.group
+      );
 
       if (!quizId) {
-        const selectedGroup = availableGroups.find(
-          (g) => g.groupId === quiz.group
-        );
         console.log('Selected Group:', selectedGroup);
 
         const payload = {
@@ -333,17 +347,17 @@ export default function CreateQuizPage() {
         metadata: {
           quizId: quizId,
           quizTitle: quiz.title,
-          groupName: quiz.group,
-          groupId: quiz.group,
+          groupName: selectedGroup?.groupName || '',
+          groupId: selectedGroup?.groupId || '',
           dueDate: quiz.dueDate,
         },
       });
 
-      showAlert('success', 'Quiz saved successfully!');
+      snackbar.showSnackbar('Quiz saved successfully!', 'success');
       setTimeout(() => navigate('/tutor-dashboard'), 1500);
     } catch (error) {
       console.error('Error saving quiz:', error);
-      showAlert('error', 'Failed to save quiz. Please try again.');
+      snackbar.showSnackbar('Failed to save quiz. Please try again.', 'error');
     }
   };
 
@@ -374,9 +388,9 @@ export default function CreateQuizPage() {
 
   const handlePreviewQuiz = () => {
     if (quiz.questions.length === 0) {
-      showAlert(
-        'error',
-        'Please add at least one question to preview the quiz'
+      snackbar.showSnackbar(
+        'Please add at least one question to preview the quiz',
+        'error'
       );
       return;
     }
@@ -485,7 +499,11 @@ export default function CreateQuizPage() {
                     }
                   >
                     {availableGroups.map((option) => (
-                      <MenuItem key={option.groupId} value={option.groupId}>
+                      <MenuItem
+                        key={option.groupId}
+                        value={option.groupId}
+                        disableRipple
+                      >
                         {option.groupName}
                       </MenuItem>
                     ))}
@@ -622,9 +640,9 @@ export default function CreateQuizPage() {
                             }))
                           }
                         >
-                          <MenuItem value="MCQ">Multiple Choice</MenuItem>
-                          <MenuItem value="short_answer">Short Answer</MenuItem>
-                          <MenuItem value="true_false">True/False</MenuItem>
+                          <MenuItem value="MCQ" disableRipple >Multiple Choice</MenuItem>
+                          <MenuItem value="short_answer" disableRipple>Short Answer</MenuItem>
+                          <MenuItem value="true_false" disableRipple>True/False</MenuItem>
                         </Select>
                       </FormControl>
 
@@ -642,7 +660,6 @@ export default function CreateQuizPage() {
                         }
                       />
                     </Box>
-
                     <TextField
                       fullWidth
                       multiline
@@ -657,7 +674,6 @@ export default function CreateQuizPage() {
                         }))
                       }
                     />
-
                     {/* Multiple Choice Options */}
                     {currentQuestion.type === 'MCQ' && (
                       <Box>
@@ -726,7 +742,6 @@ export default function CreateQuizPage() {
                         </Typography>
                       </Box>
                     )}
-
                     {/* True/False Options */}
                     {currentQuestion.type === 'true_false' && (
                       <Box>
@@ -757,7 +772,6 @@ export default function CreateQuizPage() {
                         </FormControl>
                       </Box>
                     )}
-
                     {/* Short Answer */}
                     {currentQuestion.type === 'short_answer' && (
                       <TextField
@@ -772,13 +786,27 @@ export default function CreateQuizPage() {
                           }))
                         }
                       />
-                    )}
-
+                    )}{' '}
                     <Stack direction="row" spacing={2}>
-                      <Button variant="contained" onClick={handleAddQuestion}>
-                        Update Question
+                      <Button
+                        variant="contained"
+                        onClick={handleAddQuestion}
+                        disabled={isAddingQuestionLoading}
+                        startIcon={
+                          isAddingQuestionLoading ? (
+                            <CircularProgress size={20} />
+                          ) : undefined
+                        }
+                      >
+                        {isAddingQuestionLoading
+                          ? 'Updating...'
+                          : 'Update Question'}
                       </Button>
-                      <Button variant="outlined" onClick={cancelEditing}>
+                      <Button
+                        variant="outlined"
+                        onClick={cancelEditing}
+                        disabled={isAddingQuestionLoading}
+                      >
                         Cancel
                       </Button>
                     </Stack>
@@ -899,7 +927,6 @@ export default function CreateQuizPage() {
             </Paper>
           ))}
 
-          {/* Add Question Form */}
           {isAddingQuestion && !editingQuestionId && (
             <Paper
               sx={{
@@ -963,7 +990,6 @@ export default function CreateQuizPage() {
                     }
                   />
                 </Box>
-
                 <TextField
                   fullWidth
                   multiline
@@ -978,7 +1004,6 @@ export default function CreateQuizPage() {
                     }))
                   }
                 />
-
                 {/* Multiple Choice Options */}
                 {currentQuestion.type === 'MCQ' && (
                   <Box>
@@ -1045,7 +1070,6 @@ export default function CreateQuizPage() {
                     </Typography>
                   </Box>
                 )}
-
                 {/* True/False Options */}
                 {currentQuestion.type === 'true_false' && (
                   <Box>
@@ -1074,7 +1098,6 @@ export default function CreateQuizPage() {
                     </FormControl>
                   </Box>
                 )}
-
                 {/* Short Answer */}
                 {currentQuestion.type === 'short_answer' && (
                   <TextField
@@ -1089,13 +1112,27 @@ export default function CreateQuizPage() {
                       }))
                     }
                   />
-                )}
-
+                )}{' '}
                 <Stack direction="row" spacing={2}>
-                  <Button variant="contained" onClick={handleAddQuestion}>
-                    Add Question
+                  <Button
+                    variant="contained"
+                    onClick={handleAddQuestion}
+                    disabled={isAddingQuestionLoading}
+                    startIcon={
+                      isAddingQuestionLoading ? (
+                        <CircularProgress size={20} />
+                      ) : undefined
+                    }
+                  >
+                    {isAddingQuestionLoading
+                      ? 'Adding Question...'
+                      : 'Add Question'}
                   </Button>
-                  <Button variant="outlined" onClick={resetCurrentQuestion}>
+                  <Button
+                    variant="outlined"
+                    onClick={resetCurrentQuestion}
+                    disabled={isAddingQuestionLoading}
+                  >
                     Cancel
                   </Button>
                 </Stack>
@@ -1116,7 +1153,7 @@ export default function CreateQuizPage() {
         </CardContent>
       </Card>
 
-      {/* Preview Dialog */}
+     
       <Dialog
         open={showPreview}
         onClose={() => setShowPreview(false)}

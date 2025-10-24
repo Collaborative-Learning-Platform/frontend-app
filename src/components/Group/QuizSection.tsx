@@ -8,6 +8,7 @@ import {
   LinearProgress,
   Avatar,
   useTheme,
+  CircularProgress,
 } from '@mui/material';
 import {
   Quiz,
@@ -213,8 +214,10 @@ const QuizSection = ({ groupId }: QuizSectionProps) => {
           {loading ? (
             // Loading state
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Loading quizzes...
+              <CircularProgress size={20}  />
+              <Typography variant="body2" sx={{ color: 'text.secondary' , ml: 1
+              }}>
+                Loading quizzes
               </Typography>
             </Box>
           ) : visibleQuizzes.length === 0 ? (

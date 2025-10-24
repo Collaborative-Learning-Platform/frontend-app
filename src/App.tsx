@@ -14,7 +14,6 @@ import { UserWorkspaces } from './components/UserDashboard/UserWorkspaces';
 import { UserStudyPlan } from './components/UserDashboard/UserStudyPlan';
 import { UserAnalytics } from './components/UserDashboard/UseAnalytics';
 import { UserDocuments } from './pages/UserDocuments';
-import { AdminOverview } from './components/AdminDashboard/AdminOverview';
 import { SystemSettings } from './components/AdminDashboard/SystemSettings';
 import ProfilePage from './pages/ProfilePage';
 import WhiteboardPage from './pages/Whiteboard';
@@ -106,14 +105,13 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route path="add-users" element={<AddUsers />} />
           <Route element={<AdminDashboard />}>
-            <Route path="admin-dashboard" element={<AdminOverview />} />
+            <Route path="admin-analytics" element={<AnalyticsDashboard />} />
             <Route path="admin-users" element={<UserManagement />} />
             <Route path="admin-workspaces" element={<WorkspaceManagement />} />
             <Route
               path="admin-workspaces/manage/:workspaceId"
               element={<WorkspaceManagementPage />}
             />
-            <Route path="admin-analytics" element={<AnalyticsDashboard />} />
             <Route path="admin-settings" element={<SystemSettings />} />
           </Route>
         </Route>

@@ -9,7 +9,7 @@ import {
   Chip,
   Fade,
 } from '@mui/material';
-import { Send, MoreVert, Circle } from '@mui/icons-material';
+import { Send, Circle } from '@mui/icons-material';
 import { io, Socket } from 'socket.io-client';
 import axiosInstance from '../../api/axiosInstance';
 
@@ -258,7 +258,7 @@ const GroupChat = ({
           <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
             Online
           </Typography>
-          <IconButton
+          {/* <IconButton
             size="small"
             sx={{
               color: theme.palette.text.secondary,
@@ -269,7 +269,7 @@ const GroupChat = ({
             }}
           >
             <MoreVert />
-          </IconButton>
+          </IconButton> */}
         </Box>
       </Box>
 
