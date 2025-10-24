@@ -218,8 +218,6 @@ export default function Sidebar({
     if (item.path) navigate(item.path);
   };
 
-
-
   const resolved = resolveNavItems(navConfig, role);
   const filteredNavigationItems = resolved.filter(
     (i) => i.section !== 'bottom'
