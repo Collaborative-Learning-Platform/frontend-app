@@ -28,6 +28,7 @@ import {
   PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
 import axiosInstance from "../../../api/axiosInstance";
+import { useSnackbar } from "../../../contexts/SnackbarContext";
 import AddMembersDialog from "./AddMembersToGroups";
 
 interface Group {
@@ -61,14 +62,18 @@ export default function GroupsPanel({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const theme = useTheme();
   useMediaQuery(theme.breakpoints.down("sm"));
+  const { showSnackbar } = useSnackbar();
 
   const handleCreateGroup = async () => {
     if (!newGroup.name.trim()) {
-      setError("Group name is required");
+      showSnackbar("Group name is required", "error");
       return;
     }
+
+    setIsCreating(true);
     try {
       const res = await axiosInstance.post(`/workspace/groups/createGroup`, {
         workspaceId,
@@ -79,12 +84,14 @@ export default function GroupsPanel({
       if (res.data.success) {
         setGroups((prev) => [...prev, res.data.data]);
         setNewGroup({ name: "", description: "" });
-        setSuccess("Group created successfully");
+        showSnackbar("Group created successfully", "success");
       } else {
-        setError(res.data.message || "Failed to create group");
+        showSnackbar(res.data.message || "Failed to create group", "error");
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to create group");
+      showSnackbar(err?.response?.data?.message || "Failed to create group", "error");
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -105,9 +112,9 @@ export default function GroupsPanel({
     try {
       await axiosInstance.delete(`workspace/groups/${groupToDelete.id}/delete`);
       setGroups((prev) => prev.filter((g) => g.groupId !== groupToDelete.id));
-      setSuccess("Group deleted successfully");
+      showSnackbar("Group deleted successfully", "success");
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to delete group");
+      showSnackbar(err?.response?.data?.message || "Failed to delete group", "error");
     } finally {
       setIsDeleting(false);
       setDeleteConfirmOpen(false);
@@ -209,9 +216,9 @@ export default function GroupsPanel({
             />
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
+              startIcon={isCreating ? <CircularProgress size={18} color="inherit" /> : <AddIcon />}
               onClick={handleCreateGroup}
-              disabled={!newGroup.name.trim()}
+              disabled={isCreating || !newGroup.name.trim()}
               sx={{
                 height: 56,
                 borderRadius: 2,
@@ -231,7 +238,7 @@ export default function GroupsPanel({
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               }}
             >
-              Create
+              {isCreating ? 'Creating...' : 'Create'}
             </Button>
           </Box>
         </CardContent>

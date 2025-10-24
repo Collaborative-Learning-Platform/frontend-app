@@ -6,7 +6,6 @@ import {
   TextField,
   IconButton,
   useTheme,
-  Chip,
   Fade,
 } from '@mui/material';
 import { Send, Circle } from '@mui/icons-material';
@@ -232,20 +231,6 @@ const GroupChat = ({
           >
             Group Chat
           </Typography>
-          <Chip
-            label={groupId}
-            size="small"
-            variant="outlined"
-            sx={{
-              height: 24,
-              fontSize: '0.75rem',
-              borderColor: theme.palette.primary.main,
-              color: theme.palette.primary.main,
-              '& .MuiChip-label': {
-                fontWeight: 600,
-              },
-            }}
-          />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Circle
@@ -258,18 +243,6 @@ const GroupChat = ({
           <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
             Online
           </Typography>
-          {/* <IconButton
-            size="small"
-            sx={{
-              color: theme.palette.text.secondary,
-              '&:hover': {
-                color: theme.palette.primary.main,
-                backgroundColor: theme.palette.action.hover,
-              },
-            }}
-          >
-            <MoreVert />
-          </IconButton> */}
         </Box>
       </Box>
 

@@ -142,6 +142,14 @@ export default function ProfilePage() {
       ...profileData,
       profile_picture: response.data.downloadUrl,
     });
+    // Update auth context so other components  can react
+    if (typeof (auth as any)?.setProfilePicture === 'function') {
+      try {
+        (auth as any).setProfilePicture(response.data.downloadUrl);
+      } catch (err) {
+        console.warn('Failed to update auth profile picture in context', err);
+      }
+    }
   };
 
   const handleFileChange = async (
@@ -247,21 +255,7 @@ export default function ProfilePage() {
     }
   }, [auth?.user_id]);
 
-  // // Update profile data when auth context data changes
-  // useEffect(() => {
-  //   if (auth && !auth.loading) {
-  //     console.log("Auth context data:", { name: auth.name, email: auth.email, role: auth.role });
-  //     // Use auth context as fallback if profile data is empty
-  //     if (auth.name && auth.email && auth.role) {
-  //       setProfileData(prevData => ({
-  //         ...prevData,
-  //         name: prevData.name || auth.name || "",
-  //         email: prevData.email || auth.email || "",
-  //         role: prevData.role || auth.role || "",
-  //       }));
-  //     }
-  //   }
-  // }, [auth?.name, auth?.email, auth?.role, auth?.loading]);
+
 
   const handleUpdateProfile = async () => {
     if (!auth?.user_id) {
@@ -433,7 +427,7 @@ export default function ProfilePage() {
                       sx={{ width: 80, height: 80, fontSize: 32 }}
                       src={profileData.profile_picture}
                     >
-                      JS
+                      {!profileData.profile_picture && <Skeleton variant="circular" width={80} height={80} animation="wave" />}
                     </Avatar>
                     <Box>
                       <Typography variant="body2">Profile Picture</Typography>
