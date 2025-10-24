@@ -6,7 +6,6 @@ import {
   TextField,
   IconButton,
   useTheme,
-  Chip,
   Fade,
 } from '@mui/material';
 import { Send, Circle } from '@mui/icons-material';
