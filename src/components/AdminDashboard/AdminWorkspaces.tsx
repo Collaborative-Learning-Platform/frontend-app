@@ -19,6 +19,7 @@ import CreateWorkspaceModal from "../workpsaces/CreateWorkspaceModal";
 import axiosInstance from "../../api/axiosInstance";
 import WorkspaceCard from "../workpsaces/WorkspaceCard";
 import { useNavigate } from "react-router-dom";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface Workspace {
   workspaceId: string;
@@ -37,6 +38,7 @@ export function WorkspaceManagement() {
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [workspaces, setWorkspaces] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showSnackbar } = useSnackbar();
 
   const fetchWorkspaces = async () => {
     try {
@@ -73,6 +75,7 @@ export function WorkspaceManagement() {
   }, []);
 
   function handleCreated(newWs: any) {
+    // notify user and refresh list from server so data stays consistent
     const mapped = {
       id: newWs?.id ?? Date.now(),
       name: newWs?.name ?? "New Workspace",
@@ -85,11 +88,13 @@ export function WorkspaceManagement() {
       lastActivity: "just now",
     };
     setWorkspaces((prev) => [mapped, ...prev]);
+    showSnackbar("Workspace created successfully", "success");
+    setIsWorkspaceModalOpen(false);
+    // refresh from server to ensure any server-side defaults are reflected
+    fetchWorkspaces();
   }
 
   const handleManageWorkspace = (workspace: any) => {
-    // setSelectedWorkspace(workspace);
-    // setIsManagementModalOpen(true);
     navigate(`/admin-workspaces/manage/${workspace.id}`);
   };
 
@@ -170,8 +175,6 @@ export function WorkspaceManagement() {
             ),
           }}
         />
-        <Button variant="outlined">Filter</Button>
-        <Button variant="outlined">Export</Button>
       </Box>
 
       {/* Workspaces */}
@@ -210,48 +213,7 @@ export function WorkspaceManagement() {
             ))}
       </Box>
 
-      {/* Quick Stats */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-        {[156, 2847, 1234, "89%"].map((val, i) => (
-          <Box
-            key={i}
-            sx={{
-              flex: {
-                xs: "1 1 100%",
-                sm: "1 1 calc(50% - 8px)",
-                md: "1 1 calc(25% - 12px)",
-              },
-            }}
-          >
-            <Card>
-              <CardContent sx={{ p: 2 }}>
-                {loading ? (
-                  <>
-                    <Skeleton width="50%" height={30} />
-                    <Skeleton width="70%" />
-                  </>
-                ) : (
-                  <>
-                    <Typography variant="h4" fontWeight="bold" gutterBottom>
-                      {val}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {
-                        [
-                          "Total Workspaces",
-                          "Total Participants",
-                          "Active Groups",
-                          "Engagement Rate",
-                        ][i]
-                      }
-                    </Typography>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </Box>
-        ))}
-      </Box>
+      
 
       <CreateWorkspaceModal
         open={isWorkspaceModalOpen}

@@ -8,7 +8,9 @@ type AuthContextType = {
   name: string | null;
   email: string | null;
   loading: boolean;
+  profilePicture: string | null;
   setAuth: (user_id: string, role: string) => void;
+  setProfilePicture: (url: string | null) => void;
   clearAuth: () => void;
 };
 
@@ -19,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user_id, setUser_id] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchUserData = async (userId: string) => {
@@ -31,6 +34,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const user = response.data.user;
         setName(user.name);
         setEmail(user.email);
+        
+        try {
+          const picRes = await axiosInstance.post(
+            '/storage/generate-profile-pic-download-url',
+            { userId }
+          );
+          if (picRes.data?.downloadUrl) {
+            setProfilePicture(picRes.data.downloadUrl);
+          } else {
+            setProfilePicture(null);
+          }
+        } catch (err) {
+          console.warn('Could not fetch profile picture URL', err);
+          setProfilePicture(null);
+        }
       } else {
         console.error("Failed to fetch user data");
       }
@@ -67,13 +85,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser_id(null);
     setName(null);
     setEmail(null);
+    setProfilePicture(null);
     localStorage.removeItem("user_id");
     localStorage.removeItem("role");
   };
 
   return (
     <AuthContext.Provider
-      value={{ role, user_id, name, email, loading, setAuth, clearAuth }}
+      value={{ role, user_id, name, email, loading, profilePicture, setProfilePicture, setAuth, clearAuth }}
     >
       {children}
     </AuthContext.Provider>

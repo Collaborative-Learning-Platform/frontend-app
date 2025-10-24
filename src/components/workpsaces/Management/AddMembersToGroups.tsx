@@ -52,6 +52,7 @@ interface Props {
   groupId: string | null;
   setSuccess: (msg: string | null) => void;
   setError: (msg: string | null) => void;
+  onMembersAdded?: () => void;
 }
 
 export default function AddMembersDialog({
@@ -61,6 +62,7 @@ export default function AddMembersDialog({
   groupId,
   setSuccess,
   setError,
+  onMembersAdded,
 }: Props) {
   const theme = useTheme();
   const [workspaceUsers, setWorkspaceUsers] = useState<User[]>([]);
@@ -184,6 +186,14 @@ export default function AddMembersDialog({
       console.log("AddMembers response:", res);
       if (res.data.success) {
         setSuccess("Members added successfully");
+        // Notify parent that members were added so it can refresh data (e.g., header)
+        if (typeof onMembersAdded === 'function') {
+          try {
+            onMembersAdded();
+          } catch (err) {
+            console.warn('onMembersAdded callback threw an error', err);
+          }
+        }
         onClose();
         setSelectedUsers([]);
         setExistingMembers([]);

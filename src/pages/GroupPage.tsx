@@ -74,35 +74,38 @@ const GroupPage = () => {
     fetchWorkspaceData(workspaceId!);
   }, [workspaceId]);
 
+  // make fetchGroupData available to be called after adding members
+  const fetchGroupData = async (gId: string) => {
+    if (!gId) return;
+    try {
+      const response = await axiosInstance.get(
+        `/workspace/groups/${gId}/fetchDetails`
+      );
+      console.log('Fetched group data:', response.data);
+      // Use the URL parameter groupId which is guaranteed to be correct
+      setGroupData({
+        id: gId, // Use the URL parameter directly
+        name: `${response.data.data.name}` || 'Group Name',
+        description:
+          response.data.data.description || 'No description available',
+        memberCount: response.data.data.memberCount || 0,
+        members: response.data.data.members || [],
+        recentActivity:
+          response.data.data.recentActivity || 'No recent activity',
+        type: response.data.data.type || 'Custom',
+      });
+    } catch (error) {
+      console.error('Error fetching group data:', error);
+    }
+  };
+
   useEffect(() => {
     if (!groupId) {
       navigate(-1);
       return;
     }
 
-    const fetchGroupData = async (groupId: string) => {
-      try {
-        const response = await axiosInstance.get(
-          `/workspace/groups/${groupId}/fetchDetails`
-        );
-        console.log('Fetched group data:', response.data);
-        // Use the URL parameter groupId which is guaranteed to be correct
-        setGroupData({
-          id: groupId, // Use the URL parameter directly
-          name: `${response.data.data.name}` || 'Group Name',
-          description:
-            response.data.data.description || 'No description available',
-          memberCount: response.data.data.memberCount || 0,
-          members: response.data.data.members || [],
-          recentActivity:
-            response.data.data.recentActivity || 'No recent activity',
-          type: response.data.data.type || 'Custom',
-        });
-      } catch (error) {
-        console.error('Error fetching group data:', error);
-      }
-    };
-    fetchGroupData(groupId!);
+    fetchGroupData(groupId);
   }, [groupId, workspaceName]);
 
   const handleTabChange = async (_: any, newValue: number) => {
@@ -247,6 +250,9 @@ const GroupPage = () => {
         groupId={groupId || ''}
         setSuccess={(msg) => showSnackbar(msg || '', 'success')}
         setError={(msg) => showSnackbar(msg || '', 'error')}
+        onMembersAdded={() => {
+          if (groupId) fetchGroupData(groupId);
+        }}
       />
     </Box>
   );
