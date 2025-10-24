@@ -27,11 +27,9 @@ import {
   Description as FileTextIcon,
   Add as PlusIcon,
   Search as SearchIcon,
-  // FilterList as FilterIcon,
   GridView as Grid3X3Icon,
   ViewList as ListIcon,
   People as UsersIcon,
-  // Star as StarIcon,
   MoreHoriz as MoreHorizontalIcon,
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
@@ -39,6 +37,7 @@ import NewDocumentDialog from '../components/UserDocuments/NewDocumentDialog';
 import { useAuth } from '../contexts/Authcontext';
 import axiosInstance from '../api/axiosInstance';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import LoadingComponent from '../components/LoadingComponent';
 
 // Interface for document response from API
 interface DocumentResponse {
@@ -76,6 +75,7 @@ export const UserDocuments = () => {
     'grid'
   );
   const [deleting, setDeleting] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [workspaceDocuments, setWorkspaceDocuments] = useState<
@@ -148,6 +148,7 @@ export const UserDocuments = () => {
     title: string;
     groupId: string;
   }) => {
+    setCreating(true);
     try {
       const createdBy = auth.user_id;
       const res = await axiosInstance.post('/documents/create', {
@@ -182,9 +183,13 @@ export const UserDocuments = () => {
         addContributor(res.data.data.id);
       } else {
         console.warn('Document creation failed:', res.data);
+        snackBar.showSnackbar('Failed to create document', 'error');
       }
     } catch (error) {
       console.error('Error creating document:', error);
+      snackBar.showSnackbar('Error creating document', 'error');
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -323,482 +328,328 @@ export const UserDocuments = () => {
   );
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: theme.palette.background.default,
-      }}
-    >
-      {/* Header */}
-      <Card
-        elevation={0}
+    <>
+      {/* Loading Overlay */}
+      {(isLoading || creating) && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <LoadingComponent fullPage={true} />
+        </Box>
+      )}
+
+      <Box
         sx={{
-          borderRadius: 0,
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: theme.palette.background.default,
         }}
       >
-        <CardContent sx={{ py: 3, px: { xs: 2, sm: 3 } }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: { xs: 'flex-start', sm: 'center' },
-              justifyContent: 'space-between',
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 2, sm: 0 },
-            }}
-          >
+        {/* Header */}
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 0,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <CardContent sx={{ py: 3, px: { xs: 2, sm: 3 } }}>
             <Box
               sx={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: { xs: 1, sm: 2 },
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                justifyContent: 'space-between',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: { xs: 2, sm: 0 },
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FileTextIcon
-                  sx={{
-                    fontSize: { xs: 24, sm: 28 },
-                    color: theme.palette.primary.main,
-                  }}
-                />
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: { xs: 1, sm: 2 },
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <FileTextIcon
+                    sx={{
+                      fontSize: { xs: 24, sm: 28 },
+                      color: theme.palette.primary.main,
+                    }}
+                  />
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+                  >
+                    My Documents
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  width: { xs: '100%', sm: 'auto' },
+                }}
+              >
+                <Button
+                  variant="contained"
+                  startIcon={<PlusIcon />}
+                  onClick={() => setDialogOpen(true)}
                 >
-                  My Documents
-                </Typography>
+                  New Document
+                </Button>
+                <NewDocumentDialog
+                  open={dialogOpen}
+                  onClose={() => setDialogOpen(false)}
+                  onCreate={handleCreate}
+                  userId={auth.user_id ?? ''}
+                />
               </Box>
             </Box>
+          </CardContent>
+        </Card>
 
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: { xs: '100%', sm: 'auto' },
-              }}
-            >
-              <Button
-                variant="contained"
-                startIcon={<PlusIcon />}
-                onClick={() => setDialogOpen(true)}
-              >
-                New Document
-              </Button>
-              <NewDocumentDialog
-                open={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                onCreate={handleCreate}
-                userId={auth.user_id ?? ''}
-              />
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* Main Content */}
-      <Box sx={{ flex: 1, overflow: 'auto', py: { xs: 2, sm: 3 } }}>
-        <Box sx={{ maxWidth: 'lg', mx: 'auto', width: '100%' }}>
-          {/* Search Documents Section */}
-          <Box sx={{ mb: theme.spacing(3), width: '100%' }}>
-            <Typography variant="h5" fontWeight="bold">
-              Document Library
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Manage and access your document collections
-            </Typography>
-          </Box>
-
-          <Card sx={{ mb: theme.spacing(3) }}>
-            <CardHeader
-              avatar={<SearchIcon color="primary" />}
-              title="Search Documents"
-              subheader="Find your documents by title, content, or owner"
-            />
-            <CardContent>
-              <TextField
-                fullWidth
-                placeholder="Search documents..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Workspaces and Documents */}
-          {/* Error State */}
-          {error && (
-            <Box
-              sx={{
-                py: theme.spacing(4),
-                mx: 'auto',
-              }}
-            >
-              <Alert severity="error">
-                <AlertTitle align="left">Error</AlertTitle>
-                {error}
-              </Alert>
-            </Box>
-          )}
-          {/* Loading State for Workspaces */}
-          {isLoading ? (
-            <Box
-              sx={{
-                textAlign: 'center',
-                my: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 2,
-              }}
-            >
-              <CircularProgress size={40} />
-              <Typography variant="body1" color="text.secondary">
-                Loading your documents...
+        {/* Main Content */}
+        <Box sx={{ flex: 1, overflow: 'auto', py: { xs: 2, sm: 3 } }}>
+          <Box sx={{ maxWidth: 'lg', mx: 'auto', width: '100%' }}>
+            {/* Search Documents Section */}
+            <Box sx={{ mb: theme.spacing(3), width: '100%' }}>
+              <Typography variant="h5" fontWeight="bold">
+                Document Library
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Manage and access your document collections
               </Typography>
             </Box>
-          ) : workspaceDocuments.length > 0 ? (
-            <Box sx={{ mb: 4 }}>
-              <Card
-                elevation={1}
+
+            <Card sx={{ mb: theme.spacing(3) }}>
+              <CardHeader
+                avatar={<SearchIcon color="primary" />}
+                title="Search Documents"
+                subheader="Find your documents by title, content, or owner"
+              />
+              <CardContent>
+                <TextField
+                  fullWidth
+                  placeholder="Search documents..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Workspaces and Documents */}
+            {/* Error State */}
+            {error && (
+              <Box
                 sx={{
-                  mb: 2,
-                  background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.primary.light}15)`,
-                  borderLeft: `4px solid ${theme.palette.primary.main}`,
-                  overflow: 'visible',
+                  py: theme.spacing(4),
+                  mx: 'auto',
                 }}
               >
-                {/* Error State */}
-                {error && (
-                  <Box
-                    sx={{
-                      py: theme.spacing(4),
-                      mx: 'auto',
-                    }}
-                  >
-                    <Alert severity="error">
-                      <AlertTitle align="left">Error</AlertTitle>
-                      {error}
-                    </Alert>
-                  </Box>
-                )}
-                <CardContent sx={{ py: 1.5 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: { xs: 'flex-start', sm: 'center' },
-                      justifyContent: 'space-between',
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      gap: { xs: 1, sm: 0 },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <UsersIcon color="primary" />
+                <Alert severity="error">
+                  <AlertTitle align="left">Error</AlertTitle>
+                  {error}
+                </Alert>
+              </Box>
+            )}
+            {/* Loading State for Workspaces */}
+            {isLoading ? (
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  my: 4,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={40} />
+                <Typography variant="body1" color="text.secondary">
+                  Loading your documents...
+                </Typography>
+              </Box>
+            ) : workspaceDocuments.length > 0 ? (
+              <Box sx={{ mb: 4 }}>
+                <Card
+                  elevation={1}
+                  sx={{
+                    mb: 2,
+                    background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.primary.light}15)`,
+                    borderLeft: `4px solid ${theme.palette.primary.main}`,
+                    overflow: 'visible',
+                  }}
+                >
+                  {/* Error State */}
+                  {error && (
+                    <Box
+                      sx={{
+                        py: theme.spacing(4),
+                        mx: 'auto',
+                      }}
+                    >
+                      <Alert severity="error">
+                        <AlertTitle align="left">Error</AlertTitle>
+                        {error}
+                      </Alert>
+                    </Box>
+                  )}
+                  <CardContent sx={{ py: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: { xs: 'flex-start', sm: 'center' },
+                        justifyContent: 'space-between',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: { xs: 1, sm: 0 },
+                      }}
+                    >
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
+                        <UsersIcon color="primary" />
+                        <Typography
+                          variant="h6"
+                          fontWeight="600"
+                          sx={{ color: theme.palette.primary.main }}
+                        >
+                          {searchQuery
+                            ? `Search Results (${totalFilteredDocuments})`
+                            : 'My Workspaces'}
+                        </Typography>
+                      </Box>
+                      <ToggleButtonGroup
+                        value={viewModeWorkspace}
+                        exclusive
+                        onChange={handleWorkspaceViewModeChange}
+                        size="small"
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
+                      >
+                        <ToggleButton
+                          value="grid"
+                          sx={{ flex: { xs: 1, sm: 'none' } }}
+                        >
+                          <Grid3X3Icon />
+                        </ToggleButton>
+                        <ToggleButton
+                          value="list"
+                          sx={{ flex: { xs: 1, sm: 'none' } }}
+                        >
+                          <ListIcon />
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    </Box>
+                  </CardContent>
+                </Card>
+
+                {filteredWorkspaceDocuments.map((workspace) => (
+                  <Box key={workspace.workspaceId} sx={{ mb: 4 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 2,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        pb: 1,
+                      }}
+                    >
                       <Typography
-                        variant="h6"
+                        variant="subtitle1"
                         fontWeight="600"
                         sx={{ color: theme.palette.primary.main }}
                       >
-                        {searchQuery
-                          ? `Search Results (${totalFilteredDocuments})`
-                          : 'My Workspaces'}
+                        Workspace: {workspace.name}
                       </Typography>
                     </Box>
-                    <ToggleButtonGroup
-                      value={viewModeWorkspace}
-                      exclusive
-                      onChange={handleWorkspaceViewModeChange}
-                      size="small"
-                      sx={{ width: { xs: '100%', sm: 'auto' } }}
-                    >
-                      <ToggleButton
-                        value="grid"
-                        sx={{ flex: { xs: 1, sm: 'none' } }}
-                      >
-                        <Grid3X3Icon />
-                      </ToggleButton>
-                      <ToggleButton
-                        value="list"
-                        sx={{ flex: { xs: 1, sm: 'none' } }}
-                      >
-                        <ListIcon />
-                      </ToggleButton>
-                    </ToggleButtonGroup>
-                  </Box>
-                </CardContent>
-              </Card>
 
-              {filteredWorkspaceDocuments.map((workspace) => (
-                <Box key={workspace.workspaceId} sx={{ mb: 4 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mb: 2,
-                      borderBottom: `1px solid ${theme.palette.divider}`,
-                      pb: 1,
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle1"
-                      fontWeight="600"
-                      sx={{ color: theme.palette.primary.main }}
-                    >
-                      Workspace: {workspace.name}
-                    </Typography>
-                  </Box>
-
-                  {workspace.groups
-                    .filter((group) => group.documents.length > 0)
-                    .map((group) => (
-                      <Box key={group.groupId} sx={{ mb: 3 }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            mb: 1.5,
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle2"
-                            fontWeight="500"
-                            sx={{ color: theme.palette.primary.main }}
+                    {workspace.groups
+                      .filter((group) => group.documents.length > 0)
+                      .map((group) => (
+                        <Box key={group.groupId} sx={{ mb: 3 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              mb: 1.5,
+                            }}
                           >
-                            <Chip
-                              label={group.name}
-                              size="small"
-                              sx={{
-                                mr: 1,
-                                color: theme.palette.primary.main,
-                                borderColor: theme.palette.primary.main,
-                              }}
-                            />
-                            Group Documents
-                          </Typography>
-                        </Box>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="500"
+                              sx={{ color: theme.palette.primary.main }}
+                            >
+                              <Chip
+                                label={group.name}
+                                size="small"
+                                sx={{
+                                  mr: 1,
+                                  color: theme.palette.primary.main,
+                                  borderColor: theme.palette.primary.main,
+                                }}
+                              />
+                              Group Documents
+                            </Typography>
+                          </Box>
 
-                        {viewModeWorkspace === 'grid' ? (
-                          <Grid
-                            container
-                            spacing={2}
-                            sx={{ width: '100%', margin: 0 }}
-                          >
-                            {group.documents.map((doc) => (
-                              <Grid
-                                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-                                key={doc.documentId}
-                              >
-                                <Card
-                                  sx={{
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease-in-out',
-                                    height: { xs: 260, sm: 280 },
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    '&:hover': {
-                                      boxShadow: theme.shadows[4],
-                                      transform: 'translateY(-2px)',
-                                      '& .document-actions': {
-                                        opacity: 1,
-                                      },
-                                    },
-                                  }}
-                                  onClick={() =>
-                                    handleWorkspaceDocumentClick(doc, group)
-                                  }
+                          {viewModeWorkspace === 'grid' ? (
+                            <Grid
+                              container
+                              spacing={2}
+                              sx={{ width: '100%', margin: 0 }}
+                            >
+                              {group.documents.map((doc) => (
+                                <Grid
+                                  size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                                  key={doc.documentId}
                                 >
-                                  <CardHeader
-                                    sx={{ pb: 1 }}
-                                    title={
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: 1,
-                                        }}
-                                      >
-                                        <FileTextIcon />
-                                      </Box>
-                                    }
-                                    action={
-                                      <IconButton
-                                        size="small"
-                                        className="document-actions"
-                                        sx={{
-                                          opacity: 0.7,
-                                          transition: 'opacity 0.2s',
-                                        }}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleMenuOpen(e, doc);
-                                        }}
-                                      >
-                                        <MoreHorizontalIcon />
-                                      </IconButton>
-                                    }
-                                  />
-                                  <CardContent
+                                  <Card
                                     sx={{
-                                      pt: 0,
-                                      flex: 1,
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s ease-in-out',
+                                      height: { xs: 260, sm: 280 },
                                       display: 'flex',
                                       flexDirection: 'column',
+                                      '&:hover': {
+                                        boxShadow: theme.shadows[4],
+                                        transform: 'translateY(-2px)',
+                                        '& .document-actions': {
+                                          opacity: 1,
+                                        },
+                                      },
                                     }}
+                                    onClick={() =>
+                                      handleWorkspaceDocumentClick(doc, group)
+                                    }
                                   >
-                                    <Typography
-                                      variant="body1"
-                                      fontWeight="500"
-                                      sx={{
-                                        mb: 2,
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                      }}
-                                      title={doc.title}
-                                    >
-                                      {doc.title}
-                                    </Typography>
-                                    <Box
-                                      sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 1,
-                                        flex: 1,
-                                      }}
-                                    >
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: 1,
-                                        }}
-                                      >
-                                        <CalendarIcon sx={{ fontSize: 14 }} />
-                                        <Typography
-                                          variant="body2"
-                                          color="text.secondary"
-                                        >
-                                          {new Date(
-                                            doc.lastEdited
-                                          ).toLocaleDateString()}{' '}
-                                          {new Date(
-                                            doc.lastEdited
-                                          ).toLocaleTimeString([], {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                          })}
-                                        </Typography>
-                                      </Box>
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: 1,
-                                        }}
-                                      >
-                                        <UsersIcon sx={{ fontSize: 14 }} />
-                                        <Typography
-                                          variant="body2"
-                                          color="text.secondary"
-                                        >
-                                          {doc.contributorIds?.length || 1}{' '}
-                                          collaborators
-                                        </Typography>
-                                      </Box>
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'space-between',
-                                          mt: 'auto',
-                                        }}
-                                      >
-                                        <Typography
-                                          variant="caption"
-                                          color="text.secondary"
-                                        >
-                                          {doc.sizeInBytes < 1024
-                                            ? `${doc.sizeInBytes} B`
-                                            : doc.sizeInBytes < 1048576
-                                            ? `${(
-                                                doc.sizeInBytes / 1024
-                                              ).toFixed(1)} KB`
-                                            : `${(
-                                                doc.sizeInBytes / 1048576
-                                              ).toFixed(1)} MB`}
-                                        </Typography>
-                                        <Chip
-                                          label={group.name}
-                                          size="small"
-                                          variant="outlined"
-                                        />
-                                      </Box>
-                                    </Box>
-                                  </CardContent>
-                                </Card>
-                              </Grid>
-                            ))}
-                          </Grid>
-                        ) : (
-                          <List>
-                            {group.documents.map((doc) => (
-                              <Box key={doc.documentId}>
-                                <Card
-                                  sx={{
-                                    mb: 1,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease-in-out',
-                                    '&:hover': {
-                                      boxShadow: theme.shadows[2],
-                                    },
-                                  }}
-                                  onClick={() =>
-                                    navigate(`/document-editor/${doc.name}`)
-                                  }
-                                >
-                                  <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
-                                    <Box
-                                      sx={{
-                                        display: 'flex',
-                                        alignItems: {
-                                          xs: 'flex-start',
-                                          sm: 'center',
-                                        },
-                                        justifyContent: 'space-between',
-                                        flexDirection: {
-                                          xs: 'column',
-                                          sm: 'row',
-                                        },
-                                        gap: { xs: 1, sm: 0 },
-                                      }}
-                                    >
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          alignItems: {
-                                            xs: 'flex-start',
-                                            sm: 'center',
-                                          },
-                                          gap: 2,
-                                          flex: 1,
-                                          flexDirection: {
-                                            xs: 'column',
-                                            sm: 'row',
-                                          },
-                                        }}
-                                      >
+                                    <CardHeader
+                                      sx={{ pb: 1 }}
+                                      title={
                                         <Box
                                           sx={{
                                             display: 'flex',
@@ -808,66 +659,15 @@ export const UserDocuments = () => {
                                         >
                                           <FileTextIcon />
                                         </Box>
-                                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                                          <Typography
-                                            fontWeight="500"
-                                            sx={{
-                                              overflow: 'hidden',
-                                              textOverflow: 'ellipsis',
-                                              whiteSpace: 'nowrap',
-                                            }}
-                                          >
-                                            {doc.title}
-                                          </Typography>
-                                        </Box>
-                                      </Box>
-                                      <Box
-                                        sx={{
-                                          display: 'flex',
-                                          alignItems: {
-                                            xs: 'flex-start',
-                                            sm: 'center',
-                                          },
-                                          gap: { xs: 2, sm: 3 },
-                                          flexDirection: {
-                                            xs: 'column',
-                                            sm: 'row',
-                                          },
-                                          width: { xs: '100%', sm: 'auto' },
-                                        }}
-                                      >
-                                        <Typography
-                                          variant="body2"
-                                          color="text.secondary"
-                                          sx={{ order: { xs: 1, sm: 0 } }}
-                                        >
-                                          {new Date(
-                                            doc.lastEdited
-                                          ).toLocaleDateString()}
-                                        </Typography>
-                                        <Box
-                                          sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 0.5,
-                                            order: { xs: 0, sm: 1 },
-                                          }}
-                                        >
-                                          <UsersIcon sx={{ fontSize: 14 }} />
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                          >
-                                            {doc.contributorIds?.length || 1}
-                                          </Typography>
-                                        </Box>
-                                        <Chip
-                                          label={group.name}
-                                          size="small"
-                                          variant="outlined"
-                                        />
+                                      }
+                                      action={
                                         <IconButton
                                           size="small"
+                                          className="document-actions"
+                                          sx={{
+                                            opacity: 0.7,
+                                            transition: 'opacity 0.2s',
+                                          }}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleMenuOpen(e, doc);
@@ -875,99 +675,328 @@ export const UserDocuments = () => {
                                         >
                                           <MoreHorizontalIcon />
                                         </IconButton>
+                                      }
+                                    />
+                                    <CardContent
+                                      sx={{
+                                        pt: 0,
+                                        flex: 1,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="body1"
+                                        fontWeight="500"
+                                        sx={{
+                                          mb: 2,
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap',
+                                        }}
+                                        title={doc.title}
+                                      >
+                                        {doc.title}
+                                      </Typography>
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          gap: 1,
+                                          flex: 1,
+                                        }}
+                                      >
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <CalendarIcon sx={{ fontSize: 14 }} />
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                          >
+                                            {new Date(
+                                              doc.lastEdited
+                                            ).toLocaleDateString()}{' '}
+                                            {new Date(
+                                              doc.lastEdited
+                                            ).toLocaleTimeString([], {
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                            })}
+                                          </Typography>
+                                        </Box>
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <UsersIcon sx={{ fontSize: 14 }} />
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                          >
+                                            {doc.contributorIds?.length || 1}{' '}
+                                            collaborators
+                                          </Typography>
+                                        </Box>
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            mt: 'auto',
+                                          }}
+                                        >
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            {doc.sizeInBytes < 1024
+                                              ? `${doc.sizeInBytes} B`
+                                              : doc.sizeInBytes < 1048576
+                                              ? `${(
+                                                  doc.sizeInBytes / 1024
+                                                ).toFixed(1)} KB`
+                                              : `${(
+                                                  doc.sizeInBytes / 1048576
+                                                ).toFixed(1)} MB`}
+                                          </Typography>
+                                          <Chip
+                                            label={group.name}
+                                            size="small"
+                                            variant="outlined"
+                                          />
+                                        </Box>
                                       </Box>
-                                    </Box>
-                                  </CardContent>
-                                </Card>
-                              </Box>
-                            ))}
-                          </List>
-                        )}
-                      </Box>
-                    ))}
-                </Box>
-              ))}
-            </Box>
-          ) : !error ? (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: 8,
-                px: 4,
-                textAlign: 'center',
-              }}
-            >
+                                    </CardContent>
+                                  </Card>
+                                </Grid>
+                              ))}
+                            </Grid>
+                          ) : (
+                            <List>
+                              {group.documents.map((doc) => (
+                                <Box key={doc.documentId}>
+                                  <Card
+                                    sx={{
+                                      mb: 1,
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s ease-in-out',
+                                      '&:hover': {
+                                        boxShadow: theme.shadows[2],
+                                      },
+                                    }}
+                                    onClick={() =>
+                                      navigate(`/document-editor/${doc.name}`)
+                                    }
+                                  >
+                                    <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: {
+                                            xs: 'flex-start',
+                                            sm: 'center',
+                                          },
+                                          justifyContent: 'space-between',
+                                          flexDirection: {
+                                            xs: 'column',
+                                            sm: 'row',
+                                          },
+                                          gap: { xs: 1, sm: 0 },
+                                        }}
+                                      >
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: {
+                                              xs: 'flex-start',
+                                              sm: 'center',
+                                            },
+                                            gap: 2,
+                                            flex: 1,
+                                            flexDirection: {
+                                              xs: 'column',
+                                              sm: 'row',
+                                            },
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: 1,
+                                            }}
+                                          >
+                                            <FileTextIcon />
+                                          </Box>
+                                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography
+                                              fontWeight="500"
+                                              sx={{
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                              }}
+                                            >
+                                              {doc.title}
+                                            </Typography>
+                                          </Box>
+                                        </Box>
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: {
+                                              xs: 'flex-start',
+                                              sm: 'center',
+                                            },
+                                            gap: { xs: 2, sm: 3 },
+                                            flexDirection: {
+                                              xs: 'column',
+                                              sm: 'row',
+                                            },
+                                            width: { xs: '100%', sm: 'auto' },
+                                          }}
+                                        >
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                            sx={{ order: { xs: 1, sm: 0 } }}
+                                          >
+                                            {new Date(
+                                              doc.lastEdited
+                                            ).toLocaleDateString()}
+                                          </Typography>
+                                          <Box
+                                            sx={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: 0.5,
+                                              order: { xs: 0, sm: 1 },
+                                            }}
+                                          >
+                                            <UsersIcon sx={{ fontSize: 14 }} />
+                                            <Typography
+                                              variant="body2"
+                                              color="text.secondary"
+                                            >
+                                              {doc.contributorIds?.length || 1}
+                                            </Typography>
+                                          </Box>
+                                          <Chip
+                                            label={group.name}
+                                            size="small"
+                                            variant="outlined"
+                                          />
+                                          <IconButton
+                                            size="small"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleMenuOpen(e, doc);
+                                            }}
+                                          >
+                                            <MoreHorizontalIcon />
+                                          </IconButton>
+                                        </Box>
+                                      </Box>
+                                    </CardContent>
+                                  </Card>
+                                </Box>
+                              ))}
+                            </List>
+                          )}
+                        </Box>
+                      ))}
+                  </Box>
+                ))}
+              </Box>
+            ) : !error ? (
               <Box
                 sx={{
-                  mb: 3,
-                  opacity: 0.5,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  py: 8,
+                  px: 4,
+                  textAlign: 'center',
                 }}
               >
-                <FileTextIcon
+                <Box
                   sx={{
-                    fontSize: 120,
-                    color: theme.palette.text.secondary,
+                    mb: 3,
+                    opacity: 0.5,
                   }}
-                />
+                >
+                  <FileTextIcon
+                    sx={{
+                      fontSize: 120,
+                      color: theme.palette.text.secondary,
+                    }}
+                  />
+                </Box>
+                <Typography
+                  variant="h5"
+                  fontWeight="600"
+                  sx={{ mb: 2, color: theme.palette.text.primary }}
+                >
+                  No Workspaces Found
+                </Typography>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ mb: 4, maxWidth: 400 }}
+                >
+                  Join a workspace to get started and begin collaborating on
+                  documents with your team.
+                </Typography>
               </Box>
-              <Typography
-                variant="h5"
-                fontWeight="600"
-                sx={{ mb: 2, color: theme.palette.text.primary }}
-              >
-                No Workspaces Found
-              </Typography>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ mb: 4, maxWidth: 400 }}
-              >
-                Join a workspace to get started and begin collaborating on
-                documents with your team.
-              </Typography>
-            </Box>
-          ) : null}
+            ) : null}
+          </Box>
         </Box>
-      </Box>
 
-      {/* Document Actions Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem
-          onClick={handleDeleteMenuClick}
-          sx={{ color: 'error.main' }}
-          disableRipple
+        {/* Document Actions Menu */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          Delete
-        </MenuItem>
-      </Menu>
-      {deleting && (
-        <Card
-          sx={{
-            position: 'fixed',
-            bottom: 20,
-            right: 20,
-            width: 250,
-            p: 2,
-            boxShadow: 3,
-            zIndex: 1000,
-          }}
-        >
-          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
-            Deleting document set...
-          </Typography>
-          <LinearProgress color="error" />
-        </Card>
-      )}
-    </Box>
+          <MenuItem
+            onClick={handleDeleteMenuClick}
+            sx={{ color: 'error.main' }}
+            disableRipple
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+        {deleting && (
+          <Card
+            sx={{
+              position: 'fixed',
+              bottom: 20,
+              right: 20,
+              width: 250,
+              p: 2,
+              boxShadow: 3,
+              zIndex: 1000,
+            }}
+          >
+            <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+              Deleting document set...
+            </Typography>
+            <LinearProgress color="error" />
+          </Card>
+        )}
+      </Box>
+    </>
   );
 };
 
