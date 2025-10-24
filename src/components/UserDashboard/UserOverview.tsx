@@ -42,7 +42,7 @@ interface RecentActivityLog {
 }
 
 export function UserOverview() {
-  const { user_id, loading: authLoading } = useAuth();
+  const { user_id } = useAuth();
   const groupIdNameMap: Record<string, string> = {};
   const [dashboardData, setDashboardData] = useState<{
     workspaces: number;
