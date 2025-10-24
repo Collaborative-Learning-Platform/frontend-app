@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Skeleton, Card, CardContent } from "@mui/material";
+import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Skeleton, Card, CardContent, CircularProgress } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import GroupCard from "../components/workpsaces/GroupCard";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,6 +28,7 @@ const WorkspacePage = () => {
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
   
   const { showSnackbar } = useSnackbar();
   
@@ -69,6 +70,7 @@ const WorkspacePage = () => {
       showSnackbar("Group name is required", "error");
       return;
     }
+    setIsCreating(true);
     try {
       const response = await axiosInstance.post(`/workspace/groups/customGroup/create`, {
         workspaceId,
@@ -89,6 +91,8 @@ const WorkspacePage = () => {
       }
     } catch (error: any) {
       showSnackbar(error?.response?.data?.message || "Failed to create group", "error");
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -160,7 +164,7 @@ const WorkspacePage = () => {
             startIcon={<AddIcon />}
             onClick={() => setCreateGroupOpen(true)}
             size="small"
-            disabled={loading}
+            disabled={loading || isCreating}
           >
             Create Group
           </Button>
@@ -218,8 +222,8 @@ const WorkspacePage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleCreateGroup} variant="contained">
-            Create Group
+          <Button onClick={handleCreateGroup} variant="contained" disabled={isCreating} startIcon={isCreating ? <CircularProgress size={18} color="inherit" /> : null}>
+            {isCreating ? 'Creating...' : 'Create Group'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -133,9 +133,6 @@ const WorkspaceCard = React.memo(
               <Typography variant="caption" color="text.secondary">
                 Created: {workspace.created}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Last activity: {workspace.lastActivity}
-              </Typography>
             </Box>
           </Box>
 
@@ -150,6 +147,7 @@ const WorkspaceCard = React.memo(
                 Manage
               </Button>
             )}
+            {role !== "admin" && (
             <Button
               size="small"
               variant="contained"
@@ -158,6 +156,7 @@ const WorkspaceCard = React.memo(
             >
               View
             </Button>
+    )}
           </Box>
         </CardContent>
       </Card>

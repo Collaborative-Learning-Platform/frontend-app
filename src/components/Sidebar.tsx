@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Drawer,
@@ -31,7 +31,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import IconButton from '@mui/material/IconButton';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/Authcontext';
-import axiosInstance from '../api/axiosInstance';
 
 const drawerWidth = 280;
 
@@ -169,37 +168,13 @@ export default function Sidebar({
   isMobile: isMobileProp,
 }: SidebarProps) {
   const theme = useTheme();
-  const { role, user_id, name } = useAuth();
-  const [s3ProfilePictureDownloadUrl, setS3ProfilePictureDownloadURL] =
-    useState<string | null>(null);
+  const { role, name, profilePicture } = useAuth();
   const isMobileDefault = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = isMobileProp !== undefined ? isMobileProp : isMobileDefault;
   const navigate = useNavigate();
   const location = useLocation();
 
-  const fetchProfilePicture = async () => {
-    if (!user_id) return;
 
-    try {
-      const response = await axiosInstance.post(
-        '/storage/generate-profile-pic-download-url',
-        { userId: user_id }
-      );
-      if (response.data?.downloadUrl) {
-        setS3ProfilePictureDownloadURL(response.data.downloadUrl);
-      }
-    } catch (error) {
-      console.error('Error fetching profile picture:', error);
-      // Don't set error state, just keep the default avatar
-    }
-  };
-
-  // Fetch profile picture when user_id changes
-  useEffect(() => {
-    if (user_id) {
-      fetchProfilePicture();
-    }
-  }, [user_id]);
 
   // Fallback state for when component is used standalone
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
@@ -396,7 +371,7 @@ export default function Sidebar({
           onClick={() => navigate('/user-profile')}
         >
           <Avatar
-            src={s3ProfilePictureDownloadUrl || undefined}
+            src={profilePicture || undefined}
             sx={{
               width: 36,
               height: 36,
