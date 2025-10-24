@@ -309,7 +309,7 @@ const Tiptap = ({ ydoc, provider, documentData, isConnected }: TiptapProps) => {
             textarea.value = selectedText;
             document.body.appendChild(textarea);
             textarea.select();
-            document.execCommand('copy');
+            await navigator.clipboard.writeText(selectedText);
             document.body.removeChild(textarea);
             return true;
           }

@@ -20,7 +20,6 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ShareIcon from '@mui/icons-material/Share';
 import BookIcon from '@mui/icons-material/Book';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/Authcontext';
@@ -119,25 +118,15 @@ export const FlashCardLibrary = () => {
     });
   };
 
-  const handleShareSet = () => {
-    if (!selectedSetId) return;
-    const selectedSet = getSelectedSet();
-    if (selectedSet) {
-      console.log(`Sharing set: ${selectedSet.title}`);
-      // Implement sharing logic here
-    }
-    handleMenuClose();
-  };
-
-  const handleEditSet = () => {
-    if (!selectedSetId) return;
-    const selectedSet = getSelectedSet();
-    if (selectedSet) {
-      console.log(`Editing set: ${selectedSet.title}`);
-      // Navigate to edit page or open edit modal
-    }
-    handleMenuClose();
-  };
+  // const handleEditSet = () => {
+  //   if (!selectedSetId) return;
+  //   const selectedSet = getSelectedSet();
+  //   if (selectedSet) {
+  //     console.log(`Editing set: ${selectedSet.title}`);
+  //     // Navigate to edit page or open edit modal
+  //   }
+  //   handleMenuClose();
+  // };
 
   const handleDeleteSet = async () => {
     if (!selectedSetId) return;
@@ -412,11 +401,7 @@ export const FlashCardLibrary = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleShareSet}>
-          <ShareIcon sx={{ mr: 1 }} />
-          Share
-        </MenuItem>
-        <MenuItem onClick={handleEditSet}>Edit</MenuItem>
+        {/* <MenuItem onClick={handleEditSet}>Edit</MenuItem> */}
         <MenuItem onClick={handleDeleteSet} sx={{ color: 'error.main' }}>
           Delete
         </MenuItem>

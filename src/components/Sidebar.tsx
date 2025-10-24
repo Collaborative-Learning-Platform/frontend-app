@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -14,7 +14,7 @@ import {
   alpha,
   useMediaQuery,
   Avatar,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Dashboard,
   School,
@@ -24,18 +24,18 @@ import {
   Analytics,
   Group,
   Tune,
-} from "@mui/icons-material";
-import WorkspacesOutlineIcon from "@mui/icons-material/WorkspacesOutline";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
-import MenuIcon from "@mui/icons-material/Menu";
-import IconButton from "@mui/material/IconButton";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/Authcontext";
-import axiosInstance from "../api/axiosInstance";
+} from '@mui/icons-material';
+import WorkspacesOutlineIcon from '@mui/icons-material/WorkspacesOutline';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import MenuIcon from '@mui/icons-material/Menu';
+import IconButton from '@mui/material/IconButton';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/Authcontext';
+import axiosInstance from '../api/axiosInstance';
 
 const drawerWidth = 280;
 
-type Role = "user" | "tutor" | "admin";
+type Role = 'user' | 'tutor' | 'admin';
 
 interface NavItem {
   id?: string;
@@ -46,102 +46,95 @@ interface NavItem {
   roles?: Role[];
   badgeKey?: string;
   urgent?: boolean;
-  section?: "main" | "bottom";
+  section?: 'main' | 'bottom';
 }
 
 const navConfig: NavItem[] = [
   {
-    text: "Dashboard",
+    text: 'Dashboard',
     icon: <Dashboard />,
     pathByRole: {
-      user: "/user-dashboard",
-      tutor: "/tutor-dashboard",
-      admin: "/admin-dashboard",
+      user: '/user-dashboard',
+      tutor: '/tutor-dashboard',
+      admin: '/admin-analytics',
     },
-    roles: ["user", "tutor", "admin"],
-    section: "main",
+    roles: ['user', 'tutor', 'admin'],
+    section: 'main',
   },
   {
-    text: "Workspaces",
+    text: 'Workspaces',
     icon: <WorkspacesOutlineIcon />,
-    path: "/user-workspaces",
-    roles: ["user", "tutor"],
-    badgeKey: "workspaces",
+    path: '/user-workspaces',
+    roles: ['user', 'tutor'],
+    badgeKey: 'workspaces',
     urgent: true,
-    section: "main",
+    section: 'main',
   },
   {
-    text: "Study Plans",
+    text: 'Study Plans',
     icon: <Assignment />,
-    path: "/study-plans",
-    roles: ["user"],
-    section: "main",
+    path: '/study-plans',
+    roles: ['user'],
+    section: 'main',
   },
   {
-    text: "Flashcards",
+    text: 'Flashcards',
     icon: <Quiz />,
-    path: "/flashcard-library",
-    roles: ["user"],
-    section: "main",
+    path: '/flashcard-library',
+    roles: ['user'],
+    section: 'main',
   },
   {
-    text: "Documents",
+    text: 'Documents',
     icon: <FileCopyIcon />,
-    path: "/user-documents",
-    roles: ["user", "tutor"],
-    section: "main",
+    path: '/user-documents',
+    roles: ['user', 'tutor'],
+    section: 'main',
   },
   {
-    text: "Create Quiz",
+    text: 'Create Quiz',
     icon: <Quiz />,
-    path: "/quiz",
-    roles: ["tutor"],
-    section: "main",
+    path: '/quiz',
+    roles: ['tutor'],
+    section: 'main',
   },
   {
-    text: "Quiz Analytics",
+    text: 'Quiz Analytics',
     icon: <Analytics />,
-    path: "/tutor-analytics",
-    roles: ["tutor"],
-    section: "main",
+    path: '/tutor-analytics',
+    roles: ['tutor'],
+    section: 'main',
   },
   {
-    text: "User Management",
+    text: 'User Management',
     icon: <Group />,
-    path: "/admin-users",
-    roles: ["admin"],
-    section: "main",
+    path: '/admin-users',
+    roles: ['admin'],
+    section: 'main',
   },
   {
-    text: "Workspace Management",
+    text: 'Workspace Management',
     icon: <WorkspacesOutlineIcon />,
-    path: "/admin-workspaces",
-    badgeKey: "adminWorkspaces",
+    path: '/admin-workspaces',
+    badgeKey: 'adminWorkspaces',
     urgent: true,
-    roles: ["admin"],
-    section: "main",
-  },
-  {
-    text: "Analytics",
-    icon: <Analytics />,
-    path: "/admin-analytics",
-    roles: ["admin"],
-    section: "main",
+    roles: ['admin'],
+    section: 'main',
   },
 
   {
-    text: "Settings",
+    text: 'Settings',
     icon: <Settings />,
-    path: "/settings",
-    roles: ["user", "tutor"],
-    section: "bottom",
+    path: '/settings',
+    roles: ['user', 'tutor'],
+    section: 'bottom',
   },
   {
-    text: "System Settings",
+    text: 'System Settings',
     icon: <Tune />,
-    path: "/admin-settings",
-    roles: ["admin"],
-    section: "bottom",
+    path: '/admin-settings',
+    roles: ['admin'],
+    section: 'bottom',
   },
 ];
 
@@ -159,7 +152,7 @@ function resolveNavItems(
     .map((item) => ({
       ...item,
       path:
-        item.path ?? item.pathByRole?.[roleTyped as Role] ?? item.path ?? "/",
+        item.path ?? item.pathByRole?.[roleTyped as Role] ?? item.path ?? '/',
       badge: item.badgeKey ? badgeCounts[item.badgeKey] ?? 0 : undefined,
     }));
 }
@@ -170,20 +163,28 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobileProp }: SidebarProps) {
+export default function Sidebar({
+  mobileOpen = false,
+  onToggle,
+  isMobile: isMobileProp,
+}: SidebarProps) {
   const theme = useTheme();
   const { role, user_id, name } = useAuth();
-  const [s3ProfilePictureDownloadUrl, setS3ProfilePictureDownloadURL] = useState<string | null>(null);
-  const isMobileDefault = useMediaQuery(theme.breakpoints.down("md"));
+  const [s3ProfilePictureDownloadUrl, setS3ProfilePictureDownloadURL] =
+    useState<string | null>(null);
+  const isMobileDefault = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = isMobileProp !== undefined ? isMobileProp : isMobileDefault;
   const navigate = useNavigate();
   const location = useLocation();
 
   const fetchProfilePicture = async () => {
     if (!user_id) return;
-    
+
     try {
-      const response = await axiosInstance.post('/storage/generate-profile-pic-download-url', { userId: user_id });
+      const response = await axiosInstance.post(
+        '/storage/generate-profile-pic-download-url',
+        { userId: user_id }
+      );
       if (response.data?.downloadUrl) {
         setS3ProfilePictureDownloadURL(response.data.downloadUrl);
       }
@@ -202,7 +203,8 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
 
   // Fallback state for when component is used standalone
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
-  const isMobileOpen = mobileOpen !== undefined ? mobileOpen : internalMobileOpen;
+  const isMobileOpen =
+    mobileOpen !== undefined ? mobileOpen : internalMobileOpen;
 
   const handleDrawerToggle = () => {
     if (onToggle) {
@@ -224,16 +226,16 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
 
   const resolved = resolveNavItems(navConfig, role, badgeCounts);
   const filteredNavigationItems = resolved.filter(
-    (i) => i.section !== "bottom"
+    (i) => i.section !== 'bottom'
   );
-  const filteredBottomItems = resolved.filter((i) => i.section === "bottom");
+  const filteredBottomItems = resolved.filter((i) => i.section === 'bottom');
 
   const sidebarContent = (
     <Box
       sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         bgcolor: theme.palette.background.paper,
         borderRight: `1px solid ${theme.palette.divider}`,
       }}
@@ -241,8 +243,8 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
       <Box
         sx={{
           p: 1,
-          display: "flex",
-          alignItems: "center",
+          display: 'flex',
+          alignItems: 'center',
           gap: 2,
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
@@ -257,13 +259,13 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
         />
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: "text.primary" }}
+          sx={{ fontWeight: 600, color: 'text.primary' }}
         >
           Learni
         </Typography>
       </Box>
 
-      <Box sx={{ flex: 1, overflow: "auto", py: 1 }}>
+      <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
         <List sx={{ px: 2 }}>
           {filteredNavigationItems.map((item) => {
             const isActive =
@@ -278,29 +280,29 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
                       minHeight: 48,
                       bgcolor: isActive
                         ? alpha(theme.palette.primary.main, 0.08)
-                        : "transparent",
-                      color: isActive ? "primary.main" : "text.primary",
-                      "&:hover": {
+                        : 'transparent',
+                      color: isActive ? 'primary.main' : 'text.primary',
+                      '&:hover': {
                         bgcolor: isActive
                           ? alpha(theme.palette.primary.main, 0.12)
                           : alpha(theme.palette.action.hover, 0.04),
                       },
                       border: isActive
                         ? `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                        : "1px solid transparent",
+                        : '1px solid transparent',
                     }}
                   >
                     <ListItemIcon
                       sx={{
-                        color: "inherit",
+                        color: 'inherit',
                         minWidth: 40,
-                        "& .MuiSvgIcon-root": { fontSize: 22 },
+                        '& .MuiSvgIcon-root': { fontSize: 22 },
                       }}
                     >
                       {item.badge ? (
                         <Badge
                           badgeContent={item.badge}
-                          color={item.urgent ? "error" : "primary"}
+                          color={item.urgent ? 'error' : 'primary'}
                           max={99}
                         >
                           {item.icon}
@@ -313,7 +315,7 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
                       primary={item.text}
                       primaryTypographyProps={{
                         fontWeight: isActive ? 600 : 500,
-                        fontSize: "0.9rem",
+                        fontSize: '0.9rem',
                       }}
                     />
                   </ListItemButton>
@@ -324,7 +326,7 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
         </List>
       </Box>
 
-      <Box sx={{ mt: "auto" }}>
+      <Box sx={{ mt: 'auto' }}>
         <Divider sx={{ mx: 2, my: 2 }} />
 
         <List sx={{ px: 2 }}>
@@ -340,8 +342,8 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
                     minHeight: 48,
                     bgcolor: isActive
                       ? alpha(theme.palette.primary.main, 0.08)
-                      : "transparent",
-                    "&:hover": {
+                      : 'transparent',
+                    '&:hover': {
                       bgcolor: isActive
                         ? alpha(theme.palette.primary.main, 0.12)
                         : alpha(theme.palette.action.hover, 0.04),
@@ -350,15 +352,15 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
                 >
                   <ListItemIcon
                     sx={{
-                      color: "text.secondary",
+                      color: 'text.secondary',
                       minWidth: 40,
-                      "& .MuiSvgIcon-root": { fontSize: 22 },
+                      '& .MuiSvgIcon-root': { fontSize: 22 },
                     }}
                   >
                     {item.badge ? (
                       <Badge
                         badgeContent={item.badge}
-                        color={item.urgent ? "error" : "primary"}
+                        color={item.urgent ? 'error' : 'primary'}
                         max={99}
                       >
                         {item.icon}
@@ -371,8 +373,8 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
                     primary={item.text}
                     primaryTypographyProps={{
                       fontWeight: 500,
-                      fontSize: "0.9rem",
-                      color: "text.secondary",
+                      fontSize: '0.9rem',
+                      color: 'text.secondary',
                     }}
                   />
                 </ListItemButton>
@@ -386,18 +388,18 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
           sx={{
             px: 2,
             py: 1,
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: 2,
-            cursor: "pointer",
-            "&:hover": {
+            cursor: 'pointer',
+            '&:hover': {
               bgcolor: alpha(theme.palette.action.hover, 0.04),
             },
             borderRadius: 2,
             mx: 2,
             mt: 1,
           }}
-          onClick={() => navigate("/user-profile")}
+          onClick={() => navigate('/user-profile')}
         >
           <Avatar
             src={s3ProfilePictureDownloadUrl || undefined}
@@ -405,33 +407,33 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
               width: 36,
               height: 36,
               bgcolor: theme.palette.primary.main,
-              fontSize: "0.9rem",
+              fontSize: '0.9rem',
               fontWeight: 600,
             }}
           >
-            {name ? name.charAt(0).toUpperCase() : "U"}
+            {name ? name.charAt(0).toUpperCase() : 'U'}
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               variant="body2"
               sx={{
                 fontWeight: 600,
-                color: "text.primary",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                color: 'text.primary',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
             >
-              {name || "User"}
+              {name || 'User'}
             </Typography>
             <Typography
               variant="caption"
               sx={{
-                color: "text.secondary",
-                textTransform: "capitalize",
+                color: 'text.secondary',
+                textTransform: 'capitalize',
               }}
             >
-              {role === "user" ? "Student" : role || "Member"}
+              {role === 'user' ? 'Student' : role || 'Member'}
             </Typography>
           </Box>
         </Box>
@@ -442,23 +444,23 @@ export default function Sidebar({ mobileOpen = false, onToggle, isMobile: isMobi
   return (
     <Box>
       {isMobile && (
-        <IconButton onClick={handleDrawerToggle} sx={{ color: "text.primary" }}>
+        <IconButton onClick={handleDrawerToggle} sx={{ color: 'text.primary' }}>
           <MenuIcon />
         </IconButton>
       )}
       <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
+        variant={isMobile ? 'temporary' : 'permanent'}
         open={isMobile ? isMobileOpen : true}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          "& .MuiDrawer-paper": {
+          '& .MuiDrawer-paper': {
             width: drawerWidth,
-            boxSizing: "border-box",
-            border: "none",
-            boxShadow: "0 0 20px rgba(0,0,0,0.08)",
+            boxSizing: 'border-box',
+            border: 'none',
+            boxShadow: '0 0 20px rgba(0,0,0,0.08)',
           },
         }}
       >

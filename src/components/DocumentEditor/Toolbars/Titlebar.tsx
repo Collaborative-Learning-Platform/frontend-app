@@ -9,7 +9,6 @@ import {
   // Avatar, AvatarGroup removed
   IconButton,
   Tooltip,
-  Fade,
   Stack,
   useTheme,
   Popover,
@@ -103,15 +102,29 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
     // Add inline styles directly to table elements
     html = html.replace(
       /<table/g,
-      '<table style="border-collapse: collapse; width: 100%; margin: 10px 0; table-layout: fixed;"'
+      '<table style="border-collapse: collapse; width: 100%; margin: 0; table-layout: fixed; overflow: hidden;"'
+    );
+    html = html.replace(/<tr/g, '<tr style="height: 40px; min-height: 40px;"');
+
+    // First, handle empty cells with larger padding
+    html = html.replace(
+      /<td><\/td>/g,
+      '<td style="border: 1px solid #101011; padding: 15px 8px; vertical-align: top; box-sizing: border-box; min-width: 1em; position: relative; margin-bottom: 0; line-height: 3"></td>'
     );
     html = html.replace(
-      /<td/g,
-      '<td style="border: 2px solid #101011; padding: 8px 12px; vertical-align: top; box-sizing: border-box; min-width: 1em; line-height: 1.6; position: relative; height: auto;"'
+      /<td>\s*<\/td>/g,
+      '<td style="border: 1px solid #101011; padding: 15px 8px; vertical-align: top; box-sizing: border-box; min-width: 1em; position: relative; margin-bottom: 0; line-height: 3"></td>'
     );
+
+    // Then handle all other cells with smaller padding
+    html = html.replace(
+      /<td(?![^>]*style=)/g,
+      '<td style="border: 1px solid #101011; padding: 8px 6px; vertical-align: top; box-sizing: border-box; min-width: 1em; position: relative; margin-bottom: 0; line-height: 3"'
+    );
+
     html = html.replace(
       /<th/g,
-      '<th style="border: 2px solid #101011; padding: 8px 12px; background-color: #2c2b2b; font-weight: bold; text-align: left; vertical-align: top; box-sizing: border-box; min-width: 1em; color: white; line-height: 1.6; position: relative; height: auto;"'
+      '<th style="border: 1px solid #101011; padding: 15px 8px; background-color: #7e8691ff; font-weight: bold; text-align: left; vertical-align: top; box-sizing: border-box; min-width: 1em; color: white; line-height: 3; position: relative; '
     );
 
     element.innerHTML = `
@@ -210,7 +223,7 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
 
               {/* Save Status - Hidden on mobile and small tablets */}
               <Box sx={getSaveStatusWrapper(isSaving)}>
-                <Fade in={!isSaving}>
+                {!isSaving ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CloudDoneIcon
                       sx={{ fontSize: 16, color: 'success.main' }}
@@ -219,10 +232,14 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
                       AutoSave On
                     </Typography>
                   </Box>
-                </Fade>
-                <Fade in={isSaving}>
-                  <SyncIcon sx={syncIconStyles} />
-                </Fade>
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="primary.main">
+                      Saving...
+                    </Typography>
+                    <SyncIcon sx={syncIconStyles} />
+                  </Box>
+                )}
               </Box>
             </Box>
 
@@ -265,11 +282,6 @@ export const Titlebar = ({ documentData, editor }: TitlebarProps) => {
                 spacing={{ sm: 0.5, md: 1 }}
                 sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}
               >
-                <NotificationsButton
-                  size="small"
-                  showTooltip={true}
-                  badgeContent={3}
-                />
                 <ThemeToggle size="small" showTooltip={true} />
               </Stack>
               <BackButton size="small" showTooltip={true} />
