@@ -72,6 +72,7 @@ interface RecentActivityLog {
   activity_type: string;
   description: string;
   time: string;
+  metadata?: any;
 }
 
 interface SystemActivity {
@@ -84,6 +85,7 @@ interface SystemActivity {
   description: string;
   time: string;
   created_at: string;
+  metadata?: any;
 }
 
 export function AdminOverview({
@@ -114,6 +116,79 @@ export function AdminOverview({
       '#E91E63', // Pink
     ];
     return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  // Function to get appropriate icon for metadata based on activity type
+  const getMetadataIcon = (activity_type: string) => {
+    switch (activity_type) {
+      case 'DOWNLOADED_RESOURCE':
+      case 'UPLOADED_RESOURCE':
+        return '📁'; // File folder
+      case 'GENERATED_FLASHCARDS':
+      case 'DELETED_FLASHCARDS':
+        return '🃏'; // Playing card for flashcards
+      case 'JOINED_WHITEBOARD':
+        return '👥'; // People for group/whiteboard
+      case 'JOINED_DOCUMENT':
+        return '📄'; // Document
+      case 'ADDED_TO_WORKSPACE':
+      case 'CREATED_WORKSPACE':
+        return '🏢'; // Office building for workspace
+      case 'ADDED_TO_GROUP':
+      case 'CREATED_GROUP':
+      case 'DELETED_GROUP':
+        return '👥'; // People for group
+      case 'POSTED_MESSAGE':
+        return '💬'; // Speech bubble for message
+      case 'STARTED_QUIZ':
+      case 'SUBMITTED_QUIZ':
+      case 'CREATED_QUIZ':
+        return '📝'; // Memo for quiz
+      default:
+        return '📄'; // Default document icon
+    }
+  };
+
+  // Function to extract relevant metadata name based on activity type
+  const getMetadataName = (activity: RecentActivityLog | SystemActivity) => {
+    if (!activity.metadata) return null;
+
+    const { activity_type, metadata } = activity;
+
+    try {
+      switch (activity_type) {
+        case 'DOWNLOADED_RESOURCE':
+        case 'UPLOADED_RESOURCE':
+          return metadata.fileName;
+        case 'GENERATED_FLASHCARDS':
+          return metadata.fileName;
+        case 'DELETED_FLASHCARDS':
+          return metadata.title;
+        case 'JOINED_WHITEBOARD':
+          return metadata.groupName;
+        case 'JOINED_DOCUMENT':
+          return metadata.title;
+        case 'ADDED_TO_WORKSPACE':
+        case 'CREATED_WORKSPACE':
+          return metadata.name || metadata.workspaceName;
+        case 'ADDED_TO_GROUP':
+        case 'CREATED_GROUP':
+        case 'DELETED_GROUP':
+          return metadata.name;
+        case 'POSTED_MESSAGE':
+          return metadata.groupName;
+        case 'STARTED_QUIZ':
+        case 'SUBMITTED_QUIZ':
+        case 'CREATED_QUIZ':
+          return metadata.quizTitle;
+        default:
+          // Fallback: try to find any 'name' or 'title' field in metadata
+          return metadata.name || metadata.title || metadata.fileName || null;
+      }
+    } catch (error) {
+      console.warn('Error extracting metadata name:', error);
+      return null;
+    }
   };
 
   // Fetch recent admin activity data
@@ -152,6 +227,10 @@ export function AdminOverview({
           console.log(
             'AdminOverview: Setting recent admin activity:',
             response.data.data
+          );
+          console.log(
+            'AdminOverview: First activity metadata:',
+            response.data.data[0]?.metadata
           );
           setRecentAdminActivity(response.data.data);
         } else {
@@ -192,6 +271,10 @@ export function AdminOverview({
         console.log('AdminOverview: System Activity Response:', response.data);
 
         if (response.data && response.data.success && response.data.data) {
+          console.log(
+            'AdminOverview: First system activity metadata:',
+            response.data.data[0]?.metadata
+          );
           setSystemActivity(response.data.data);
         }
       } catch (error) {
@@ -301,12 +384,28 @@ export function AdminOverview({
                           </ListItemIcon>
                           <ListItemText
                             primary={
-                              <Typography
-                                variant="body2"
-                                sx={{ fontWeight: 600 }}
-                              >
-                                {activity.description}
-                              </Typography>
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 600 }}
+                                >
+                                  {activity.description}
+                                </Typography>
+                                {getMetadataName(activity) && (
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      display: 'block',
+                                      color: theme.palette.primary.main,
+                                      fontWeight: 500,
+                                      mt: 0.5,
+                                    }}
+                                  >
+                                    {getMetadataIcon(activity.activity_type)}{' '}
+                                    {getMetadataName(activity)}
+                                  </Typography>
+                                )}
+                              </Box>
                             }
                             secondary={
                               <Typography
@@ -410,6 +509,20 @@ export function AdminOverview({
                             >
                               {activity.description}
                             </Typography>
+                            {getMetadataName(activity) && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  display: 'block',
+                                  color: theme.palette.primary.main,
+                                  fontWeight: 500,
+                                  mb: 0.5,
+                                }}
+                              >
+                                {getMetadataIcon(activity.activity_type)}{' '}
+                                {getMetadataName(activity)}
+                              </Typography>
+                            )}
                             <Typography
                               variant="caption"
                               color="text.secondary"
