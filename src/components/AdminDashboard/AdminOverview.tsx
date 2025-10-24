@@ -18,6 +18,54 @@ import { useAuth } from '../../contexts/Authcontext';
 import axiosInstance from '../../api/axiosInstance';
 import { StatsCards } from './StatsCards';
 
+interface AuthInfo {
+  totalCount: number;
+  tutorCount: number;
+  userCount: number;
+  totalCountChange: number;
+  tutorCountChange: number;
+  userCountChange: number;
+  totalPercentChange: number;
+  tutorPercentChange: number;
+  userPercentChange: number;
+  lastMonthCounts: {
+    totalCount: number;
+    tutorCount: number;
+    userCount: number;
+  };
+}
+
+interface WorkspaceInfo {
+  workspaces: number;
+  groups: number;
+  workspaceCountChange: number;
+  groupCountChange: number;
+  workspacePercentChange: number;
+  groupPercentChange: number;
+  lastWeekCounts: {
+    workspaces: number;
+    groups: number;
+  };
+}
+
+interface EngagementInfo {
+  last7Avg: number;
+  prev7Avg: number;
+  difference: number;
+  percentChange: number;
+}
+
+interface AnalyticsData {
+  authInfo?: AuthInfo;
+  workspaceInfo?: WorkspaceInfo;
+  engagementInfo?: EngagementInfo;
+}
+
+interface AdminOverviewProps {
+  analyticsData: AnalyticsData;
+  loading: boolean;
+}
+
 interface RecentActivityLog {
   id: string;
   category: string;
@@ -38,7 +86,10 @@ interface SystemActivity {
   created_at: string;
 }
 
-export function AdminOverview() {
+export function AdminOverview({
+  analyticsData,
+  loading: analyticsLoading,
+}: AdminOverviewProps) {
   const theme = useTheme();
   const { user_id } = useAuth();
   const [recentAdminActivity, setRecentAdminActivity] = useState<
@@ -167,16 +218,7 @@ export function AdminOverview() {
   return (
     <Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Dashboard Overview
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Monitor your learning platform's performance and activity
-          </Typography>
-        </Box>
-
-        <StatsCards />
+        <StatsCards analyticsData={analyticsData} loading={analyticsLoading} />
 
         {/* Recent Activity */}
         <Box

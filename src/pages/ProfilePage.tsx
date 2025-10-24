@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 import {
   Box,
   Container,
@@ -15,24 +15,22 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  MenuItem,
   Skeleton,
-} from "@mui/material";
+  CircularProgress,
+} from '@mui/material';
 import {
   Key,
   Shield,
-  CheckCircle,
-  Warning as AlertTriangle,
-  Smartphone,
   Visibility as Eye,
   VisibilityOff as EyeOff,
   CameraAlt as Camera,
   AccountCircle as CircleUser,
   Settings as SettingsIcon,
-} from "@mui/icons-material";
-import axiosInstance from "../api/axiosInstance";
-import { useAuth } from "../contexts/Authcontext";
-import { useSnackbar } from "../contexts/SnackbarContext";
+  ChangeCircle,
+} from '@mui/icons-material';
+import axiosInstance from '../api/axiosInstance';
+import { useAuth } from '../contexts/Authcontext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 interface ProfileData {
   name: string;
@@ -46,14 +44,12 @@ export default function ProfilePage() {
   const { showSnackbar } = useSnackbar();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: "",
-    email: "",
-    role: "",
-    profile_picture: "",
+    name: '',
+    email: '',
+    role: '',
+    profile_picture: '',
   });
 
-
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [privacySettings, setPrivacySettings] = useState({
     profileVisibility: true,
     activityTracking: false,
@@ -62,16 +58,73 @@ export default function ProfilePage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isTestingTwoFactor, setIsTestingTwoFactor] = useState(false);
   const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
-  const [open2FADialog, setOpen2FADialog] = useState(false);
   const [loadingProfileData, setLoadingProfileData] = useState(true);
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const handlePasswordChangeSubmit = async () => {
+    if (!auth?.user_id) {
+      showSnackbar('User ID not available', 'error');
+      return;
+    }
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      showSnackbar('Please fill all password fields', 'error');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showSnackbar('New password and confirmation do not match', 'error');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      showSnackbar('Password must be at least 8 characters long', 'error');
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const response = await axiosInstance.post('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      });
+      if (response.data?.success) {
+        showSnackbar('Password updated successfully!', 'success');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        showSnackbar(
+          response.data?.message || 'Failed to update password',
+          'error'
+        );
+      }
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      if (error.response?.data?.message) {
+        showSnackbar(error.response.data.message, 'error');
+      } else if (error.response?.status === 404) {
+        showSnackbar('User not found', 'error');
+      } else if (error.response?.status === 401) {
+        showSnackbar('Current password is incorrect', 'error');
+      } else {
+        showSnackbar('Failed to change password. Please try again', 'error');
+      }
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   const handleProfilePictureUpload = () => {
     if (!auth?.user_id) {
-      showSnackbar("User ID not available", "error");
+      showSnackbar('User ID not available', 'error');
       return;
     }
 
@@ -80,27 +133,34 @@ export default function ProfilePage() {
   };
 
   const setS3DownloadURL = async () => {
-        const response = await axiosInstance.post('/storage/generate-profile-pic-download-url',{userId: auth.user_id})
-        console.log("Generated profile pic download URL", response.data);
-        setProfileData({...profileData, profile_picture: response.data.downloadUrl});
+    const response = await axiosInstance.post(
+      '/storage/generate-profile-pic-download-url',
+      { userId: auth.user_id }
+    );
+    console.log('Generated profile pic download URL', response.data);
+    setProfileData({
+      ...profileData,
+      profile_picture: response.data.downloadUrl,
+    });
+  };
 
-  }
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
-    
+
     if (!file) return;
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      showSnackbar("Please select an image file", "error");
+      showSnackbar('Please select an image file', 'error');
       return;
     }
 
-    // Validate file size 
+    // Validate file size
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      showSnackbar("File size must be less than 5MB", "error");
+      showSnackbar('File size must be less than 5MB', 'error');
       return;
     }
 
@@ -108,11 +168,14 @@ export default function ProfilePage() {
 
     try {
       // Generate upload URL
-      const uploadUrlResponse = await axiosInstance.post('/storage/generate-profile-pic-upload-url', {
-        userId: auth.user_id,
-        fileName: file.name,
-        contentType: file.type
-      });
+      const uploadUrlResponse = await axiosInstance.post(
+        '/storage/generate-profile-pic-upload-url',
+        {
+          userId: auth.user_id,
+          fileName: file.name,
+          contentType: file.type,
+        }
+      );
 
       if (uploadUrlResponse.data.success) {
         const { uploadUrl } = uploadUrlResponse.data;
@@ -127,24 +190,21 @@ export default function ProfilePage() {
         });
 
         if (uploadResponse.ok) {
-          
-            showSnackbar("Profile picture updated successfully!", "success");
-            await fetchProfileData(); 
-            await setS3DownloadURL();
-            
-          
+          showSnackbar('Profile picture updated successfully!', 'success');
+          await fetchProfileData();
+          await setS3DownloadURL();
         } else {
-          showSnackbar("Failed to upload image", "error");
+          showSnackbar('Failed to upload image', 'error');
         }
       } else {
-        showSnackbar("Failed to generate upload URL", "error");
+        showSnackbar('Failed to generate upload URL', 'error');
       }
     } catch (error: any) {
-      console.error("Error uploading profile picture:", error);
+      console.error('Error uploading profile picture:', error);
       if (error.response?.data?.message) {
-        showSnackbar(error.response.data.message, "error");
+        showSnackbar(error.response.data.message, 'error');
       } else {
-        showSnackbar("Failed to upload profile picture", "error");
+        showSnackbar('Failed to upload profile picture', 'error');
       }
     } finally {
       setUploadingProfilePicture(false);
@@ -160,29 +220,29 @@ export default function ProfilePage() {
       setLoadingProfileData(true);
       const res = await axiosInstance.get(`/auth/get-user/${auth.user_id}`);
       if (res.data.success) {
-        console.log("Fetched profile info", res.data);
+        console.log('Fetched profile info', res.data);
         setProfileData({
-          name: res.data.user.name || "",
-          email: res.data.user.email || "",
-          role: res.data.user.role || "",
+          name: res.data.user.name || '',
+          email: res.data.user.email || '',
+          role: res.data.user.role || '',
         });
         setS3DownloadURL();
       } else {
-        console.error("API response not successful:", res.data);
+        console.error('API response not successful:', res.data);
       }
     } catch (error) {
-      console.error("Error fetching profile data:", error);
+      console.error('Error fetching profile data:', error);
     } finally {
       setLoadingProfileData(false);
     }
   };
 
   useEffect(() => {
-    console.log("Auth in ProfilePage:", auth);
+    console.log('Auth in ProfilePage:', auth);
     if (auth?.user_id) {
       fetchProfileData();
     } else {
-      console.warn("No user_id available, skipping profile fetch");
+      console.warn('No user_id available, skipping profile fetch');
       setLoadingProfileData(false);
     }
   }, [auth?.user_id]);
@@ -205,12 +265,12 @@ export default function ProfilePage() {
 
   const handleUpdateProfile = async () => {
     if (!auth?.user_id) {
-      showSnackbar("User ID not available", "error");
+      showSnackbar('User ID not available', 'error');
       return;
     }
 
-    if (!profileData.name || profileData.name.trim() === "") {
-      showSnackbar("Name cannot be empty", "error");
+    if (!profileData.name || profileData.name.trim() === '') {
+      showSnackbar('Name cannot be empty', 'error');
       return;
     }
 
@@ -225,26 +285,23 @@ export default function ProfilePage() {
       );
 
       if (response.data.success) {
-        showSnackbar("Profile updated successfully!", "success");
+        showSnackbar('Profile updated successfully!', 'success');
         // Optionally refresh the profile data
         await fetchProfileData();
       } else {
-        showSnackbar(
-          response.data.message || "Failed to update profile",
-          "error"
-        );
+        showSnackbar('Failed to update profile', 'error');
       }
     } catch (error: any) {
-      console.error("Error updating profile:", error);
+      console.error('Error updating profile:', error);
 
       if (error.response?.data?.message) {
-        showSnackbar(error.response.data.message, "error");
+        showSnackbar(error.response.data.message, 'error');
       } else if (error.response?.status === 404) {
-        showSnackbar("User not found", "error");
+        showSnackbar('User not found', 'error');
       } else if (error.response?.status === 500) {
-        showSnackbar("Server error. Please try again later", "error");
+        showSnackbar('Server error. Please try again later', 'error');
       } else {
-        showSnackbar("Failed to update profile. Please try again", "error");
+        showSnackbar('Failed to update profile. Please try again', 'error');
       }
     } finally {
       setUpdatingProfile(false);
@@ -261,21 +318,21 @@ export default function ProfilePage() {
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
-      
-      <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
+
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 4 }}>
         <Container>
           <Box sx={{ mb: 4 }}>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 gap: 2,
                 mb: 2,
               }}
             >
               <SettingsIcon
                 sx={{
-                  color: "primary.main",
+                  color: 'primary.main',
                   fontSize: 32,
                 }}
               />
@@ -291,7 +348,7 @@ export default function ProfilePage() {
           {/* Profile Information Card */}
           <Card sx={{ mb: 4 }}>
             <CardHeader
-              avatar={<CircleUser sx={{ color: "#1976d2", fontSize: 30 }} />}
+              avatar={<CircleUser sx={{ color: '#1976d2', fontSize: 30 }} />}
               title={<Typography variant="h6">Profile Information</Typography>}
               subheader={
                 <Typography variant="body2">
@@ -304,8 +361,8 @@ export default function ProfilePage() {
                 <>
                   <Box
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 4,
                       mb: 3,
                     }}
@@ -330,8 +387,8 @@ export default function ProfilePage() {
                   <Divider sx={{ mb: 2 }} />
                   <Box
                     sx={{
-                      display: "grid",
-                      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                       gap: 2,
                     }}
                   >
@@ -366,8 +423,8 @@ export default function ProfilePage() {
                 <>
                   <Box
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 4,
                       mb: 3,
                     }}
@@ -388,21 +445,23 @@ export default function ProfilePage() {
                         sx={{ mt: 1 }}
                       >
                         <Camera sx={{ mr: 0.75, fontSize: 16 }} />
-                        {uploadingProfilePicture ? "Uploading..." : "Change Picture"}
+                        {uploadingProfilePicture
+                          ? 'Uploading...'
+                          : 'Change Picture'}
                       </Button>
                     </Box>
                   </Box>
                   <Divider sx={{ mb: 2 }} />
                   <Box
                     sx={{
-                      display: "grid",
-                      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                       gap: 2,
                     }}
                   >
                     <TextField
                       label="Name"
-                      defaultValue={profileData.name || auth?.name || ""}
+                      defaultValue={profileData.name || auth?.name || ''}
                       onChange={(e) =>
                         setProfileData({ ...profileData, name: e.target.value })
                       }
@@ -412,7 +471,7 @@ export default function ProfilePage() {
                       disabled
                       label="Email Address"
                       type="email"
-                      value={profileData.email || auth?.email || ""}
+                      value={profileData.email || auth?.email || ''}
                       InputLabelProps={{
                         shrink: true,
                       }}
@@ -421,7 +480,7 @@ export default function ProfilePage() {
                     <TextField
                       disabled
                       label="Role"
-                      value={profileData.role || auth?.role || ""}
+                      value={profileData.role || auth?.role || ''}
                       InputLabelProps={{
                         shrink: true,
                       }}
@@ -434,7 +493,7 @@ export default function ProfilePage() {
                     disabled={updatingProfile}
                     sx={{ mt: 3 }}
                   >
-                    {updatingProfile ? "Updating..." : "Save Profile Changes"}
+                    {updatingProfile ? 'Updating...' : 'Save Profile Changes'}
                   </Button>
                 </>
               )}
@@ -444,7 +503,7 @@ export default function ProfilePage() {
           {/* Privacy Checkup Card */}
           <Card sx={{ mb: 4 }}>
             <CardHeader
-              avatar={<Shield sx={{ color: "#1976d2", fontSize: 20 }} />}
+              avatar={<Shield sx={{ color: '#1976d2', fontSize: 20 }} />}
               title={<Typography variant="h6">Privacy Checkup</Typography>}
               subheader={
                 <Typography variant="body2">
@@ -453,12 +512,12 @@ export default function ProfilePage() {
               }
             />
             <CardContent>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                   }}
                 >
                   <Box>
@@ -479,9 +538,9 @@ export default function ProfilePage() {
                 </Box>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                   }}
                 >
                   <Box>
@@ -502,9 +561,9 @@ export default function ProfilePage() {
                 </Box>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                   }}
                 >
                   <Box>
@@ -526,7 +585,7 @@ export default function ProfilePage() {
               </Box>
               <Button
                 onClick={() =>
-                  showSnackbar("Privacy settings updated!", "success")
+                  showSnackbar('Privacy settings updated!', 'success')
                 }
                 variant="contained"
                 sx={{ mt: 3 }}
@@ -539,7 +598,7 @@ export default function ProfilePage() {
           {/* Security Settings Card */}
           <Card>
             <CardHeader
-              avatar={<Key sx={{ color: "#1976d2", fontSize: 20 }} />}
+              avatar={<Key sx={{ color: '#1976d2', fontSize: 20 }} />}
               title={<Typography variant="h6">Security Settings</Typography>}
               subheader={
                 <Typography variant="body2">
@@ -548,103 +607,22 @@ export default function ProfilePage() {
               }
             />
             <CardContent>
-              <Box sx={{ mb: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Typography>Two-Factor Authentication</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Add an extra layer of security to your account
-                    </Typography>
-                    <Box>
-                      {twoFactorEnabled ? (
-                        <Button
-                          size="small"
-                          color="success"
-                          sx={{
-                            border: "none",
-                            pointerEvents: "none",
-                            pl: 0,
-                            minWidth: "auto",
-                          }}
-                          startIcon={<CheckCircle sx={{ fontSize: 14 }} />}
-                        >
-                          Enabled
-                        </Button>
-                      ) : (
-                        <Button
-                          size="small"
-                          color="error"
-                          sx={{
-                            border: "none",
-                            pointerEvents: "none",
-                            pl: 0,
-                            minWidth: "auto",
-                          }}
-                          startIcon={<AlertTriangle sx={{ fontSize: 14 }} />}
-                        >
-                          Disabled
-                        </Button>
-                      )}
-                    </Box>
-                  </Box>
-                  <Switch
-                    checked={twoFactorEnabled}
-                    onChange={(_, checked) => setTwoFactorEnabled(checked)}
-                  />
-                </Box>
-                {twoFactorEnabled && (
-                  <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        setIsTestingTwoFactor(true);
-                        setTimeout(() => {
-                          setIsTestingTwoFactor(false);
-                          showSnackbar("2FA test successful!", "success");
-                        }, 2000);
-                      }}
-                      disabled={isTestingTwoFactor}
-                    >
-                      <Smartphone sx={{ mr: 0.75, fontSize: 16 }} />
-                      {isTestingTwoFactor ? "Testing..." : "Test 2FA"}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => setOpen2FADialog(true)}
-                    >
-                      Change 2FA Settings
-                    </Button>
-                  </Box>
-                )}
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
+              <Box sx={{ mb: 3, gap: 1 }}>
                 <Box>
                   <Typography variant="subtitle1">Change Password</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Update your account password
-                  </Typography>
                 </Box>
                 <Button
                   variant="contained"
                   onClick={() => setOpenPasswordDialog(true)}
+                  sx={{ mt: 1, mb: 1 }}
                 >
                   Change Password
                 </Button>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Update your account password
+                  </Typography>
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -658,9 +636,11 @@ export default function ProfilePage() {
             <DialogContent>
               <TextField
                 label="Current Password"
-                type={showCurrentPassword ? "text" : "password"}
+                type={showCurrentPassword ? 'text' : 'password'}
                 fullWidth
                 margin="dense"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
                 InputProps={{
                   endAdornment: (
                     <Button
@@ -670,9 +650,9 @@ export default function ProfilePage() {
                       size="small"
                     >
                       {showCurrentPassword ? (
-                        <Eye sx={{ fontSize: 16 }} />
-                      ) : (
                         <EyeOff sx={{ fontSize: 16 }} />
+                      ) : (
+                        <Eye sx={{ fontSize: 16 }} />
                       )}
                     </Button>
                   ),
@@ -680,7 +660,9 @@ export default function ProfilePage() {
               />
               <TextField
                 label="New Password"
-                type={showNewPassword ? "text" : "password"}
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
                 fullWidth
                 margin="dense"
                 InputProps={{
@@ -690,9 +672,9 @@ export default function ProfilePage() {
                       size="small"
                     >
                       {showNewPassword ? (
-                        <Eye sx={{ fontSize: 16 }} />
-                      ) : (
                         <EyeOff sx={{ fontSize: 16 }} />
+                      ) : (
+                        <Eye sx={{ fontSize: 16 }} />
                       )}
                     </Button>
                   ),
@@ -700,7 +682,9 @@ export default function ProfilePage() {
               />
               <TextField
                 label="Confirm New Password"
-                type={showConfirmPassword ? "text" : "password"}
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 fullWidth
                 margin="dense"
                 InputProps={{
@@ -712,9 +696,9 @@ export default function ProfilePage() {
                       size="small"
                     >
                       {showConfirmPassword ? (
-                        <Eye sx={{ fontSize: 16 }} />
-                      ) : (
                         <EyeOff sx={{ fontSize: 16 }} />
+                      ) : (
+                        <Eye sx={{ fontSize: 16 }} />
                       )}
                     </Button>
                   ),
@@ -727,38 +711,20 @@ export default function ProfilePage() {
               </Button>
               <Button
                 onClick={() => {
-                  showSnackbar("Password updated!", "success");
-                  setOpenPasswordDialog(false);
+                  handlePasswordChangeSubmit(), setOpenPasswordDialog(false);
                 }}
                 variant="contained"
+                disabled={changingPassword}
+                startIcon={
+                  changingPassword ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    <ChangeCircle />
+                  )
+                }
               >
-                Update Password
+                {changingPassword ? 'Updating...' : 'Update Password'}
               </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* 2FA Dialog */}
-          <Dialog open={open2FADialog} onClose={() => setOpen2FADialog(false)}>
-            <DialogTitle>Two-Factor Authentication Settings</DialogTitle>
-            <DialogContent>
-              <TextField
-                label="Authentication Method"
-                select
-                defaultValue="app"
-                fullWidth
-                margin="dense"
-              >
-                <MenuItem value="app">Authenticator App</MenuItem>
-                <MenuItem value="sms">SMS</MenuItem>
-                <MenuItem value="email">Email</MenuItem>
-              </TextField>
-              <Button variant="outlined" fullWidth sx={{ mt: 2 }}>
-                Generate New Backup Codes
-              </Button>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpen2FADialog(false)}>Cancel</Button>
-              <Button variant="contained">Save Changes</Button>
             </DialogActions>
           </Dialog>
         </Container>

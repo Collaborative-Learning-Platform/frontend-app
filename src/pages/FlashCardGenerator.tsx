@@ -11,6 +11,7 @@ import {
   Select,
   FormHelperText,
   CircularProgress,
+  LinearProgress,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
@@ -37,6 +38,7 @@ export const FlashCardGenerator = () => {
     { value: 5, text: 'Five' },
     { value: 10, text: 'Ten' },
   ];
+  const [progress, setProgress] = useState(0);
   const [numberOfCards, SetNumberOfCards] = useState(10);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(
     null
@@ -98,6 +100,7 @@ export const FlashCardGenerator = () => {
     if (!selectedResource) return;
 
     try {
+      setProgress(0);
       setGenerating(true);
 
       const requestData = {
@@ -112,6 +115,15 @@ export const FlashCardGenerator = () => {
 
       console.log('Generating flashcards with data:', requestData);
 
+      // Simulate progress increments
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 90) return 90; // Don't go to 100 until done
+          const newProgress = prev + Math.random() * 20;
+          return Math.min(newProgress, 90); // Cap at 90%
+        });
+      }, 3000);
+
       const response = await axiosInstance.post(
         '/aiservice/generate-flashcards',
         requestData,
@@ -119,6 +131,8 @@ export const FlashCardGenerator = () => {
           timeout: 120000, // 2 minutes specifically for flashcard generation
         }
       );
+      clearInterval(interval);
+      setProgress(100);
 
       console.log('Flashcards generated successfully:', response.data);
 
@@ -353,6 +367,19 @@ export const FlashCardGenerator = () => {
                   >
                     {generating ? 'Generating...' : 'Generate Flashcards'}
                   </Button>
+                  <Box>
+                    <Typography>
+                      {generating ? (
+                        <FormHelperText>
+                          This may take some time...
+                        </FormHelperText>
+                      ) : (
+                        <FormHelperText>
+                          *Flashcards will be added to Flashcard Library
+                        </FormHelperText>
+                      )}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
             </Box>
@@ -395,6 +422,30 @@ export const FlashCardGenerator = () => {
           </Card>
         </Masonry>
       </Box>
+      {generating && (
+        <Card
+          sx={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            width: 250,
+            p: 2,
+            boxShadow: 3,
+            zIndex: 1000,
+          }}
+        >
+          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+            Generating flashcards...
+          </Typography>
+          <LinearProgress variant="determinate" value={progress} />
+          <Typography
+            variant="caption"
+            sx={{ mt: 1, display: 'block', textAlign: 'right' }}
+          >
+            {Math.round(progress)}%
+          </Typography>
+        </Card>
+      )}
     </Box>
   );
 };

@@ -24,8 +24,7 @@ import {
   Email as Mail,
   Save,
   RestartAlt as RotateCcw,
-  People as Users,
-  Chat as MessageSquare,
+  // Chat as MessageSquare,
   Person as User,
   Link as ExternalLink,
 } from '@mui/icons-material';
@@ -326,36 +325,6 @@ export default function SettingsPage() {
                       />
                     </Box>
                   </Box>
-
-                  <Box
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Auto Save
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Automatically save document changes
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={settings.emailNotifications}
-                        onChange={(_, checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            emailNotifications: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-                  </Box>
                 </Box>
               </CardContent>
             </Card>
@@ -532,121 +501,6 @@ export default function SettingsPage() {
                         <Mail sx={{ fontSize: 16, color: 'text.secondary' }} />
                         <Typography variant="body2" fontWeight={500}>
                           Email Notifications
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={settings.emailNotifications}
-                        onChange={(_, checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            emailNotifications: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                      >
-                        <MessageSquare
-                          sx={{ fontSize: 16, color: 'text.secondary' }}
-                        />
-                        <Typography variant="body2" fontWeight={500}>
-                          Push Notifications
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={settings.emailNotifications}
-                        onChange={(_, checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            emailNotifications: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-                  </Box>
-
-                  <Box
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-                  >
-                    <Typography
-                      variant="overline"
-                      sx={{
-                        fontWeight: 600,
-                        color: 'text.secondary',
-                        letterSpacing: 1,
-                      }}
-                    >
-                      Notification Types
-                    </Typography>
-
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                      >
-                        <Users sx={{ fontSize: 16, color: 'text.secondary' }} />
-                        <Typography variant="body2" fontWeight={500}>
-                          Collaborator Joined
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={settings.emailNotifications}
-                        onChange={(_, checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            emailNotifications: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Weekly Upcoming Quizzes
-                        </Typography>
-                      </Box>
-                      <Switch
-                        checked={settings.emailNotifications}
-                        onChange={(_, checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            emailNotifications: checked,
-                          }))
-                        }
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          Weekly Activity Digest
                         </Typography>
                       </Box>
                       <Switch

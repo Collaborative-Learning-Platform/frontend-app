@@ -299,11 +299,11 @@ export default function CreateQuizPage() {
 
     try {
       let quizId = quiz.quizId;
+      const selectedGroup = availableGroups.find(
+        (g) => g.groupId === quiz.group
+      );
 
       if (!quizId) {
-        const selectedGroup = availableGroups.find(
-          (g) => g.groupId === quiz.group
-        );
         console.log('Selected Group:', selectedGroup);
 
         const payload = {
@@ -333,8 +333,8 @@ export default function CreateQuizPage() {
         metadata: {
           quizId: quizId,
           quizTitle: quiz.title,
-          groupName: quiz.group,
-          groupId: quiz.group,
+          groupName: selectedGroup?.groupName || '', // <-- use selectedGroup here
+          groupId: selectedGroup?.groupId || '', // <-- use selectedGroup here
           dueDate: quiz.dueDate,
         },
       });

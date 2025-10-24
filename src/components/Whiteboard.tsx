@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Tldraw, createTLStore, defaultShapeUtils } from 'tldraw';
 import type { TLRecord } from 'tldraw';
-// import { useUserSettings } from '../contexts/SettingsContext';
+import { useUserSettings } from '../contexts/SettingsContext';
 import 'tldraw/tldraw.css';
 
 interface WhiteboardProps {
@@ -19,17 +19,17 @@ export default function Whiteboard({
   if (!storeRef.current) {
     storeRef.current = createTLStore({ shapeUtils: defaultShapeUtils });
   }
-  // const userSettings = useUserSettings();
+  const userSettings = useUserSettings();
   const store = storeRef.current;
   const wsRef = useRef<WebSocket | null>(null);
   const isUpdating = useRef(false);
   const mountedRef = useRef(true);
   const storeListenerRef = useRef<(() => void) | null>(null);
 
-  // const isGridMode = userSettings.settings?.showGrid;
-  // const isDark = userSettings.settings?.themeMode === 'dark' ? true : false;
-  // const brushSize = userSettings.settings?.defaultBrushSize;
-  // const cursorType = userSettings.settings?.defaultCursorType;
+  const isGridMode = userSettings.settings?.showGrid;
+  const isDark = userSettings.settings?.themeMode === 'dark' ? true : false;
+  const brushSize = userSettings.settings?.defaultBrushSize;
+  const cursorType = userSettings.settings?.defaultCursorType;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -243,22 +243,22 @@ export default function Whiteboard({
   return (
     <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
       <Tldraw
-        // onMount={(editor) => {
-        //   editor.setCurrentTool('draw');
-        //   editor.updateInstanceState({
-        //     isGridMode: isGridMode ? true : false,
-        //     cursor: { type: cursorType || 'default', rotation: 0 },
-        //     brush: {
-        //       x: 0, // optional
-        //       y: 0, // optional
-        //       w: brushSize || 6, // width = brush size
-        //       h: brushSize || 6, // height = brush size
-        //     },
-        //   });
-        //   editor.user.updateUserPreferences({
-        //     colorScheme: isDark ? 'dark' : 'light',
-        //   });
-        // }}
+        onMount={(editor) => {
+          editor.setCurrentTool('draw');
+          editor.updateInstanceState({
+            isGridMode: isGridMode ? true : false,
+            cursor: { type: cursorType || 'default', rotation: 0 },
+            brush: {
+              x: 0, // optional
+              y: 0, // optional
+              w: brushSize || 6, // width = brush size
+              h: brushSize || 6, // height = brush size
+            },
+          });
+          editor.user.updateUserPreferences({
+            colorScheme: isDark ? 'dark' : 'light',
+          });
+        }}
         store={store}
         licenseKey={import.meta.env.VITE_TLDRAW_LICENSE_KEY}
       />
