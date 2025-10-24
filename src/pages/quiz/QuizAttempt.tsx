@@ -351,7 +351,8 @@ export default function QuizAttempt({
   if (!quiz) {
     return (
       <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Typography>Loading quiz...</Typography>
+        <CircularProgress size={20} />
+        <Typography sx={{ml:1}}>Loading quiz</Typography>
       </Container>
     );
   }
