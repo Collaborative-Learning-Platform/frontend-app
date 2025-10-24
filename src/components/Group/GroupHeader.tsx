@@ -4,10 +4,9 @@ import {
   Card,
   Avatar,
   AvatarGroup,
-  Chip,
   Button,
 } from '@mui/material';
-import { Group, AccessTime, PersonAdd } from '@mui/icons-material';
+import { Group, PersonAdd } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 

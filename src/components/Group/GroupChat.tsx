@@ -9,7 +9,7 @@ import {
   Chip,
   Fade,
 } from '@mui/material';
-import { Send, MoreVert, Circle } from '@mui/icons-material';
+import { Send, Circle } from '@mui/icons-material';
 import { io, Socket } from 'socket.io-client';
 import axiosInstance from '../../api/axiosInstance';
 
