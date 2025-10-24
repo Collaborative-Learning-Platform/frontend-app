@@ -121,10 +121,10 @@ export const FlashCardLibrary = () => {
   };
 
   const handleDeleteSet = async () => {
-    handleMenuClose();
     if (!selectedSetId) return;
     const selectedSet = getSelectedSet();
     if (selectedSet) {
+      handleMenuClose();
       try {
         setDeleting(true);
         const response = await axiosInstance.delete(
