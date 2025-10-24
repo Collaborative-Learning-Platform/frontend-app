@@ -113,8 +113,6 @@ export const FlashCardGenerator = () => {
         number: numberOfCards,
       };
 
-      console.log('Generating flashcards with data:', requestData);
-
       // Simulate progress increments
       const interval = setInterval(() => {
         setProgress((prev) => {
@@ -122,7 +120,7 @@ export const FlashCardGenerator = () => {
           const newProgress = prev + Math.random() * 20;
           return Math.min(newProgress, 90); // Cap at 90%
         });
-      }, 3000);
+      }, 2300);
 
       const response = await axiosInstance.post(
         '/aiservice/generate-flashcards',

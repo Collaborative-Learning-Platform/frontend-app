@@ -258,7 +258,7 @@ const GroupChat = ({
           <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
             Online
           </Typography>
-          <IconButton
+          {/* <IconButton
             size="small"
             sx={{
               color: theme.palette.text.secondary,
@@ -269,7 +269,7 @@ const GroupChat = ({
             }}
           >
             <MoreVert />
-          </IconButton>
+          </IconButton> */}
         </Box>
       </Box>
 

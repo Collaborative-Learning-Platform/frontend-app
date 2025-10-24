@@ -20,6 +20,7 @@ import {
   CircularProgress,
   Alert,
   AlertTitle,
+  LinearProgress,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
@@ -74,6 +75,7 @@ export const UserDocuments = () => {
   const [viewModeWorkspace, setViewModeWorkspace] = useState<'grid' | 'list'>(
     'grid'
   );
+  const [deleting, setDeleting] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [workspaceDocuments, setWorkspaceDocuments] = useState<
@@ -156,8 +158,6 @@ export const UserDocuments = () => {
       console.log('Document create response:', res);
 
       if (res.data.success) {
-        await fetchDocuments();
-
         const groupDetails = await axiosInstance.get(
           `workspace/groups/${res.data.data.groupId}/fetchDetails`
         );
@@ -205,12 +205,6 @@ export const UserDocuments = () => {
     }))
     .filter((workspace) => workspace.groups.length > 0); // Exclude workspaces with no groups
 
-  // const filteredDocuments = recentDocuments.filter(
-  //   (doc) =>
-  //     doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //     doc.owner.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
-
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
     document: DocumentResponse
@@ -222,15 +216,6 @@ export const UserDocuments = () => {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-
-  // const handleRecentViewModeChange = (
-  //   _event: React.MouseEvent<HTMLElement>,
-  //   newRecentViewMode: 'grid' | 'list'
-  // ) => {
-  //   if (newRecentViewMode !== null) {
-  //     setViewModeRecent(newRecentViewMode);
-  //   }
-  // };
 
   const handleWorkspaceViewModeChange = (
     _event: React.MouseEvent<HTMLElement>,
@@ -266,16 +251,20 @@ export const UserDocuments = () => {
   };
 
   const handleDeleteDocument = async (documentId: string) => {
+    setDeleting(true);
     try {
       const res = await axiosInstance.delete(`/documents/${documentId}`);
       if (res.data.success) {
-        snackBar.showSnackbar('Document deleted!', 'success');
+        snackBar.showSnackbar('Document deleted successfully', 'success');
+        setDeleting(false);
         await fetchDocuments(); // Refresh the list
       } else {
-        snackBar.showSnackbar(res.data.message || 'Delete failed', 'error');
+        snackBar.showSnackbar('Delete failed', 'error');
       }
     } catch (err) {
       snackBar.showSnackbar('Delete failed', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -939,21 +928,6 @@ export const UserDocuments = () => {
                 Join a workspace to get started and begin collaborating on
                 documents with your team.
               </Typography>
-              {/* <Button
-                variant="contained"
-                size="large"
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 2,
-                }}
-                onClick={() => {
-                  // You can add navigation to workspace join page here
-                  console.log('Navigate to join workspace');
-                }}
-              >
-                Explore Workspaces
-              </Button> */}
             </Box>
           ) : null}
         </Box>
@@ -967,10 +941,32 @@ export const UserDocuments = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleDeleteMenuClick} sx={{ color: 'error.main' }}>
+        <MenuItem
+          onClick={handleDeleteMenuClick}
+          sx={{ color: 'error.main' }}
+          disableRipple
+        >
           Delete
         </MenuItem>
       </Menu>
+      {deleting && (
+        <Card
+          sx={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            width: 250,
+            p: 2,
+            boxShadow: 3,
+            zIndex: 1000,
+          }}
+        >
+          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+            Deleting document set...
+          </Typography>
+          <LinearProgress color="error" />
+        </Card>
+      )}
     </Box>
   );
 };

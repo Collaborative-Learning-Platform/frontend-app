@@ -16,6 +16,7 @@ import {
   AlertTitle,
   CircularProgress,
   alpha,
+  LinearProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
@@ -53,6 +54,7 @@ export const FlashCardLibrary = () => {
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
   const [flashcardSets, setFlashcardSets] = useState<FlashcardSet[]>([]);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch flashcards from the API
@@ -118,23 +120,13 @@ export const FlashCardLibrary = () => {
     });
   };
 
-  // const handleEditSet = () => {
-  //   if (!selectedSetId) return;
-  //   const selectedSet = getSelectedSet();
-  //   if (selectedSet) {
-  //     console.log(`Editing set: ${selectedSet.title}`);
-  //     // Navigate to edit page or open edit modal
-  //   }
-  //   handleMenuClose();
-  // };
-
   const handleDeleteSet = async () => {
+    handleMenuClose();
     if (!selectedSetId) return;
     const selectedSet = getSelectedSet();
     if (selectedSet) {
       try {
-        console.log(`Deleting set: ${selectedSet.title}`);
-
+        setDeleting(true);
         const response = await axiosInstance.delete(
           `/aiservice/flashcards/${selectedSetId}`
         );
@@ -145,15 +137,21 @@ export const FlashCardLibrary = () => {
             prevSets.filter((set) => set.flashcardId !== selectedSetId)
           );
           console.log('Flashcard set deleted successfully');
+          snackbar.showSnackbar(
+            'Flashcard set deleted successfully',
+            'success'
+          );
+          setDeleting(false);
         } else {
           throw new Error(response.data.message);
         }
       } catch (error) {
         console.error('Error deleting flashcard set:', error);
         snackbar.showSnackbar('Failed to delete flashcard set', 'error');
+      } finally {
+        setDeleting(false);
       }
     }
-    handleMenuClose();
   };
 
   // Date formatting removed as per request
@@ -402,10 +400,32 @@ export const FlashCardLibrary = () => {
         onClose={handleMenuClose}
       >
         {/* <MenuItem onClick={handleEditSet}>Edit</MenuItem> */}
-        <MenuItem onClick={handleDeleteSet} sx={{ color: 'error.main' }}>
+        <MenuItem
+          onClick={handleDeleteSet}
+          sx={{ color: 'error.main' }}
+          disableRipple
+        >
           Delete
         </MenuItem>
       </Menu>
+      {deleting && (
+        <Card
+          sx={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            width: 250,
+            p: 2,
+            boxShadow: 3,
+            zIndex: 1000,
+          }}
+        >
+          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+            Deleting flashcard set...
+          </Typography>
+          <LinearProgress color="error" />
+        </Card>
+      )}
     </>
   );
 };

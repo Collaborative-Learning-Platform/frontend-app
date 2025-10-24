@@ -220,8 +220,8 @@ export default function Sidebar({
 
   // badgeCounts: ideally from context or API; falling back to current hard-coded values
   const badgeCounts: Record<string, number> = {
-    workspaces: 2,
-    adminWorkspaces: 3,
+    workspaces: 0,
+    adminWorkspaces: 0,
   };
 
   const resolved = resolveNavItems(navConfig, role, badgeCounts);
