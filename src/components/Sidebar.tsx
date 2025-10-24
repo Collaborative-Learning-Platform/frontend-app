@@ -218,13 +218,9 @@ export default function Sidebar({
     if (item.path) navigate(item.path);
   };
 
-  // badgeCounts: ideally from context or API; falling back to current hard-coded values
-  const badgeCounts: Record<string, number> = {
-    workspaces: 2,
-    adminWorkspaces: 3,
-  };
 
-  const resolved = resolveNavItems(navConfig, role, badgeCounts);
+
+  const resolved = resolveNavItems(navConfig, role);
   const filteredNavigationItems = resolved.filter(
     (i) => i.section !== 'bottom'
   );

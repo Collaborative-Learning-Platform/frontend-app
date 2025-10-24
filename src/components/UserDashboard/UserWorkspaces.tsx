@@ -103,24 +103,7 @@ export function UserWorkspaces() {
           </Box>
         </Box>
 
-        <Button
-          variant="contained"
-          startIcon={<PlusIcon />}
-          sx={{
-            minWidth: { xs: "100%", sm: "180px" },
-            height: 44,
-            fontSize: "0.95rem",
-            fontWeight: 500,
-            borderRadius: 1,
-            textTransform: "none",
-            boxShadow: theme.shadows[2],
-            "&:hover": {
-              boxShadow: theme.shadows[4],
-            },
-          }}
-        >
-          Join Workspace
-        </Button>
+  
       </Box>
 
       {/* Workspaces Grid */}
