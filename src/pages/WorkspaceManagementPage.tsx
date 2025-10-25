@@ -93,11 +93,12 @@ export default function WorkspaceManagementPage() {
       } catch (err: any) {
         setLoadingGroups(false);
         setLoadingUsers(false);
-        if(err?.response?.data?.message === "Failed to fetch user details from Auth Service"){
-          setError("Failed to load users: Auth Service is unreachable");
-          return;
-        }
-        setError(err?.response?.data?.message || "Failed to load workspace");
+        // Temporarily ignore specific Auth Service fetch error to avoid showing it here
+        // if (err?.response?.data?.message === "Failed to fetch user details from Auth Service") {
+        //   // setError("Failed to load users: Auth Service is unreachable");
+        //   return;
+        // }
+        // setError(err?.response?.data?.message || "Failed to load workspace");
       }
     };
     fetchWorkspace();

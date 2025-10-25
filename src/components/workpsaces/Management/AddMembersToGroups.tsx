@@ -125,11 +125,11 @@ export default function AddMembersDialog({
           );
         });
       } else {
-        setError(res.data.message || "Failed to load users");
+        // setError(res.data.message || "Failed to load users");
         setLoading(false);
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to fetch users");
+      // setError(err?.response?.data?.message || "Failed to fetch users");
       setLoading(false);
     }
   };
